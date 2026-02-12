@@ -7,6 +7,9 @@ import {
     TouchableOpacity
 } from 'react-native';
 
+import { useData } from '../data/DataContext';
+
+
 type CapitalEquipment = {
     id: string;
     category: string;
@@ -23,23 +26,23 @@ type OperatingEquipment = {
 };
 
 // Данные капитальных затрат
-const capitalData: CapitalEquipment[] = [
-    { id: '1', category: 'Серверное оборудование', name: 'Сервер HP', quantity: 5, price: 50000 },
-{ id: '2', category: 'Сетевое оборудование', name: 'TEST', quantity: 1, price: 3 },
-{ id: '3', category: 'Клиентское оборудование', name: 'ПК Dell', quantity: 10, price: 30000 },
-{ id: '4', category: 'Лицензии ПО', name: 'MS Windows 11 Pro', quantity: 1, price: 20000 },
-];
+// const capitalData: CapitalEquipment[] = [
+//     { id: '1', category: 'Серверное оборудование', name: 'Сервер HP', quantity: 5, price: 50000 },
+//     { id: '2', category: 'Сетевое оборудование', name: 'TEST', quantity: 1, price: 3 },
+//     { id: '3', category: 'Клиентское оборудование', name: 'ПК Dell', quantity: 10, price: 30000 },
+//     { id: '4', category: 'Лицензии ПО', name: 'MS Windows 11 Pro', quantity: 1, price: 20000 },
+// ];
 
 // Данные операционных затрат
-const operatingData: OperatingEquipment[] = [
-    { id: '1', category: 'Лицензии по подписке', name: 'Microsoft 365', price: 1300 },
-{ id: '2', category: 'Аренда серверов', name: 'TEST', price: 0 },
-{ id: '3', category: 'Миграция', name: 'TEST', price: 0 },
-{ id: '4', category: 'Тестирование', name: 'TEST', price: 0 },
-{ id: '5', category: 'Резервирование', name: 'TEST', price: 0 },
-{ id: '6', category: 'Оплата труда', name: 'TEST', price: 0 },
-{ id: '7', category: 'Администрирование серверов', name: 'TEST', price: 0 },
-];
+// const operatingData: OperatingEquipment[] = [
+//     { id: '1', category: 'Лицензии по подписке', name: 'Microsoft 365', price: 1300 },
+//     { id: '2', category: 'Аренда серверов', name: 'TEST', price: 0 },
+//     { id: '3', category: 'Миграция', name: 'TEST', price: 0 },
+//     { id: '4', category: 'Тестирование', name: 'TEST', price: 0 },
+//     { id: '5', category: 'Резервирование', name: 'TEST', price: 0 },
+//     { id: '6', category: 'Оплата труда', name: 'TEST', price: 0 },
+//     { id: '7', category: 'Администрирование серверов', name: 'TEST', price: 0 },
+// ];
 
 export const options = {
     title: 'Общая сводка',
@@ -47,6 +50,7 @@ export const options = {
 
 export default function SummaryScreen() {
     const [showDetails, setShowDetails] = useState(false);
+    const { capitalData, operatingData } = useData();
 
     // Определяем разовые и периодические категории операционных затрат
     const oneTimeCategories = ['Миграция', 'Тестирование'];
@@ -107,136 +111,136 @@ export default function SummaryScreen() {
         <ScrollView style={styles.container}>
         {/* Заголовок */}
         <View style={styles.header}>
-        <Text style={styles.headerText}>Общая стоимость</Text>
+            <Text style={styles.headerText}>Общая стоимость</Text>
         </View>
 
         {/* Общий итог */}
         <View style={styles.summarySection}>
-        <Text style={styles.sectionTitle}>Общий итог</Text>
+            <Text style={styles.sectionTitle}>Общий итог</Text>
 
-        <View style={styles.summaryItem}>
-        <Text style={styles.summaryLabel}>Итого все разовые затраты</Text>
-        <Text style={styles.summaryValue}>{formatCurrency(totalOneTimeExpenses)}</Text>
-        </View>
+            <View style={styles.summaryItem}>
+                <Text style={styles.summaryLabel}>Итого все разовые затраты</Text>
+                <Text style={styles.summaryValue}>{formatCurrency(totalOneTimeExpenses)}</Text>
+            </View>
 
-        <View style={styles.summaryItem}>
-        <Text style={styles.summaryLabel}>Итого все периодические затраты</Text>
-        <Text style={styles.summaryValue}>{formatCurrency(periodicTotal)}</Text>
-        </View>
+            <View style={styles.summaryItem}>
+                <Text style={styles.summaryLabel}>Итого все периодические затраты</Text>
+                <Text style={styles.summaryValue}>{formatCurrency(periodicTotal)}</Text>
+            </View>
 
-        <View style={styles.summaryItem}>
-        <Text style={styles.summaryLabel}>Затраты на электроэнергию</Text>
-        <Text style={styles.summaryValue}>{formatCurrency(electricityTotal)}</Text>
-        </View>
+            <View style={styles.summaryItem}>
+                <Text style={styles.summaryLabel}>Затраты на электроэнергию</Text>
+                <Text style={styles.summaryValue}>{formatCurrency(electricityTotal)}</Text>
+            </View>
 
-        <View style={[styles.summaryItem, styles.grandTotal]}>
-        <Text style={styles.summaryLabel}>ОБЩИЙ ИТОГ</Text>
-        <Text style={styles.grandTotalValue}>{formatCurrency(grandTotal)}</Text>
-        </View>
+            <View style={[styles.summaryItem, styles.grandTotal]}>
+                <Text style={styles.summaryLabel}>ОБЩИЙ ИТОГ</Text>
+                <Text style={styles.grandTotalValue}>{formatCurrency(grandTotal)}</Text>
+            </View>
         </View>
 
         {/* Детали */}
         <TouchableOpacity
-        style={styles.detailsToggle}
-        onPress={() => setShowDetails(!showDetails)}
+            style={styles.detailsToggle}
+            onPress={() => setShowDetails(!showDetails)}
         >
-        <Text style={styles.detailsToggleText}>
-        {showDetails ? 'Скрыть детали' : 'Показать детали'} ▼
-        </Text>
+            <Text style={styles.detailsToggleText}>
+                {showDetails ? 'Скрыть детали' : 'Показать детали'} ▼
+            </Text>
         </TouchableOpacity>
 
         {showDetails && (
             <View style={styles.detailsSection}>
-            {/* Таблица капитальных затрат */}
-            <View style={styles.tableContainer}>
-            <Text style={styles.detailsTitle}>Капитальные затраты</Text>
+                {/* Таблица капитальных затрат */}
+                <View style={styles.tableContainer}>
+                    <Text style={styles.detailsTitle}>Капитальные затраты</Text>
 
-            <View style={styles.tableHeader}>
-            <Text style={styles.tableHeaderText}>Категория</Text>
-            <Text style={styles.tableHeaderText}>Наименование</Text>
-            <Text style={styles.tableHeaderText}>Кол-во</Text>
-            <Text style={styles.tableHeaderText}>Затраты</Text>
-            </View>
-
-            {Object.entries(groupCapitalByCategory()).map(([category, items]) => (
-                <View key={category} style={styles.categoryGroup}>
-                <Text style={styles.categorySubtitle}>{category}</Text>
-                {items.map(item => (
-                    <View key={item.id} style={styles.tableRow}>
-                    <Text style={styles.tableCellSmall}>{category}</Text>
-                    <Text style={styles.tableCell}>{item.name}</Text>
-                    <Text style={styles.tableCellSmall}>{item.quantity}</Text>
-                    <Text style={styles.tableCell}>
-                    {formatCurrency(item.quantity * item.price)}
-                    </Text>
+                    <View style={styles.tableHeader}>
+                        <Text style={styles.tableHeaderText}>Категория</Text>
+                        <Text style={styles.tableHeaderText}>Наименование</Text>
+                        <Text style={styles.tableHeaderText}>Кол-во</Text>
+                        <Text style={styles.tableHeaderText}>Затраты</Text>
                     </View>
-                ))}
-                </View>
-            ))}
 
-            {/* Подытоживающая строка для капитальных затрат */}
-            <View style={styles.subtotalRow}>
-            <Text style={styles.subtotalText}>ИТОГО КАПИТАЛЬНЫХ:</Text>
-            <Text style={styles.subtotalValue}>{formatCurrency(capitalTotal)}</Text>
-            </View>
-            </View>
-
-            {/* Таблица операционных затрат */}
-            <View style={styles.tableContainer}>
-            <Text style={styles.detailsTitle}>Операционные затраты</Text>
-
-            {/* Разовые операционные затраты */}
-            <Text style={styles.subsectionTitle}>Разовые</Text>
-            {oneTimeOperating.length > 0 ? (
-                <>
-                {Object.entries(groupOperatingByType(oneTimeOperating, 'one-time')).map(([category, items]) => (
-                    <View key={category} style={styles.categoryGroup}>
-                    <Text style={styles.categorySubtitle}>{category}</Text>
-                    {items.map(item => (
-                        <View key={item.id} style={styles.tableRow}>
-                        <Text style={styles.tableCellSmall}>{category}</Text>
-                        <Text style={styles.tableCell}>{item.name}</Text>
-                        <Text style={styles.tableCellSmall}>1</Text>
-                        <Text style={styles.tableCell}>{formatCurrency(item.price)}</Text>
+                    {Object.entries(groupCapitalByCategory()).map(([category, items]) => (
+                        <View key={category} style={styles.categoryGroup}>
+                            <Text style={styles.categorySubtitle}>{category}</Text>
+                            {items.map(item => (
+                                <View key={item.id} style={styles.tableRow}>
+                                <Text style={styles.tableCellSmall}>{category}</Text>
+                                <Text style={styles.tableCell}>{item.name}</Text>
+                                <Text style={styles.tableCellSmall}>{item.quantity}</Text>
+                                <Text style={styles.tableCell}>
+                                {formatCurrency(item.quantity * item.price)}
+                                </Text>
+                                </View>
+                            ))}
                         </View>
                     ))}
-                    </View>
-                ))}
-                <View style={styles.subtotalRow}>
-                <Text style={styles.subtotalText}>ИТОГО РАЗОВЫХ:</Text>
-                <Text style={styles.subtotalValue}>{formatCurrency(oneTimeOperatingTotal)}</Text>
-                </View>
-                </>
-            ) : (
-                <Text style={styles.emptyText}>Нет данных</Text>
-            )}
 
-            {/* Периодические операционные затраты */}
-            <Text style={[styles.subsectionTitle, { marginTop: 20 }]}>Периодические</Text>
-            {periodicOperating.length > 0 ? (
-                <>
-                {Object.entries(groupOperatingByType(periodicOperating, 'periodic')).map(([category, items]) => (
-                    <View key={category} style={styles.categoryGroup}>
-                    <Text style={styles.categorySubtitle}>{category}</Text>
-                    {items.map(item => (
-                        <View key={item.id} style={styles.tableRow}>
-                        <Text style={styles.tableCellSmall}>{category}</Text>
-                        <Text style={styles.tableCell}>{item.name}</Text>
-                        <Text style={styles.tableCellSmall}>1</Text>
-                        <Text style={styles.tableCell}>{formatCurrency(item.price)}</Text>
-                        </View>
-                    ))}
+                    {/* Подытоживающая строка для капитальных затрат */}
+                    <View style={styles.subtotalRow}>
+                        <Text style={styles.subtotalText}>ИТОГО КАПИТАЛЬНЫХ:</Text>
+                        <Text style={styles.subtotalValue}>{formatCurrency(capitalTotal)}</Text>
                     </View>
-                ))}
-                <View style={styles.subtotalRow}>
-                <Text style={styles.subtotalText}>ИТОГО ПЕРИОДИЧЕСКИХ:</Text>
-                <Text style={styles.subtotalValue}>{formatCurrency(periodicTotal)}</Text>
                 </View>
-                </>
-            ) : (
-                <Text style={styles.emptyText}>Нет данных</Text>
-            )}
-            </View>
+
+                {/* Таблица операционных затрат */}
+                <View style={styles.tableContainer}>
+                    <Text style={styles.detailsTitle}>Операционные затраты</Text>
+
+                    {/* Разовые операционные затраты */}
+                    <Text style={styles.subsectionTitle}>Разовые</Text>
+                    {oneTimeOperating.length > 0 ? (
+                        <>
+                        {Object.entries(groupOperatingByType(oneTimeOperating, 'one-time')).map(([category, items]) => (
+                            <View key={category} style={styles.categoryGroup}>
+                            <Text style={styles.categorySubtitle}>{category}</Text>
+                            {items.map(item => (
+                                <View key={item.id} style={styles.tableRow}>
+                                    <Text style={styles.tableCellSmall}>{category}</Text>
+                                    <Text style={styles.tableCell}>{item.name}</Text>
+                                    <Text style={styles.tableCellSmall}>1</Text>
+                                    <Text style={styles.tableCell}>{formatCurrency(item.price)}</Text>
+                                </View>
+                            ))}
+                            </View>
+                        ))}
+                        <View style={styles.subtotalRow}>
+                            <Text style={styles.subtotalText}>ИТОГО РАЗОВЫХ:</Text>
+                            <Text style={styles.subtotalValue}>{formatCurrency(oneTimeOperatingTotal)}</Text>
+                        </View>
+                        </>
+                    ) : (
+                        <Text style={styles.emptyText}>Нет данных</Text>
+                    )}
+
+                    {/* Периодические операционные затраты */}
+                    <Text style={[styles.subsectionTitle, { marginTop: 20 }]}>Периодические</Text>
+                    {periodicOperating.length > 0 ? (
+                        <>
+                        {Object.entries(groupOperatingByType(periodicOperating, 'periodic')).map(([category, items]) => (
+                            <View key={category} style={styles.categoryGroup}>
+                            <Text style={styles.categorySubtitle}>{category}</Text>
+                            {items.map(item => (
+                                <View key={item.id} style={styles.tableRow}>
+                                <Text style={styles.tableCellSmall}>{category}</Text>
+                                <Text style={styles.tableCell}>{item.name}</Text>
+                                <Text style={styles.tableCellSmall}>1</Text>
+                                <Text style={styles.tableCell}>{formatCurrency(item.price)}</Text>
+                                </View>
+                            ))}
+                            </View>
+                        ))}
+                        <View style={styles.subtotalRow}>
+                        <Text style={styles.subtotalText}>ИТОГО ПЕРИОДИЧЕСКИХ:</Text>
+                        <Text style={styles.subtotalValue}>{formatCurrency(periodicTotal)}</Text>
+                        </View>
+                        </>
+                    ) : (
+                        <Text style={styles.emptyText}>Нет данных</Text>
+                    )}
+                </View>
             </View>
         )}
         </ScrollView>

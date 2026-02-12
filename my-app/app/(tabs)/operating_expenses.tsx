@@ -1,7 +1,10 @@
 import { Picker } from '@react-native-picker/picker';
 import { useState } from 'react';
 import { Alert, Button, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { exploreStyles as styles } from './styles/catalog.styles';
+import { exploreStyles as styles } from '../styles/catalog.styles';
+
+import { useData } from '../data/DataContext';
+
 
 type Equipment = {
   id: string;
@@ -16,25 +19,27 @@ export const options = {
 
 export default function OperatingScreen() {
   // Данные категорий и записей
-  const [categories, setCategories] = useState<string[]>([
-    'Лицензии по подписке',
-    'Аренда серверов',
-    'Миграция',
-    'Тестирование',
-    'Резервирование',
-    'Оплата труда',
-    'Администрирование серверов',
-  ]);
-
-  const [data, setData] = useState<Equipment[]>([
-    { id: '1', category: 'Лицензии по подписке', name: 'Microsoft 365', price: 1300 },
-    { id: '2', category: 'Аренда серверов', name: 'TEST',  price: 0 },
-    { id: '3', category: 'Миграция', name: 'TEST',  price: 0},
-    { id: '4', category: 'Тестирование', name: 'TEST',  price: 0 },
-    { id: '5', category: 'Резервирование', name: 'TEST',  price: 0 },
-    { id: '6', category: 'Оплата труда', name: 'TEST',  price: 0},
-    { id: '7', category: 'Администрирование серверов', name: 'TEST',  price: 0 },
-  ]);
+//   const [categories, setCategories] = useState<string[]>([
+//     'Лицензии по подписке',
+//     'Аренда серверов',
+//     'Миграция',
+//     'Тестирование',
+//     'Резервирование',
+//     'Оплата труда',
+//     'Администрирование серверов',
+//   ]);
+//
+//   const [data, setData] = useState<Equipment[]>([
+//     { id: '1', category: 'Лицензии по подписке', name: 'Microsoft 365', price: 1300 },
+//     { id: '2', category: 'Аренда серверов', name: 'TEST',  price: 0 },
+//     { id: '3', category: 'Миграция', name: 'TEST',  price: 0},
+//     { id: '4', category: 'Тестирование', name: 'TEST',  price: 0 },
+//     { id: '5', category: 'Резервирование', name: 'TEST',  price: 0 },
+//     { id: '6', category: 'Оплата труда', name: 'TEST',  price: 0},
+//     { id: '7', category: 'Администрирование серверов', name: 'TEST',  price: 0 },
+//   ]);
+  const { operatingData, setOperatingData } = useData();
+  const categories = Array.from(new Set(operatingData.map(item => item.category)));
 
   const [modalVisible, setModalVisible] = useState(false);
   const [editingItem, setEditingItem] = useState<Equipment | null>(null);
@@ -62,9 +67,9 @@ export default function OperatingScreen() {
     };
 
     if (editingItem) {
-      setData(data.map(item => (item.id === editingItem.id ? newItem : item)));
+      setOperatingData(operatingData.map(item => (item.id === editingItem.id ? newItem : item)));
     } else {
-      setData([...data, newItem]);
+      setOperatingData([...operatingData, newItem]);
     }
 
     resetForm();
@@ -82,7 +87,9 @@ export default function OperatingScreen() {
   const deleteItem = (id: string) => {
     Alert.alert('Удаление', 'Вы уверены?', [
       { text: 'Отмена', style: 'cancel' },
-      { text: 'Удалить', style: 'destructive', onPress: () => setData(data.filter(item => item.id !== id)) },
+      { text: 'Удалить', style: 'destructive', onPress: () =>
+        setOperatingData(operatingData.filter(item => item.id !== id))
+      },
     ]);
     setSelectedItem(null);
   };
@@ -91,7 +98,7 @@ export default function OperatingScreen() {
     setEditingItem(null);
     setName('');
     setPrice('');
-    setCategory(categories[0]);
+    setCategory(categories[0] || 'Лицензии по подписке');
   };
 
   // Добавление новой категории
@@ -109,7 +116,8 @@ export default function OperatingScreen() {
 
   // Рендер таблицы для категории
   const renderCategory = (categoryName: string) => {
-    const categoryData = data.filter(item => item.category === categoryName);
+//     const categoryData = data.filter(item => item.category === categoryName);
+    const categoryData = operatingData.filter(item => item.category === categoryName);
 
     return (
       <View key={categoryName} style={styles.categoryContainer}>

@@ -2,6 +2,9 @@ import { Picker } from '@react-native-picker/picker';
 import { useState } from 'react';
 import { Alert, Button, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+import { useData } from '../data/DataContext';
+
+
 type Equipment = {
   id: string;
   category: string;
@@ -16,19 +19,23 @@ export const options = {
 
 export default function ExploreScreen() {
   // Данные категорий и записей
-  const [categories, setCategories] = useState<string[]>([
-    'Серверное оборудование',
-    'Сетевое оборудование',
-    'Клиентское оборудование',
-    'Лицензии ПО',
-  ]);
+//   const [categories, setCategories] = useState<string[]>([
+//     'Серверное оборудование',
+//     'Сетевое оборудование',
+//     'Клиентское оборудование',
+//     'Лицензии ПО',
+//   ]);
+//
+//   const [data, setData] = useState<Equipment[]>([
+//     { id: '1', category: 'Серверное оборудование', name: 'Сервер HP', quantity: 5, price: 50000 },
+//     { id: '2', category: 'Сетевое оборудование', name: 'TEST', quantity: 1, price: 3 },
+//     { id: '3', category: 'Клиентское оборудование', name: 'ПК Dell', quantity: 10, price: 30000 },
+//     { id: '4', category: 'Лицензии ПО', name: 'MS Windows 11 Pro', quantity: 1, price: 20000 },
+//   ]);
+  const { capitalData, setCapitalData } = useData();
 
-  const [data, setData] = useState<Equipment[]>([
-    { id: '1', category: 'Серверное оборудование', name: 'Сервер HP', quantity: 5, price: 50000 },
-    { id: '2', category: 'Сетевое оборудование', name: 'TEST', quantity: 1, price: 3 },
-    { id: '3', category: 'Клиентское оборудование', name: 'ПК Dell', quantity: 10, price: 30000 },
-    { id: '4', category: 'Лицензии ПО', name: 'MS Windows 11 Pro', quantity: 1, price: 20000 },
-  ]);
+  const categories = Array.from(new Set(capitalData.map(item => item.category)));
+
 
   const [modalVisible, setModalVisible] = useState(false);
   const [editingItem, setEditingItem] = useState<Equipment | null>(null);
@@ -37,7 +44,7 @@ export default function ExploreScreen() {
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('');
   const [price, setPrice] = useState('');
-  const [category, setCategory] = useState(categories[0]);
+  const [category, setCategory] = useState(categories[0] || 'Серверное оборудование');
 
   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -58,14 +65,24 @@ export default function ExploreScreen() {
     };
 
     if (editingItem) {
-      setData(data.map(item => (item.id === editingItem.id ? newItem : item)));
+      setCapitalData(capitalData.map(item => (item.id === editingItem.id ? newItem : item)));
     } else {
-      setData([...data, newItem]);
+      setCapitalData([...capitalData, newItem]);
     }
 
-    resetForm();
-    setModalVisible(false);
+    resetForm();  // ← вызов внешней функции
+    setModalVisible(false);  // ← теперь выполнится
   };
+
+  // ВЫНЕСИ resetForm НА УРОВЕНЬ КОМПОНЕНТА (после saveItem)
+  const resetForm = () => {
+    setEditingItem(null);
+    setName('');
+    setQuantity('');
+    setPrice('');
+    setCategory(categories[0] || 'Серверное оборудование');
+  };
+
 
   const editItem = (item: Equipment) => {
     setEditingItem(item);
@@ -79,35 +96,54 @@ export default function ExploreScreen() {
   const deleteItem = (id: string) => {
     Alert.alert('Удаление', 'Вы уверены?', [
       { text: 'Отмена', style: 'cancel' },
-      { text: 'Удалить', style: 'destructive', onPress: () => setData(data.filter(item => item.id !== id)) },
+      { text: 'Удалить', style: 'destructive', onPress: () =>
+        setCapitalData(capitalData.filter(item => item.id !== id))
+      },
     ]);
     setSelectedItem(null);
   };
 
-  const resetForm = () => {
-    setEditingItem(null);
-    setName('');
-    setQuantity('');
-    setPrice('');
-    setCategory(categories[0]);
-  };
 
   // Добавление новой категории
+//   const addCategory = () => {
+//     const trimmed = newCategoryName.trim();
+//     if (!trimmed) return;
+//     if (categories.includes(trimmed)) {
+//       Alert.alert('Ошибка', 'Такая категория уже существует');
+//       return;
+//     }
+//     setCategories([...categories, trimmed]);
+//     setNewCategoryName('');
+//     setCategoryModalVisible(false);
+//   };
   const addCategory = () => {
     const trimmed = newCategoryName.trim();
-    if (!trimmed) return;
-    if (categories.includes(trimmed)) {
-      Alert.alert('Ошибка', 'Такая категория уже существует');
+    if (!trimmed || categories.includes(trimmed)) {
+      Alert.alert('Ошибка', 'Такая категория уже существует или поле пустое');
+      setNewCategoryName('');
+      setCategoryModalVisible(false);
       return;
     }
-    setCategories([...categories, trimmed]);
+
+    // Обновляем capitalData с новой категорией (добавляем фиктивную запись или просто обновляем состояние)
+    const newItem = {
+      id: Date.now().toString(),
+      category: trimmed,
+      name: 'Новая категория',
+      quantity: 0,
+      price: 0
+    };
+    setCapitalData([...capitalData, newItem]);
+
     setNewCategoryName('');
     setCategoryModalVisible(false);
   };
 
   // Рендер таблицы для категории
   const renderCategory = (categoryName: string) => {
-    const categoryData = data.filter(item => item.category === categoryName);
+//     const categoryData = data.filter(item => item.category === categoryName);
+    const categoryData = capitalData.filter(item => item.category === categoryName);
+
 
     return (
       <View key={categoryName} style={styles.categoryContainer}>
