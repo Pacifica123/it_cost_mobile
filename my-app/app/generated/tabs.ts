@@ -30,7 +30,7 @@ export const entryBlocks: BlockItem[] = [
 export const tabBlocks: BlockItem[] = [
   {
     "id": "/test_name/(tabs)/it_infrastructure",
-    "title": "ИТ-инфрастуктура",
+    "title": "ИТ-инфраструктура",
     "route": "/test_name/(tabs)/it_infrastructure",
     "group": "/test_name/(tabs)"
   },
@@ -48,7 +48,7 @@ export const tabBlocks: BlockItem[] = [
   },
   {
     "id": "/test_name/(tabs)/operating_expenses",
-    "title": "Операционные затрат",
+    "title": "Операционные затраты",
     "route": "/test_name/(tabs)/operating_expenses",
     "group": "/test_name/(tabs)"
   },
@@ -56,6 +56,12 @@ export const tabBlocks: BlockItem[] = [
     "id": "/test_name/(tabs)/electricity",
     "title": "Потребление электричество",
     "route": "/test_name/(tabs)/electricity",
+    "group": "/test_name/(tabs)"
+  },
+  {
+    "id": "/test_name/(tabs)/ahp",
+    "title": "AHP-анализ",
+    "route": "/test_name/(tabs)/ahp",
     "group": "/test_name/(tabs)"
   },
   {
@@ -87,7 +93,7 @@ export const screenGroups: GroupedBlocks[] = [
     "items": [
       {
         "id": "/test_name/(tabs)/it_infrastructure",
-        "title": "ИТ-инфрастуктура",
+        "title": "ИТ-инфраструктура",
         "route": "/test_name/(tabs)/it_infrastructure"
       },
       {
@@ -97,13 +103,18 @@ export const screenGroups: GroupedBlocks[] = [
       },
       {
         "id": "/test_name/(tabs)/operating_expenses",
-        "title": "Операционные затрат",
+        "title": "Операционные затраты",
         "route": "/test_name/(tabs)/operating_expenses"
       },
       {
         "id": "/test_name/(tabs)/electricity",
         "title": "Потребление электричество",
         "route": "/test_name/(tabs)/electricity"
+      },
+      {
+        "id": "/test_name/(tabs)/ahp",
+        "title": "AHP-анализ",
+        "route": "/test_name/(tabs)/ahp"
       },
       {
         "id": "/test_name/(tabs)/NPV",
