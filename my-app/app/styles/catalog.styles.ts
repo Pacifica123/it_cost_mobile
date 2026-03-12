@@ -1,97 +1,403 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 export const exploreStyles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    padding: 20, 
-    backgroundColor: '#fff' 
+  container: {
+    flex: 1,
+    backgroundColor: '#F6F7FB',
   },
 
-  addButton: { 
-    backgroundColor: '#4CAF50', 
-    padding: 15, 
-    borderRadius: 10, 
-    marginBottom: 15 
+  content: {
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 22,
+    gap: 12,
+    // чтобы на ПК/планшете карточки и таблица не растягивались на весь экран
+    width: '100%',
+    alignSelf: 'center',
+    maxWidth: 900,
   },
 
-  addButtonText: { 
-    color: '#fff', 
-    fontSize: 16, 
-    textAlign: 'center', 
-    fontWeight: 'bold' 
+  topBar: {
+    backgroundColor: 'rgba(255,255,255,0.94)',
+    borderRadius: 22,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(17,24,39,0.06)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOpacity: 0.06,
+        shadowRadius: 14,
+        shadowOffset: { width: 0, height: 8 },
+      },
+      android: { elevation: 2 },
+      default: {},
+    }),
   },
 
-  categoryContainer: { 
-    marginBottom: 30 
+  screenTitle: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#111827',
+    lineHeight: 22,
+    // на Android у жирных шрифтов иногда "режет" низ букв
+    includeFontPadding: false,
+  },
+
+  topActions: {
+    marginTop: 10,
+    flexDirection: 'row',
+    gap: 10,
+    flexWrap: 'wrap',
+  },
+
+  chipBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    backgroundColor: 'rgba(17,24,39,0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(17,24,39,0.06)',
+  },
+
+  chipText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#111827',
+  },
+
+  categoryCard: {
+    backgroundColor: 'rgba(255,255,255,0.94)',
+    borderRadius: 22,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(17,24,39,0.06)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOpacity: 0.05,
+        shadowRadius: 14,
+        shadowOffset: { width: 0, height: 8 },
+      },
+      android: { elevation: 1 },
+      default: {},
+    }),
+  },
+
+  categoryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+    paddingHorizontal: 4,
+    paddingTop: 4,
+    paddingBottom: 10,
   },
 
   categoryTitle: {
-    textAlign: 'center', 
-    fontSize: 20, 
-    fontWeight: 'bold', 
-    marginBottom: 10 
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#111827',
+    lineHeight: 20,
+    includeFontPadding: false,
+    // чтобы длинные названия не ломали верстку
+    flexShrink: 1,
   },
 
-  tableHeader: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    paddingVertical: 5, 
-    borderBottomWidth: 1, 
-    borderColor: '#000' 
+  // колонки таблицы: имя шире, цена уже (на ПК смотрится ровно)
+  nameCell: {
+    flex: 3,
+  },
+  priceCell: {
+    flex: 1,
   },
 
-  row: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    paddingVertical: 10, 
-    borderBottomWidth: 1, 
-    borderColor: '#ccc', 
-    paddingHorizontal: 5 
+  badge: {
+    minWidth: 34,
+    height: 26,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    backgroundColor: 'rgba(99,102,241,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
-  cell: { 
-    flex: 1, 
-    textAlign: 'center' 
+  badgeText: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#111827',
+    lineHeight: 16,
+    includeFontPadding: false,
   },
 
-  actionButtons: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-around', 
-    marginTop: 10, 
-    flexWrap: 'wrap' 
+  table: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(17,24,39,0.08)',
+    backgroundColor: '#fff',
   },
 
-  modalOverlay: { 
-    flex: 1, 
-    justifyContent: 'center', 
-    backgroundColor: 'rgba(0,0,0,0.5)' 
+  tableHeader: {
+    flexDirection: 'row',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: 'rgba(17,24,39,0.05)',
   },
 
-  modal: { 
-    backgroundColor: '#fff', 
-    margin: 20, 
-    borderRadius: 10, 
-    padding: 20 
+  row: {
+    flexDirection: 'row',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(17,24,39,0.06)',
+    backgroundColor: '#FFFFFF',
   },
 
-  modalTitle: { 
-    textAlign: 'center', 
-    fontSize: 18, 
-    fontWeight: 'bold', 
-    marginBottom: 10 
+  rowAlt: {
+    backgroundColor: 'rgba(17,24,39,0.02)',
   },
 
-  input: { 
-    borderWidth: 1, 
-    borderColor: '#ccc', 
-    padding: 10, 
-    marginVertical: 5, 
-    borderRadius: 5 
+  rowSelected: {
+    backgroundColor: 'rgba(34,197,94,0.12)',
   },
 
-  modalButtons: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    marginTop: 10 
+  cell: {
+    flex: 1,
+    fontSize: 14,
+    color: '#111827',
+    lineHeight: 18,
+    includeFontPadding: false,
+  },
+
+  cellHeader: {
+    fontWeight: '900',
+    color: 'rgba(17,24,39,0.7)',
+    fontSize: 13,
+    lineHeight: 16,
+    includeFontPadding: false,
+  },
+
+  cellRight: {
+    textAlign: 'right',
+  },
+
+  cellCenter: {
+    textAlign: 'center',
+  },
+
+  actionBar: {
+    marginTop: 10,
+    flexDirection: 'row',
+    gap: 10,
+    justifyContent: 'flex-end',
+    flexWrap: 'wrap',
+  },
+
+  actionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+
+  actionEdit: {
+    backgroundColor: 'rgba(245,158,11,0.14)',
+    borderColor: 'rgba(245,158,11,0.22)',
+  },
+
+  actionDelete: {
+    backgroundColor: 'rgba(239,68,68,0.10)',
+    borderColor: 'rgba(239,68,68,0.18)',
+  },
+
+  actionText: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#111827',
+  },
+
+  modalOverlay: {
+    flex: 1,
+    // на мобилке выглядит как bottom-sheet, на web/desktop — по центру
+    justifyContent: Platform.OS === 'web' ? 'center' : 'flex-end',
+    padding: 16,
+  },
+
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(17,24,39,0.55)',
+  },
+
+  modalCard: {
+    backgroundColor: 'rgba(255,255,255,0.98)',
+    borderRadius: Platform.OS === 'web' ? 22 : 24,
+    borderTopLeftRadius: Platform.OS === 'web' ? 22 : 24,
+    borderTopRightRadius: Platform.OS === 'web' ? 22 : 24,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(17,24,39,0.08)',
+    width: '100%',
+    maxWidth: 720,
+    alignSelf: 'center',
+
+    // лёгкая тень чтобы не выглядело "плоско"
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOpacity: 0.12,
+        shadowRadius: 18,
+        shadowOffset: { width: 0, height: Platform.OS === 'web' ? 10 : -6 },
+      },
+      android: { elevation: 8 },
+      default: {},
+    }),
+  },
+
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 8,
+  },
+
+  modalTitle: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#111827',
+    lineHeight: 20,
+    includeFontPadding: false,
+  },
+
+  iconClose: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: 'rgba(17,24,39,0.06)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  label: {
+    marginTop: 10,
+    marginBottom: 6,
+    fontSize: 13,
+    fontWeight: '800',
+    color: 'rgba(17,24,39,0.7)',
+  },
+
+  input: {
+    borderWidth: 1,
+    borderColor: 'rgba(17,24,39,0.10)',
+    backgroundColor: 'rgba(17,24,39,0.04)',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    fontSize: 14,
+    color: '#111827',
+  },
+
+  hint: {
+    marginTop: 8,
+    fontSize: 12,
+    color: 'rgba(17,24,39,0.6)',
+    lineHeight: 16,
+    includeFontPadding: false,
+  },
+
+  pickerWrap: {
+    // На web у Picker свой дефолтный бордер (select), из‑за этого получается "двойная рамка".
+    // Поэтому на web бордер переносим на сам Picker.
+    borderWidth: Platform.OS === 'web' ? 0 : 1,
+    borderColor: 'rgba(17,24,39,0.10)',
+    backgroundColor: 'rgba(17,24,39,0.04)',
+    borderRadius: 14,
+    overflow: 'hidden',
+    paddingVertical: Platform.OS === 'android' ? 2 : 0,
+  },
+
+  picker: {
+    height: 52,
+    ...(Platform.OS === 'web'
+      ? ({
+          borderWidth: 1,
+          borderColor: 'rgba(17,24,39,0.10)',
+          borderRadius: 14,
+          backgroundColor: 'rgba(17,24,39,0.04)',
+          paddingHorizontal: 12,
+          outlineStyle: 'none',
+        } as any)
+      : null),
+  },
+
+  // свайп действия
+  swipeActions: {
+    flexDirection: 'row',
+    height: '100%',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 12,
+    backgroundColor: 'transparent',
+  },
+  swipeBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  swipeEdit: {
+    backgroundColor: 'rgba(245,158,11,0.16)',
+    borderColor: 'rgba(245,158,11,0.24)',
+  },
+  swipeDelete: {
+    backgroundColor: 'rgba(239,68,68,0.12)',
+    borderColor: 'rgba(239,68,68,0.20)',
+  },
+
+  modalButtons: {
+    marginTop: 14,
+    flexDirection: 'row',
+    gap: 10,
+  },
+
+  primaryBtn: {
+    flex: 1,
+    backgroundColor: '#111827',
+    paddingVertical: 12,
+    borderRadius: 14,
+    alignItems: 'center',
+  },
+
+  primaryBtnText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '900',
+  },
+
+  secondaryBtn: {
+    flex: 1,
+    backgroundColor: 'rgba(17,24,39,0.06)',
+    paddingVertical: 12,
+    borderRadius: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(17,24,39,0.08)',
+  },
+
+  secondaryBtnText: {
+    color: '#111827',
+    fontSize: 14,
+    fontWeight: '900',
   },
 });
