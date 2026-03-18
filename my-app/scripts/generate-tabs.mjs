@@ -1,4 +1,3 @@
-// scripts/generate-tabs.mjs
 import fs from "node:fs";
 import path from "node:path";
 
@@ -11,24 +10,34 @@ const exts = new Set([".ts", ".tsx", ".js", ".jsx"]);
 
 function isRoutableFile(filename) {
   if (filename.startsWith("_") || filename.startsWith("+")) return false;
-  const ext = path.extname(filename);
-  return exts.has(ext);
+  return exts.has(path.extname(filename));
 }
 
 function walk(dir) {
+  if (!fs.existsSync(dir)) return [];
+
   const entries = fs.readdirSync(dir, { withFileTypes: true });
   const files = [];
+
   for (const e of entries) {
     const full = path.join(dir, e.name);
-    if (e.isDirectory()) files.push(...walk(full));
-    else if (e.isFile() && isRoutableFile(e.name)) files.push(full);
+
+    if (e.isDirectory()) {
+      files.push(...walk(full));
+    } else if (e.isFile() && isRoutableFile(e.name)) {
+      files.push(full);
+    }
   }
+
   return files;
 }
 
 function walkDirs(dir) {
+  if (!fs.existsSync(dir)) return [];
+
   const entries = fs.readdirSync(dir, { withFileTypes: true });
   const dirs = [];
+
   for (const e of entries) {
     if (!e.isDirectory()) continue;
 
@@ -37,7 +46,9 @@ function walkDirs(dir) {
       e.name === "generated" ||
       e.name === "styles" ||
       e.name === "data" ||
-      e.name === "components"
+      e.name === "components" ||
+      e.name === "assets" ||
+      e.name === "node_modules"
     ) {
       continue;
     }
@@ -46,6 +57,7 @@ function walkDirs(dir) {
     dirs.push(full);
     dirs.push(...walkDirs(full));
   }
+
   return dirs;
 }
 
@@ -59,19 +71,8 @@ function toPosix(p) {
   return p.split(path.sep).join("/");
 }
 
-function tryExtractTitle(src) {
-  const m = src.match(/export\s+const\s+title\s*=\s*["'`](.+?)["'`]\s*;?/);
-  return m?.[1]?.trim() || null;
-}
-
-function tryExtractEntryFlag(src) {
-  const m = src.match(/export\s+const\s+(entry|isEntry)\s*=\s*true\s*;?/);
-  return Boolean(m);
-}
-
-function tryExtractEntryTitle(src) {
-  const m = src.match(/export\s+const\s+entryTitle\s*=\s*["'`](.+?)["'`]\s*;?/);
-  return m?.[1]?.trim() || null;
+function stripRouteGroups(route) {
+  return route.replace(/\/\([^/]+\)/g, "");
 }
 
 function makeRouteFromRel(relWithExtPosix) {
@@ -80,153 +81,155 @@ function makeRouteFromRel(relWithExtPosix) {
     ? relNoExt.slice(0, -"/index".length)
     : relNoExt;
 
-  return `/${routePart}`.replace(/\/\/+/g, "/");
+  return stripRouteGroups(`/${routePart}`).replace(/\/\/+/g, "/");
 }
 
-function groupKeyFromRoute(route) {
-  // "/finance/(tabs)/menu" -> "/finance/(tabs)"
-  // "/(tabs)/menu" -> "/(tabs)"
-  const parts = route.split("/").filter(Boolean);
-  const idx = parts.indexOf("(tabs)");
-  if (idx === -1) return "/"; // если вдруг файл вне tabs
-  return "/" + parts.slice(0, idx + 1).join("/");
+function tryExtractTitle(src) {
+  const patterns = [
+    /export\s+const\s+title\s*=\s*["'`](.+?)["'`]\s*;?/,
+    /export\s+const\s+screenTitle\s*=\s*["'`](.+?)["'`]\s*;?/,
+  ];
+
+  for (const pattern of patterns) {
+    const m = src.match(pattern);
+    if (m?.[1]?.trim()) return m[1].trim();
+  }
+
+  return null;
+}
+
+function tryExtractTabFlag(src) {
+  const patterns = [
+    /export\s+const\s+tab\s*=\s*true\s*;?/,
+    /export\s+const\s+isTab\s*=\s*true\s*;?/,
+  ];
+
+  return patterns.some((pattern) => pattern.test(src));
+}
+
+function tryExtractEntryFlag(src) {
+  const patterns = [
+    /export\s+const\s+entry\s*=\s*true\s*;?/,
+    /export\s+const\s+isEntry\s*=\s*true\s*;?/,
+  ];
+
+  return patterns.some((pattern) => pattern.test(src));
+}
+
+function getFeatureGroup(absPath) {
+  const rel = toPosix(path.relative(appDir, absPath));
+  const parts = rel.split("/");
+  const tabsIdx = parts.indexOf("(tabs)");
+
+  if (tabsIdx !== -1) {
+    return stripRouteGroups("/" + parts.slice(0, tabsIdx + 1).join("/")) || "/";
+  }
+
+  return "/";
+}
+
+function parseFiles(files) {
+  return files
+    .map((abs) => {
+      const rel = path.relative(appDir, abs);
+      const relPosix = toPosix(rel);
+      const src = fs.readFileSync(abs, "utf8");
+      const title = tryExtractTitle(src);
+
+      if (!title) return null;
+
+      return {
+        id: makeRouteFromRel(relPosix),
+        name: path.basename(abs, path.extname(abs)),
+        title,
+        route: makeRouteFromRel(relPosix),
+        group: getFeatureGroup(abs),
+        isTab: tryExtractTabFlag(src),
+        isEntry: tryExtractEntryFlag(src),
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.title.localeCompare(b.title, "ru"));
 }
 
 function main() {
   const tabsDirs = findTabsDirs();
+
   if (tabsDirs.length === 0) {
     console.error(`❌ Не найдено ни одной папки "(tabs)" внутри: ${appDir}`);
     process.exit(1);
   }
 
   const files = tabsDirs.flatMap((d) => walk(d));
+  const parsed = parseFiles(files);
 
-  const allBlocks = files
-    .map((abs) => {
-      const rel = path.relative(appDir, abs);
-      const relPosix = toPosix(rel);
+  const главныеЭкраны = parsed
+    .filter((b) => b.isEntry)
+    .map((b) => ({
+      id: b.id,
+      title: b.title,
+      route: b.route,
+      group: b.group,
+    }));
 
-      const baseName = path.basename(abs, path.extname(abs)); // menu / index / NPV etc.
-      const src = fs.readFileSync(abs, "utf8");
-
-      const title = tryExtractTitle(src);
-      if (!title) return null;
-
-      const route = makeRouteFromRel(relPosix);
-      const group = groupKeyFromRoute(route);
-
-      const isEntry = tryExtractEntryFlag(src) || baseName === "menu";
-      const entryTitle = tryExtractEntryTitle(src);
-
-      return {
-        id: route,
-        title,
-        route,
-        group,
-        baseName,
-        isEntry,
-        entryTitle: entryTitle || null,
-      };
-    })
-    .filter(Boolean)
-    .sort((a, b) => a.title.localeCompare(b.title, "ru"));
-
-  // Все экраны (как было)
-  const tabBlocks = allBlocks.map((b) => ({
+const скрытыеЭкраны = parsed
+  .filter((b) => !b.isEntry && !b.isTab)
+  .map((b) => ({
     id: b.id,
     title: b.title,
     route: b.route,
     group: b.group,
   }));
 
-  // Точки входа (как было)
-  const entryBlocks = allBlocks
-    .filter((b) => b.isEntry)
-    .map((b) => ({
-      id: b.id,
-      title: b.entryTitle || b.title,
-      route: b.route,
-      group: b.group,
-    }));
-
-  // Группировка экранов
-  const screenGroupsMap = new Map();
-  for (const b of allBlocks) {
-    // Обычно меню не хотят видеть внутри меню:
-    if (b.baseName === "menu") continue;
-
-    if (!screenGroupsMap.has(b.group)) screenGroupsMap.set(b.group, []);
-    screenGroupsMap.get(b.group).push({
-      id: b.id,
-      title: b.title,
-      route: b.route,
-    });
-  }
-
-  // Группировка entry
-  const entryGroupsMap = new Map();
-  for (const b of entryBlocks) {
-    if (!entryGroupsMap.has(b.group)) entryGroupsMap.set(b.group, []);
-    entryGroupsMap.get(b.group).push({
-      id: b.id,
-      title: b.title,
-      route: b.route,
-    });
-  }
-
-  // Сортировки внутри групп
-  for (const arr of screenGroupsMap.values()) {
-    arr.sort((a, b) => a.title.localeCompare(b.title, "ru"));
-  }
-  for (const arr of entryGroupsMap.values()) {
-    arr.sort((a, b) => a.title.localeCompare(b.title, "ru"));
-  }
-
-  const screenGroups = Array.from(screenGroupsMap.entries())
-    .map(([group, items]) => ({ group, items }))
-    .sort((a, b) => a.group.localeCompare(b.group, "ru"));
-
-  const entryGroups = Array.from(entryGroupsMap.entries())
-    .map(([group, items]) => ({ group, items }))
-    .sort((a, b) => a.group.localeCompare(b.group, "ru"));
+  const всеЭкраныТабов = parsed.map((b) => ({
+    id: b.id,
+    name: b.name,
+    title: b.title,
+    route: b.route,
+    group: b.group,
+    isTab: b.isTab,
+    isEntry: b.isEntry,
+  }));
 
   fs.mkdirSync(outDir, { recursive: true });
 
   const ts = `/* eslint-disable */
 // AUTO-GENERATED FILE. DO NOT EDIT.
-// Generated by scripts/generate-tabs.mjs
 
 import type { Href } from "expo-router";
 
-export type BlockItem = {
+export type ЭкранТаба = {
+  id: string;
+  name: string;
+  title: string;
+  route: Href;
+  group?: string;
+  isTab: boolean;
+  isEntry: boolean;
+};
+
+export type ПунктЭкрана = {
   id: string;
   title: string;
   route: Href;
   group?: string;
 };
 
-export type GroupedBlocks = {
-  group: string;
-  items: Omit<BlockItem, "group">[];
-};
+export const всеЭкраныТабов: ЭкранТаба[] = ${JSON.stringify(всеЭкраныТабов, null, 2)} as const;
+export const главныеЭкраны: ПунктЭкрана[] = ${JSON.stringify(главныеЭкраны, null, 2)} as const;
+export const скрытыеЭкраны: ПунктЭкрана[] = ${JSON.stringify(скрытыеЭкраны, null, 2)} as const;
 
-// Точки входа (для главного меню)
-export const entryBlocks: BlockItem[] = ${JSON.stringify(entryBlocks, null, 2)} as const;
+// Английские алиасы для совместимости
+export type TabBlock = ЭкранТаба;
+export type BlockItem = ПунктЭкрана;
 
-// Все экраны, у которых задан title
-export const tabBlocks: BlockItem[] = ${JSON.stringify(tabBlocks, null, 2)} as const;
-
-// Группы точек входа (по пути до "(tabs)")
-export const entryGroups: GroupedBlocks[] = ${JSON.stringify(entryGroups, null, 2)} as const;
-
-// Группы экранов (по пути до "(tabs)")
-export const screenGroups: GroupedBlocks[] = ${JSON.stringify(screenGroups, null, 2)} as const;
+export const allTabScreens = всеЭкраныТабов;
+export const entryBlocks = главныеЭкраны;
+export const hiddenBlocks = скрытыеЭкраны;
 `;
 
   fs.writeFileSync(outFile, ts, "utf8");
-  console.log(
-    `✅ Generated ${path.relative(projectRoot, outFile)} (tabs: ${tabBlocks.length}, entries: ${entryBlocks.length}, screenGroups: ${screenGroups.length}, entryGroups: ${entryGroups.length})`
-  );
+  console.log(`✅ Generated ${path.relative(projectRoot, outFile)}`);
 }
 
 main();

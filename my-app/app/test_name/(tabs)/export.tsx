@@ -9,7 +9,8 @@ import {
 } from 'react-native';
 
 import { useData } from '../../data/DataContext';
-
+export const tab = true;
+export const title = 'Экспорт';
 type CapitalEquipment = {
   id: string;
   category: string;
