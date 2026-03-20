@@ -167,7 +167,7 @@ function ListPhone<T extends { id: string; name: string }>(props: {
 
 export default function SummaryScreen() {
   const [showDetails, setShowDetails] = useState(false);
-  const { capitalData, operatingData } = useData();
+  const { capitalData, operatingData, electricityTotal } = useData();
   const { width } = useWindowDimensions();
 
   const isPhone = width < 420;
@@ -209,7 +209,7 @@ export default function SummaryScreen() {
     [periodicOperating]
   );
 
-  const electricityTotal = 0;
+
   const totalOneTimeExpenses = capitalTotal + oneTimeOperatingTotal;
   const grandTotal = totalOneTimeExpenses + periodicTotal + electricityTotal;
 

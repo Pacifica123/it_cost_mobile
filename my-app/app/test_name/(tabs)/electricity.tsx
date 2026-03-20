@@ -37,7 +37,7 @@ const onlyDigits = (s: string) => String(s ?? '').replace(/\D+/g, '');
 const onlyDecimal = (s: string) => String(s ?? '').replace(/[^\d.,]+/g, '');
 
 export default function ElectricityScreen() {
-  const { capitalData } = useData();
+  const { capitalData, setElectricityTotal } = useData();
   const tabBarHeight = useBottomTabBarHeight();
 
   const [items, setItems] = useState<ElectricityItem[]>([]);
@@ -202,6 +202,10 @@ export default function ElectricityScreen() {
       dayRub,
     };
   }, [items, hoursPerDay, workDaysPerMonth, pricePerKwh]);
+
+  useEffect(() => {
+    setElectricityTotal(result.totalRub);
+  }, [result.totalRub, setElectricityTotal]);
 
   const renderItem = ({ item }: { item: ElectricityItem }) => {
     return (
