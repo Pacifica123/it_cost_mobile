@@ -183,9 +183,6 @@ export default function ItInfrastructureScreen() {
   const selectedTotals = useMemo(() => {
     if (!selectedArticle) return { sum: 0, count: 0 };
 
-    // ВАЖНО:
-    // если в статье включено "количество", то итог считаем как price * quantity.
-    // Поэтому в веб/мобиле при qty=2 и price=500 будет 1000.
     const sum = selectedArticle.items.reduce((acc, it) => acc + lineTotal(selectedArticle, it), 0);
 
     return { sum, count: selectedArticle.items.length };
@@ -233,7 +230,6 @@ export default function ItInfrastructureScreen() {
                 name,
                 expenseType,
                 hasQuantity,
-                // если выключили количество — чистим quantity у записей, чтобы не путать расчёты
                 items: hasQuantity ? a.items : a.items.map(i => ({ ...i, quantity: undefined })),
               }
             : a

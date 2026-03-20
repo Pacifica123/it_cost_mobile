@@ -8,6 +8,7 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -48,7 +49,6 @@ export default function OperatingScreen() {
   const [selectedItem, setSelectedItem] = useState<Equipment | null>(null);
 
   const [name, setName] = useState('');
-  // храним только цифры, показываем форматировано
   const [priceRaw, setPriceRaw] = useState('');
   const [category, setCategory] = useState(categories[0] || 'Лицензии по подписке');
 
@@ -114,7 +114,6 @@ export default function OperatingScreen() {
       return;
     }
 
-    // добавим “пустышку”, чтобы категория появилась в списке
     const newItem: Equipment = {
       id: Date.now().toString(),
       category: trimmed,
@@ -231,7 +230,12 @@ export default function OperatingScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+    >
       <View style={styles.topBar}>
         <Text style={styles.screenTitle}>Операционные затраты</Text>
 
@@ -262,7 +266,8 @@ export default function OperatingScreen() {
       <Modal visible={modalVisible} animationType="fade" transparent onRequestClose={() => setModalVisible(false)}>
         <KeyboardAvoidingView
           style={styles.modalOverlay}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 24 : 0}
         >
           <Pressable
             style={styles.modalBackdrop}
@@ -272,81 +277,86 @@ export default function OperatingScreen() {
             }}
           />
 
-          <View style={styles.modalCard}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
-                {editingItem ? 'Редактировать запись' : 'Добавить запись'}
+          <ScrollView
+            contentContainerStyle={localStyles.modalScrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.modalCard}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>
+                  {editingItem ? 'Редактировать запись' : 'Добавить запись'}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setModalVisible(false);
+                    resetForm();
+                  }}
+                  style={styles.iconClose}
+                >
+                  <Ionicons name="close" size={20} color="rgba(17,24,39,0.65)" />
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.label}>Категория</Text>
+              <View style={styles.pickerWrap}>
+                <Picker
+                  selectedValue={category}
+                  onValueChange={(v) => setCategory(v)}
+                  style={styles.picker}
+                  dropdownIconColor={Platform.OS === 'android' ? 'rgba(17,24,39,0.75)' : undefined}
+                  mode={Platform.OS === 'android' ? 'dropdown' : undefined}
+                >
+                  {categories.map((cat) => (
+                    <Picker.Item key={cat} label={cat} value={cat} />
+                  ))}
+                </Picker>
+              </View>
+
+              <Text style={styles.label}>Наименование</Text>
+              <TextInput
+                placeholder="Например: аренда сервера"
+                value={name}
+                onChangeText={setName}
+                style={styles.input}
+                placeholderTextColor="rgba(17,24,39,0.45)"
+              />
+
+              <Text style={styles.label}>Цена</Text>
+              <TextInput
+                placeholder="Например: 1500"
+                value={priceRaw ? new Intl.NumberFormat('ru-RU').format(Number(priceRaw)) : ''}
+                onChangeText={(t) => setPriceRaw(onlyDigits(t))}
+                keyboardType="numeric"
+                style={styles.input}
+                placeholderTextColor="rgba(17,24,39,0.45)"
+              />
+
+              <Text style={styles.hint}>
+                Будет сохранено как: {formatRub(priceRaw || 0)}
               </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  setModalVisible(false);
-                  resetForm();
-                }}
-                style={styles.iconClose}
-              >
-                <Ionicons name="close" size={20} color="rgba(17,24,39,0.65)" />
-              </TouchableOpacity>
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity style={[styles.primaryBtn]} onPress={saveItem} activeOpacity={0.9}>
+                  <Text style={styles.primaryBtnText}>Сохранить</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.secondaryBtn]}
+                  onPress={() => {
+                    setModalVisible(false);
+                    resetForm();
+                  }}
+                  activeOpacity={0.9}
+                >
+                  <Text style={styles.secondaryBtnText}>Отмена</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-
-            <Text style={styles.label}>Категория</Text>
-            <View style={styles.pickerWrap}>
-              <Picker
-                selectedValue={category}
-                onValueChange={(v) => setCategory(v)}
-                style={styles.picker}
-                dropdownIconColor={Platform.OS === 'android' ? 'rgba(17,24,39,0.75)' : undefined}
-                mode={Platform.OS === 'android' ? 'dropdown' : undefined}
-              >
-                {categories.map((cat) => (
-                  <Picker.Item key={cat} label={cat} value={cat} />
-                ))}
-              </Picker>
-            </View>
-
-            <Text style={styles.label}>Наименование</Text>
-            <TextInput
-              placeholder="Например: аренда сервера"
-              value={name}
-              onChangeText={setName}
-              style={styles.input}
-              placeholderTextColor="rgba(17,24,39,0.45)"
-            />
-
-            <Text style={styles.label}>Цена</Text>
-            <TextInput
-              placeholder="Например: 1500"
-              value={priceRaw ? new Intl.NumberFormat('ru-RU').format(Number(priceRaw)) : ''}
-              onChangeText={(t) => setPriceRaw(onlyDigits(t))}
-              keyboardType="numeric"
-              style={styles.input}
-              placeholderTextColor="rgba(17,24,39,0.45)"
-            />
-
-            <Text style={styles.hint}>
-              Будет сохранено как: {formatRub(priceRaw || 0)}
-            </Text>
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity style={[styles.primaryBtn]} onPress={saveItem} activeOpacity={0.9}>
-                <Text style={styles.primaryBtnText}>Сохранить</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.secondaryBtn]}
-                onPress={() => {
-                  setModalVisible(false);
-                  resetForm();
-                }}
-                activeOpacity={0.9}
-              >
-                <Text style={styles.secondaryBtnText}>Отмена</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          </ScrollView>
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* Модальное окно для добавления категории */}
       <Modal
         visible={categoryModalVisible}
         animationType="fade"
@@ -355,7 +365,8 @@ export default function OperatingScreen() {
       >
         <KeyboardAvoidingView
           style={styles.modalOverlay}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 24 : 0}
         >
           <Pressable
             style={styles.modalBackdrop}
@@ -365,48 +376,63 @@ export default function OperatingScreen() {
             }}
           />
 
-          <View style={styles.modalCard}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Новая категория</Text>
-              <TouchableOpacity
-                onPress={() => {
-                  setCategoryModalVisible(false);
-                  setNewCategoryName('');
-                }}
-                style={styles.iconClose}
-              >
-                <Ionicons name="close" size={20} color="rgba(17,24,39,0.65)" />
-              </TouchableOpacity>
+          <ScrollView
+            contentContainerStyle={localStyles.modalScrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.modalCard}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Новая категория</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setCategoryModalVisible(false);
+                    setNewCategoryName('');
+                  }}
+                  style={styles.iconClose}
+                >
+                  <Ionicons name="close" size={20} color="rgba(17,24,39,0.65)" />
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.label}>Название</Text>
+              <TextInput
+                placeholder="Например: Подписки"
+                value={newCategoryName}
+                onChangeText={setNewCategoryName}
+                style={styles.input}
+                placeholderTextColor="rgba(17,24,39,0.45)"
+              />
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity style={[styles.primaryBtn]} onPress={addCategory} activeOpacity={0.9}>
+                  <Text style={styles.primaryBtnText}>Добавить</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.secondaryBtn]}
+                  onPress={() => {
+                    setCategoryModalVisible(false);
+                    setNewCategoryName('');
+                  }}
+                  activeOpacity={0.9}
+                >
+                  <Text style={styles.secondaryBtnText}>Отмена</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-
-            <Text style={styles.label}>Название</Text>
-            <TextInput
-              placeholder="Например: Подписки"
-              value={newCategoryName}
-              onChangeText={setNewCategoryName}
-              style={styles.input}
-              placeholderTextColor="rgba(17,24,39,0.45)"
-            />
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity style={[styles.primaryBtn]} onPress={addCategory} activeOpacity={0.9}>
-                <Text style={styles.primaryBtnText}>Добавить</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.secondaryBtn]}
-                onPress={() => {
-                  setCategoryModalVisible(false);
-                  setNewCategoryName('');
-                }}
-                activeOpacity={0.9}
-              >
-                <Text style={styles.secondaryBtnText}>Отмена</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          </ScrollView>
         </KeyboardAvoidingView>
       </Modal>
     </ScrollView>
   );
 }
+
+const localStyles = StyleSheet.create({
+  modalScrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 24,
+  },
+});

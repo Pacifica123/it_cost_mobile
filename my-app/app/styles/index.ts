@@ -26,7 +26,6 @@ export const index = StyleSheet.create({
     backgroundColor: 'rgba(34,197,94,0.16)',
   },
 
-  // вместо content (чтобы не было двойной обертки в SectionsMenu)
   page: {
     flexGrow: 1,
     width: '100%',
