@@ -250,6 +250,7 @@ export default function CapitalExpendituresScreen() {
       style={styles.container}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
     >
       <View style={styles.topBar}>
         <Text style={styles.screenTitle}>Капитальные затраты</Text>
@@ -286,7 +287,8 @@ export default function CapitalExpendituresScreen() {
       >
         <KeyboardAvoidingView
           style={styles.modalOverlay}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 24 : 0}
         >
           <Pressable
             style={styles.modalBackdrop}
@@ -296,88 +298,94 @@ export default function CapitalExpendituresScreen() {
             }}
           />
 
-          <View style={styles.modalCard}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
-                {editingItem ? 'Редактировать запись' : 'Добавить запись'}
-              </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  setModalVisible(false);
-                  resetForm();
-                }}
-                style={styles.iconClose}
-                activeOpacity={0.9}
-              >
-                <Ionicons name="close" size={20} color="rgba(17,24,39,0.65)" />
-              </TouchableOpacity>
-            </View>
-
-            <Text style={styles.label}>Категория</Text>
-            <View style={styles.pickerWrap}>
-              <Picker
-                selectedValue={category}
-                onValueChange={(v) => setCategory(v)}
-                style={styles.picker}
-              >
-                {categories.map((cat) => (
-                  <Picker.Item key={cat} label={cat} value={cat} />
-                ))}
-              </Picker>
-            </View>
-
-            <Text style={styles.label}>Наименование</Text>
-            <TextInput
-              placeholder="Например: сервер"
-              value={name}
-              onChangeText={setName}
-              style={styles.input}
-              placeholderTextColor="rgba(17,24,39,0.45)"
-            />
-
-            <View style={localStyles.row2}>
-              <View style={localStyles.col}>
-                <Text style={styles.label}>Количество</Text>
-                <TextInput
-                  placeholder="Например: 2"
-                  value={quantityRaw ? formatNumber(quantityRaw) : ''}
-                  onChangeText={(t) => setQuantityRaw(onlyDigits(t))}
-                  keyboardType="numeric"
-                  style={styles.input}
-                  placeholderTextColor="rgba(17,24,39,0.45)"
-                />
+          <ScrollView
+            contentContainerStyle={localStyles.modalScrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.modalCard}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>
+                  {editingItem ? 'Редактировать запись' : 'Добавить запись'}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setModalVisible(false);
+                    resetForm();
+                  }}
+                  style={styles.iconClose}
+                  activeOpacity={0.9}
+                >
+                  <Ionicons name="close" size={20} color="rgba(17,24,39,0.65)" />
+                </TouchableOpacity>
               </View>
 
-              <View style={localStyles.col}>
-                <Text style={styles.label}>Цена (₽)</Text>
-                <TextInput
-                  placeholder="Например: 1300"
-                  value={priceRaw ? formatNumber(priceRaw) : ''}
-                  onChangeText={(t) => setPriceRaw(onlyDigits(t))}
-                  keyboardType="numeric"
-                  style={styles.input}
-                  placeholderTextColor="rgba(17,24,39,0.45)"
-                />
+              <Text style={styles.label}>Категория</Text>
+              <View style={styles.pickerWrap}>
+                <Picker
+                  selectedValue={category}
+                  onValueChange={(v) => setCategory(v)}
+                  style={styles.picker}
+                >
+                  {categories.map((cat) => (
+                    <Picker.Item key={cat} label={cat} value={cat} />
+                  ))}
+                </Picker>
+              </View>
+
+              <Text style={styles.label}>Наименование</Text>
+              <TextInput
+                placeholder="Например: сервер"
+                value={name}
+                onChangeText={setName}
+                style={styles.input}
+                placeholderTextColor="rgba(17,24,39,0.45)"
+              />
+
+              <View style={localStyles.row2}>
+                <View style={localStyles.col}>
+                  <Text style={styles.label}>Количество</Text>
+                  <TextInput
+                    placeholder="Например: 2"
+                    value={quantityRaw ? formatNumber(quantityRaw) : ''}
+                    onChangeText={(t) => setQuantityRaw(onlyDigits(t))}
+                    keyboardType="numeric"
+                    style={styles.input}
+                    placeholderTextColor="rgba(17,24,39,0.45)"
+                  />
+                </View>
+
+                <View style={localStyles.col}>
+                  <Text style={styles.label}>Цена (₽)</Text>
+                  <TextInput
+                    placeholder="Например: 1300"
+                    value={priceRaw ? formatNumber(priceRaw) : ''}
+                    onChangeText={(t) => setPriceRaw(onlyDigits(t))}
+                    keyboardType="numeric"
+                    style={styles.input}
+                    placeholderTextColor="rgba(17,24,39,0.45)"
+                  />
+                </View>
+              </View>
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity style={styles.primaryBtn} onPress={saveItem} activeOpacity={0.9}>
+                  <Text style={styles.primaryBtnText}>Сохранить</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.secondaryBtn}
+                  onPress={() => {
+                    setModalVisible(false);
+                    resetForm();
+                  }}
+                  activeOpacity={0.9}
+                >
+                  <Text style={styles.secondaryBtnText}>Отмена</Text>
+                </TouchableOpacity>
               </View>
             </View>
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity style={styles.primaryBtn} onPress={saveItem} activeOpacity={0.9}>
-                <Text style={styles.primaryBtnText}>Сохранить</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.secondaryBtn}
-                onPress={() => {
-                  setModalVisible(false);
-                  resetForm();
-                }}
-                activeOpacity={0.9}
-              >
-                <Text style={styles.secondaryBtnText}>Отмена</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          </ScrollView>
         </KeyboardAvoidingView>
       </Modal>
 
@@ -390,7 +398,8 @@ export default function CapitalExpendituresScreen() {
       >
         <KeyboardAvoidingView
           style={styles.modalOverlay}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 24 : 0}
         >
           <Pressable
             style={styles.modalBackdrop}
@@ -400,47 +409,53 @@ export default function CapitalExpendituresScreen() {
             }}
           />
 
-          <View style={styles.modalCard}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Новая категория</Text>
-              <TouchableOpacity
-                onPress={() => {
-                  setCategoryModalVisible(false);
-                  setNewCategoryName('');
-                }}
-                style={styles.iconClose}
-                activeOpacity={0.9}
-              >
-                <Ionicons name="close" size={20} color="rgba(17,24,39,0.65)" />
-              </TouchableOpacity>
+          <ScrollView
+            contentContainerStyle={localStyles.modalScrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.modalCard}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Новая категория</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setCategoryModalVisible(false);
+                    setNewCategoryName('');
+                  }}
+                  style={styles.iconClose}
+                  activeOpacity={0.9}
+                >
+                  <Ionicons name="close" size={20} color="rgba(17,24,39,0.65)" />
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.label}>Название</Text>
+              <TextInput
+                placeholder="Например: Серверы"
+                value={newCategoryName}
+                onChangeText={setNewCategoryName}
+                style={styles.input}
+                placeholderTextColor="rgba(17,24,39,0.45)"
+              />
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity style={styles.primaryBtn} onPress={addCategory} activeOpacity={0.9}>
+                  <Text style={styles.primaryBtnText}>Добавить</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.secondaryBtn}
+                  onPress={() => {
+                    setCategoryModalVisible(false);
+                    setNewCategoryName('');
+                  }}
+                  activeOpacity={0.9}
+                >
+                  <Text style={styles.secondaryBtnText}>Отмена</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-
-            <Text style={styles.label}>Название</Text>
-            <TextInput
-              placeholder="Например: Серверы"
-              value={newCategoryName}
-              onChangeText={setNewCategoryName}
-              style={styles.input}
-              placeholderTextColor="rgba(17,24,39,0.45)"
-            />
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity style={styles.primaryBtn} onPress={addCategory} activeOpacity={0.9}>
-                <Text style={styles.primaryBtnText}>Добавить</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.secondaryBtn}
-                onPress={() => {
-                  setCategoryModalVisible(false);
-                  setNewCategoryName('');
-                }}
-                activeOpacity={0.9}
-              >
-                <Text style={styles.secondaryBtnText}>Отмена</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          </ScrollView>
         </KeyboardAvoidingView>
       </Modal>
     </ScrollView>
@@ -464,5 +479,11 @@ const localStyles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
     color: 'rgba(17,24,39,0.65)',
+  },
+  modalScrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 24,
   },
 });
