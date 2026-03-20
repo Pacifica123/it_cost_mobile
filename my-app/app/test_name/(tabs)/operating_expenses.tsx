@@ -48,7 +48,6 @@ export default function OperatingScreen() {
   const [selectedItem, setSelectedItem] = useState<Equipment | null>(null);
 
   const [name, setName] = useState('');
-  // храним только цифры, показываем форматировано
   const [priceRaw, setPriceRaw] = useState('');
   const [category, setCategory] = useState(categories[0] || 'Лицензии по подписке');
 
@@ -114,7 +113,6 @@ export default function OperatingScreen() {
       return;
     }
 
-    // добавим “пустышку”, чтобы категория появилась в списке
     const newItem: Equipment = {
       id: Date.now().toString(),
       category: trimmed,
@@ -346,7 +344,6 @@ export default function OperatingScreen() {
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* Модальное окно для добавления категории */}
       <Modal
         visible={categoryModalVisible}
         animationType="fade"

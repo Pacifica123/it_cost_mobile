@@ -42,7 +42,7 @@ export const всеЭкраныТабов: ЭкранТаба[] = [
   {
     "id": "/test_name/menu",
     "name": "menu",
-    "title": "Меню айти",
+    "title": "Меню ИТ",
     "route": "/test_name/menu",
     "group": "/test_name",
     "isTab": true,
@@ -58,21 +58,21 @@ export const всеЭкраныТабов: ЭкранТаба[] = [
     "isEntry": false
   },
   {
-    "id": "/test_name/electricity",
-    "name": "electricity",
-    "title": "Потребление электричество",
-    "route": "/test_name/electricity",
-    "group": "/test_name",
-    "isTab": false,
-    "isEntry": false
-  },
-  {
     "id": "/test_name/export",
     "name": "export",
-    "title": "Экспорт",
+    "title": "Отчёт",
     "route": "/test_name/export",
     "group": "/test_name",
     "isTab": true,
+    "isEntry": false
+  },
+  {
+    "id": "/test_name/electricity",
+    "name": "electricity",
+    "title": "Электропотребление",
+    "route": "/test_name/electricity",
+    "group": "/test_name",
+    "isTab": false,
     "isEntry": false
   },
   {
@@ -97,7 +97,7 @@ export const всеЭкраныТабов: ЭкранТаба[] = [
 export const главныеЭкраны: ПунктЭкрана[] = [
   {
     "id": "/test_name/menu",
-    "title": "Меню айти",
+    "title": "Меню ИТ",
     "route": "/test_name/menu",
     "group": "/test_name"
   }
@@ -123,7 +123,7 @@ export const скрытыеЭкраны: ПунктЭкрана[] = [
   },
   {
     "id": "/test_name/electricity",
-    "title": "Потребление электричество",
+    "title": "Электропотребление",
     "route": "/test_name/electricity",
     "group": "/test_name"
   },

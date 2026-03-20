@@ -10,7 +10,7 @@ import {
 
 import { useData } from '../../data/DataContext';
 export const tab = true;
-export const title = 'Экспорт';
+export const title = 'Отчёт';
 type CapitalEquipment = {
   id: string;
   category: string;
@@ -223,7 +223,6 @@ export default function SummaryScreen() {
     [periodicOperating]
   );
 
-  // Фикс-ширины колонок для широкого режима (чтобы ничего не "ехало")
   const COL_NAME = isPhone ? 260 : 360;
   const COL_QTY = 90;
   const COL_COST = 130;
@@ -440,7 +439,6 @@ const styles = StyleSheet.create({
 
   sectionLabel: { marginTop: 2, marginBottom: 8, color: '#374151', fontSize: 13, fontWeight: '800' },
 
-  /* WIDE TABLE */
   table: {
     borderRadius: 14,
     overflow: 'hidden',
@@ -488,7 +486,6 @@ const styles = StyleSheet.create({
   subtotalText: { color: '#E5E7EB', fontSize: 12, fontWeight: '900', letterSpacing: 0.6 },
   subtotalValue: { color: '#FFFFFF', fontSize: 14, fontWeight: '900' },
 
-  /* PHONE LIST */
   mobileList: {
     borderRadius: 14,
     overflow: 'hidden',

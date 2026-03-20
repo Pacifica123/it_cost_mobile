@@ -11,7 +11,6 @@ export const exploreStyles = StyleSheet.create({
     paddingTop: 14,
     paddingBottom: 22,
     gap: 12,
-    // чтобы на ПК/планшете карточки и таблица не растягивались на весь экран
     width: '100%',
     alignSelf: 'center',
     maxWidth: 900,
@@ -40,7 +39,6 @@ export const exploreStyles = StyleSheet.create({
     fontWeight: '900',
     color: '#111827',
     lineHeight: 22,
-    // на Android у жирных шрифтов иногда "режет" низ букв
     includeFontPadding: false,
   },
 
@@ -104,11 +102,9 @@ export const exploreStyles = StyleSheet.create({
     color: '#111827',
     lineHeight: 20,
     includeFontPadding: false,
-    // чтобы длинные названия не ломали верстку
     flexShrink: 1,
   },
 
-  // колонки таблицы: имя шире, цена уже (на ПК смотрится ровно)
   nameCell: {
     flex: 3,
   },
@@ -226,7 +222,6 @@ export const exploreStyles = StyleSheet.create({
 
   modalOverlay: {
     flex: 1,
-    // на мобилке выглядит как bottom-sheet, на web/desktop — по центру
     justifyContent: Platform.OS === 'web' ? 'center' : 'flex-end',
     padding: 16,
   },
@@ -246,9 +241,9 @@ export const exploreStyles = StyleSheet.create({
     borderColor: 'rgba(17,24,39,0.08)',
     width: '100%',
     maxWidth: 720,
+    maxHeight: '88%',
     alignSelf: 'center',
 
-    // лёгкая тень чтобы не выглядело "плоско"
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -315,8 +310,6 @@ export const exploreStyles = StyleSheet.create({
   },
 
   pickerWrap: {
-    // На web у Picker свой дефолтный бордер (select), из‑за этого получается "двойная рамка".
-    // Поэтому на web бордер переносим на сам Picker.
     borderWidth: Platform.OS === 'web' ? 0 : 1,
     borderColor: 'rgba(17,24,39,0.10)',
     backgroundColor: 'rgba(17,24,39,0.04)',
@@ -339,7 +332,6 @@ export const exploreStyles = StyleSheet.create({
       : null),
   },
 
-  // свайп действия
   swipeActions: {
     flexDirection: 'row',
     height: '100%',
