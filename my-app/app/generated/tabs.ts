@@ -1,150 +1,152 @@
 /* eslint-disable */
 // AUTO-GENERATED FILE. DO NOT EDIT.
 
-import type { Href } from "expo-router";
-
-export type ЭкранТаба = {
+export type TabScreen = {
   id: string;
   name: string;
   title: string;
-  route: Href;
+  route: string;
   group?: string;
   isTab: boolean;
   isEntry: boolean;
 };
 
-export type ПунктЭкрана = {
+export type ScreenLink = {
   id: string;
   title: string;
-  route: Href;
+  route: string;
   group?: string;
 };
 
-export const всеЭкраныТабов: ЭкранТаба[] = [
+export const allTabScreens: TabScreen[] = [
   {
-    "id": "/test_name/it_infrastructure",
-    "name": "it_infrastructure",
-    "title": "ИТ-инфраструктура",
-    "route": "/test_name/it_infrastructure",
-    "group": "/test_name",
-    "isTab": false,
-    "isEntry": false
-  },
-  {
-    "id": "/test_name/capital_expenditures",
-    "name": "capital_expenditures",
-    "title": "Капитальные затраты",
-    "route": "/test_name/capital_expenditures",
-    "group": "/test_name",
-    "isTab": false,
-    "isEntry": false
-  },
-  {
-    "id": "/test_name/menu",
+    "id": "/it-cost/menu",
     "name": "menu",
     "title": "Меню ИТ",
-    "route": "/test_name/menu",
-    "group": "/test_name",
+    "route": "/it-cost/menu",
+    "group": "/it-cost",
     "isTab": true,
     "isEntry": true
   },
   {
-    "id": "/test_name/operating_expenses",
-    "name": "operating_expenses",
-    "title": "Операционные затраты",
-    "route": "/test_name/operating_expenses",
-    "group": "/test_name",
-    "isTab": false,
-    "isEntry": false
-  },
-  {
-    "id": "/test_name/export",
+    "id": "/it-cost/export",
     "name": "export",
     "title": "Отчёт",
-    "route": "/test_name/export",
-    "group": "/test_name",
+    "route": "/it-cost/export",
+    "group": "/it-cost",
     "isTab": true,
     "isEntry": false
-  },
-  {
-    "id": "/test_name/electricity",
-    "name": "electricity",
-    "title": "Электропотребление",
-    "route": "/test_name/electricity",
-    "group": "/test_name",
-    "isTab": false,
-    "isEntry": false
-  },
-  {
-    "id": "/test_name/ahp",
-    "name": "ahp",
-    "title": "AHP-анализ",
-    "route": "/test_name/ahp",
-    "group": "/test_name",
-    "isTab": false,
-    "isEntry": false
-  },
-  {
-    "id": "/test_name/NPV",
-    "name": "NPV",
-    "title": "NPV-анализ",
-    "route": "/test_name/NPV",
-    "group": "/test_name",
-    "isTab": false,
-    "isEntry": false
   }
 ] as const;
-export const главныеЭкраны: ПунктЭкрана[] = [
+export const entryBlocks: ScreenLink[] = [
   {
-    "id": "/test_name/menu",
+    "id": "/it-cost/menu",
     "title": "Меню ИТ",
-    "route": "/test_name/menu",
-    "group": "/test_name"
+    "route": "/it-cost/menu",
+    "group": "/it-cost"
   }
 ] as const;
-export const скрытыеЭкраны: ПунктЭкрана[] = [
+export const hiddenBlocks: ScreenLink[] = [
   {
-    "id": "/test_name/it_infrastructure",
+    "id": "/it-cost/project",
+    "title": "Проект расчёта",
+    "route": "/it-cost/project",
+    "group": "/it-cost"
+  },
+  {
+    "id": "/it-cost/templates",
+    "title": "Шаблоны проектов",
+    "route": "/it-cost/templates",
+    "group": "/it-cost"
+  },
+  {
+    "id": "/it-cost/quick_start",
+    "title": "Быстрый расчёт",
+    "route": "/it-cost/quick_start",
+    "group": "/it-cost"
+  },
+  {
+    "id": "/it-cost/project_io",
+    "title": "Импорт и экспорт проекта",
+    "route": "/it-cost/project_io",
+    "group": "/it-cost"
+  },
+  {
+    "id": "/it-cost/history",
+    "title": "История изменений",
+    "route": "/it-cost/history",
+    "group": "/it-cost"
+  },
+  {
+    "id": "/it-cost/validation",
+    "title": "Проверка данных",
+    "route": "/it-cost/validation",
+    "group": "/it-cost"
+  },
+  {
+    "id": "/it-cost/it_infrastructure",
     "title": "ИТ-инфраструктура",
-    "route": "/test_name/it_infrastructure",
-    "group": "/test_name"
+    "route": "/it-cost/it_infrastructure",
+    "group": "/it-cost"
   },
   {
-    "id": "/test_name/capital_expenditures",
+    "id": "/it-cost/capital_expenditures",
     "title": "Капитальные затраты",
-    "route": "/test_name/capital_expenditures",
-    "group": "/test_name"
+    "route": "/it-cost/capital_expenditures",
+    "group": "/it-cost"
   },
   {
-    "id": "/test_name/operating_expenses",
+    "id": "/it-cost/criteria_importance",
+    "title": "Обоснование выбора ИТ-решения",
+    "route": "/it-cost/criteria_importance",
+    "group": "/it-cost"
+  },
+  {
+    "id": "/it-cost/operating_expenses",
     "title": "Операционные затраты",
-    "route": "/test_name/operating_expenses",
-    "group": "/test_name"
+    "route": "/it-cost/operating_expenses",
+    "group": "/it-cost"
   },
   {
-    "id": "/test_name/electricity",
+    "id": "/it-cost/software",
+    "title": "ПО",
+    "route": "/it-cost/software",
+    "group": "/it-cost"
+  },
+  {
+    "id": "/it-cost/technical_equipment",
+    "title": "ТО",
+    "route": "/it-cost/technical_equipment",
+    "group": "/it-cost"
+  },
+  {
+    "id": "/it-cost/electricity",
     "title": "Электропотребление",
-    "route": "/test_name/electricity",
-    "group": "/test_name"
+    "route": "/it-cost/electricity",
+    "group": "/it-cost"
   },
   {
-    "id": "/test_name/ahp",
+    "id": "/it-cost/ahp",
     "title": "AHP-анализ",
-    "route": "/test_name/ahp",
-    "group": "/test_name"
+    "route": "/it-cost/ahp",
+    "group": "/it-cost"
   },
   {
-    "id": "/test_name/NPV",
+    "id": "/it-cost/NPV",
     "title": "NPV-анализ",
-    "route": "/test_name/NPV",
-    "group": "/test_name"
+    "route": "/it-cost/NPV",
+    "group": "/it-cost"
+  },
+  {
+    "id": "/it-cost/genetic_optimization",
+    "title": "Генетический подбор",
+    "route": "/it-cost/genetic_optimization",
+    "group": "/it-cost"
+  },
+  {
+    "id": "/it-cost/method_comparison",
+    "title": "Сравнение методов",
+    "route": "/it-cost/method_comparison",
+    "group": "/it-cost"
   }
 ] as const;
-
-// Английские алиасы для совместимости
-export type TabBlock = ЭкранТаба;
-export type BlockItem = ПунктЭкрана;
-
-export const allTabScreens = всеЭкраныТабов;
-export const entryBlocks = главныеЭкраны;
-export const hiddenBlocks = скрытыеЭкраны;

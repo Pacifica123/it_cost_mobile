@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "outDir": ".logic-test-dist",
+    "rootDir": "."
+  },
+  "include": [
+    "features/ahp/constants.ts",
+    "features/ahp/types.ts",
+    "features/ahp/logic/pipeline.ts",
+    "features/npv/types.ts",
+    "features/npv/logic/npv.ts",
+    "features/report/types.ts",
+    "features/report/logic/buildReport.ts",
+    "store/data/types.ts",
+    "store/data/selectors.ts",
+    "features/optimization/types.ts",
+    "features/optimization/logic/optimization.ts",
+    "features/criteriaImportance/types.ts",
+    "features/criteriaImportance/logic/defaultCase.ts",
+    "features/criteriaImportance/logic/pipeline.ts",
+    "store/data/catalogRules.ts"
+  ]
+}

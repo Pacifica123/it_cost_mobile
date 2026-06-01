@@ -1,87 +1,92 @@
-import fs from "node:fs";
-import path from "node:path";
+import fs from 'node:fs';
+import path from 'node:path';
 
 const projectRoot = process.cwd();
-const appDir = path.join(projectRoot, "app");
-const outDir = path.join(appDir, "generated");
-const outFile = path.join(outDir, "tabs.ts");
+const appDir = path.join(projectRoot, 'app');
+const outDir = path.join(appDir, 'generated');
+const outFile = path.join(outDir, 'tabs.ts');
 
-const exts = new Set([".ts", ".tsx", ".js", ".jsx"]);
+const exts = new Set(['.ts', '.tsx', '.js', '.jsx']);
+const IGNORED_DIRS = new Set(['generated', 'styles', 'data', 'components', 'assets', 'node_modules']);
+const MENU_ORDER = [
+  '/it-cost/project',
+  '/it-cost/templates',
+  '/it-cost/quick_start',
+  '/it-cost/project_io',
+  '/it-cost/history',
+  '/it-cost/validation',
+  '/it-cost/it_infrastructure',
+  '/it-cost/capital_expenditures',
+  '/it-cost/criteria_importance',
+  '/it-cost/operating_expenses',
+  '/it-cost/software',
+  '/it-cost/technical_equipment',
+  '/it-cost/electricity',
+  '/it-cost/ahp',
+  '/it-cost/NPV',
+  '/it-cost/genetic_optimization',
+  '/it-cost/method_comparison',
+];
+const TAB_ORDER = ['/it-cost/menu', '/it-cost/export'];
+const LEGACY_TAB_ROUTE_FILES = new Set([
+  'NPV',
+  'ahp',
+  'capital_expenditures',
+  'criteria_importance',
+  'electricity',
+  'genetic_optimization',
+  'it_infrastructure',
+  'operating_expenses',
+  'software',
+  'technical_equipment',
+]);
 
 function isRoutableFile(filename) {
-  if (filename.startsWith("_") || filename.startsWith("+")) return false;
+  if (filename.startsWith('_') || filename.startsWith('+')) return false;
   return exts.has(path.extname(filename));
 }
 
-function walk(dir) {
-  if (!fs.existsSync(dir)) return [];
-
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  const files = [];
-
-  for (const e of entries) {
-    const full = path.join(dir, e.name);
-
-    if (e.isDirectory()) {
-      files.push(...walk(full));
-    } else if (e.isFile() && isRoutableFile(e.name)) {
-      files.push(full);
-    }
-  }
-
-  return files;
-}
-
-function walkDirs(dir) {
-  if (!fs.existsSync(dir)) return [];
-
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  const dirs = [];
-
-  for (const e of entries) {
-    if (!e.isDirectory()) continue;
-
-    if (
-      e.name.startsWith(".") ||
-      e.name === "generated" ||
-      e.name === "styles" ||
-      e.name === "data" ||
-      e.name === "components" ||
-      e.name === "assets" ||
-      e.name === "node_modules"
-    ) {
-      continue;
-    }
-
-    const full = path.join(dir, e.name);
-    dirs.push(full);
-    dirs.push(...walkDirs(full));
-  }
-
-  return dirs;
-}
-
-function findTabsDirs() {
-  if (!fs.existsSync(appDir)) return [];
-  const allDirs = [appDir, ...walkDirs(appDir)];
-  return allDirs.filter((d) => path.basename(d) === "(tabs)");
-}
-
-function toPosix(p) {
-  return p.split(path.sep).join("/");
+function toPosix(value) {
+  return value.split(path.sep).join('/');
 }
 
 function stripRouteGroups(route) {
-  return route.replace(/\/\([^/]+\)/g, "");
+  return route.replace(/\/\([^/]+\)/g, '');
+}
+
+function walkFiles(dir) {
+  if (!fs.existsSync(dir)) return [];
+
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const full = path.join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      if (entry.name.startsWith('.') || IGNORED_DIRS.has(entry.name)) {
+        return [];
+      }
+
+      return walkFiles(full);
+    }
+
+    return entry.isFile() && isRoutableFile(entry.name) ? [full] : [];
+  });
+}
+
+function isLegacyItCostTabRoute(relWithExtPosix) {
+  const relNoExt = relWithExtPosix.replace(/\.[^.]+$/, '');
+  const parts = relNoExt.split('/');
+
+  return (
+    parts[0] === 'it-cost' &&
+    parts[1] === '(tabs)' &&
+    LEGACY_TAB_ROUTE_FILES.has(parts.at(-1))
+  );
 }
 
 function makeRouteFromRel(relWithExtPosix) {
-  const relNoExt = relWithExtPosix.replace(/\.[^.]+$/, "");
-  const routePart = relNoExt.endsWith("/index")
-    ? relNoExt.slice(0, -"/index".length)
-    : relNoExt;
-
-  return stripRouteGroups(`/${routePart}`).replace(/\/\/+/g, "/");
+  const relNoExt = relWithExtPosix.replace(/\.[^.]+$/, '');
+  const routePart = relNoExt.endsWith('/index') ? relNoExt.slice(0, -'/index'.length) : relNoExt;
+  return stripRouteGroups(`/${routePart}`).replace(/\/\/+/g, '/');
 }
 
 function tryExtractTitle(src) {
@@ -91,144 +96,99 @@ function tryExtractTitle(src) {
   ];
 
   for (const pattern of patterns) {
-    const m = src.match(pattern);
-    if (m?.[1]?.trim()) return m[1].trim();
+    const match = src.match(pattern);
+    if (match?.[1]?.trim()) return match[1].trim();
   }
 
   return null;
 }
 
-function tryExtractTabFlag(src) {
-  const patterns = [
-    /export\s+const\s+tab\s*=\s*true\s*;?/,
-    /export\s+const\s+isTab\s*=\s*true\s*;?/,
-  ];
-
-  return patterns.some((pattern) => pattern.test(src));
+function hasBooleanExport(src, names) {
+  return names.some((name) => new RegExp(`export\\s+const\\s+${name}\\s*=\\s*true\\s*;?`).test(src));
 }
 
-function tryExtractEntryFlag(src) {
-  const patterns = [
-    /export\s+const\s+entry\s*=\s*true\s*;?/,
-    /export\s+const\s+isEntry\s*=\s*true\s*;?/,
-  ];
-
-  return patterns.some((pattern) => pattern.test(src));
+function getFeatureGroup(route) {
+  const parts = route.split('/').filter(Boolean);
+  if (parts.length <= 1) return '/';
+  return `/${parts[0]}`;
 }
 
-function getFeatureGroup(absPath) {
-  const rel = toPosix(path.relative(appDir, absPath));
-  const parts = rel.split("/");
-  const tabsIdx = parts.indexOf("(tabs)");
-
-  if (tabsIdx !== -1) {
-    return stripRouteGroups("/" + parts.slice(0, tabsIdx + 1).join("/")) || "/";
-  }
-
-  return "/";
+function orderIndex(route, order) {
+  const index = order.indexOf(route);
+  return index === -1 ? Number.MAX_SAFE_INTEGER : index;
 }
 
 function parseFiles(files) {
   return files
-    .map((abs) => {
-      const rel = path.relative(appDir, abs);
-      const relPosix = toPosix(rel);
-      const src = fs.readFileSync(abs, "utf8");
+    .map((absPath) => {
+      const relPosix = toPosix(path.relative(appDir, absPath));
+
+      if (isLegacyItCostTabRoute(relPosix)) return null;
+
+      const src = fs.readFileSync(absPath, 'utf8');
       const title = tryExtractTitle(src);
 
       if (!title) return null;
 
+      const route = makeRouteFromRel(relPosix);
+      const name = path.basename(absPath, path.extname(absPath));
+
       return {
-        id: makeRouteFromRel(relPosix),
-        name: path.basename(abs, path.extname(abs)),
+        id: route,
+        name,
         title,
-        route: makeRouteFromRel(relPosix),
-        group: getFeatureGroup(abs),
-        isTab: tryExtractTabFlag(src),
-        isEntry: tryExtractEntryFlag(src),
+        route,
+        group: getFeatureGroup(route),
+        isTab: hasBooleanExport(src, ['tab', 'isTab']),
+        isEntry: hasBooleanExport(src, ['entry', 'isEntry']),
       };
     })
     .filter(Boolean)
-    .sort((a, b) => a.title.localeCompare(b.title, "ru"));
+    .filter((screen) => screen.route.startsWith('/it-cost/'));
 }
 
 function main() {
-  const tabsDirs = findTabsDirs();
-
-  if (tabsDirs.length === 0) {
-    console.error(`❌ Не найдено ни одной папки "(tabs)" внутри: ${appDir}`);
-    process.exit(1);
-  }
-
-  const files = tabsDirs.flatMap((d) => walk(d));
-  const parsed = parseFiles(files);
-
-  const главныеЭкраны = parsed
-    .filter((b) => b.isEntry)
-    .map((b) => ({
-      id: b.id,
-      title: b.title,
-      route: b.route,
-      group: b.group,
-    }));
-
-const скрытыеЭкраны = parsed
-  .filter((b) => !b.isEntry && !b.isTab)
-  .map((b) => ({
-    id: b.id,
-    title: b.title,
-    route: b.route,
-    group: b.group,
-  }));
-
-  const всеЭкраныТабов = parsed.map((b) => ({
-    id: b.id,
-    name: b.name,
-    title: b.title,
-    route: b.route,
-    group: b.group,
-    isTab: b.isTab,
-    isEntry: b.isEntry,
-  }));
+  const parsed = parseFiles(walkFiles(appDir));
+  const tabScreens = parsed
+    .filter((screen) => screen.isTab)
+    .sort((a, b) => orderIndex(a.route, TAB_ORDER) - orderIndex(b.route, TAB_ORDER) || a.title.localeCompare(b.title, 'ru'));
+  const entryScreens = parsed
+    .filter((screen) => screen.isEntry)
+    .sort((a, b) => orderIndex(a.route, TAB_ORDER) - orderIndex(b.route, TAB_ORDER) || a.title.localeCompare(b.title, 'ru'))
+    .map(({ id, title, route, group }) => ({ id, title, route, group }));
+  const hiddenScreens = parsed
+    .filter((screen) => !screen.isEntry && !screen.isTab)
+    .sort((a, b) => orderIndex(a.route, MENU_ORDER) - orderIndex(b.route, MENU_ORDER) || a.title.localeCompare(b.title, 'ru'))
+    .map(({ id, title, route, group }) => ({ id, title, route, group }));
 
   fs.mkdirSync(outDir, { recursive: true });
 
   const ts = `/* eslint-disable */
 // AUTO-GENERATED FILE. DO NOT EDIT.
 
-import type { Href } from "expo-router";
-
-export type ЭкранТаба = {
+export type TabScreen = {
   id: string;
   name: string;
   title: string;
-  route: Href;
+  route: string;
   group?: string;
   isTab: boolean;
   isEntry: boolean;
 };
 
-export type ПунктЭкрана = {
+export type ScreenLink = {
   id: string;
   title: string;
-  route: Href;
+  route: string;
   group?: string;
 };
 
-export const всеЭкраныТабов: ЭкранТаба[] = ${JSON.stringify(всеЭкраныТабов, null, 2)} as const;
-export const главныеЭкраны: ПунктЭкрана[] = ${JSON.stringify(главныеЭкраны, null, 2)} as const;
-export const скрытыеЭкраны: ПунктЭкрана[] = ${JSON.stringify(скрытыеЭкраны, null, 2)} as const;
-
-// Английские алиасы для совместимости
-export type TabBlock = ЭкранТаба;
-export type BlockItem = ПунктЭкрана;
-
-export const allTabScreens = всеЭкраныТабов;
-export const entryBlocks = главныеЭкраны;
-export const hiddenBlocks = скрытыеЭкраны;
+export const allTabScreens: TabScreen[] = ${JSON.stringify(tabScreens, null, 2)} as const;
+export const entryBlocks: ScreenLink[] = ${JSON.stringify(entryScreens, null, 2)} as const;
+export const hiddenBlocks: ScreenLink[] = ${JSON.stringify(hiddenScreens, null, 2)} as const;
 `;
 
-  fs.writeFileSync(outFile, ts, "utf8");
+  fs.writeFileSync(outFile, ts, 'utf8');
   console.log(`✅ Generated ${path.relative(projectRoot, outFile)}`);
 }
 
