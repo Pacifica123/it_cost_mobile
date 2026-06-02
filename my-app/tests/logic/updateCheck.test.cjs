@@ -15,3 +15,9 @@ test('update status text marks available update', () => {
   const status = describeUpdateStatus({ ok: true, hasUpdate: true, latestVersion: '1.0.1', compare: 'newer' });
   assert.match(status, /Доступна новая версия 1\.0\.1/);
 });
+
+
+test('update status accepts failed diagnostic shape', () => {
+  const status = describeUpdateStatus({ ok: false, hasUpdate: false, latestVersion: null, compare: 'unknown' });
+  assert.match(status, /Проверка не выполнена/);
+});

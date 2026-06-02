@@ -52,11 +52,13 @@ const resolveCategoryId = (categories, scope, value, fallback) => {
     const byName = categories.find((category) => category.scope === scope && normalize(category.name) === normalized);
     return byName?.id ?? fallback;
 };
-const detectScope = (raw, categoryRaw) => {
+const detectScope = (raw, categoryRaw, defaultSection = 'CAPEX') => {
     const value = `${raw} ${categoryRaw}`.toLowerCase();
     if (/opex|operating|операц|эксплуатац|подпис|аренд|администр/i.test(value))
         return 'operating';
-    return 'capital';
+    if (/capex|capital|капит|то|техничес|hardware|оборуд|по|software|лиценз/i.test(value))
+        return 'capital';
+    return defaultSection === 'OPEX' ? 'operating' : 'capital';
 };
 const detectKind = (rawKind, categoryRaw, name) => {
     const value = `${rawKind} ${categoryRaw} ${name}`.toLowerCase();
@@ -64,7 +66,8 @@ const detectKind = (rawKind, categoryRaw, name) => {
         return 'software';
     return 'hardware';
 };
-function parseProjectCsv(raw, categories) {
+function parseProjectCsv(raw, categories, options = {}) {
+    const defaultSection = options.defaultSection ?? 'CAPEX';
     const warnings = [];
     const lines = raw
         .split(/\r?\n/g)
@@ -105,7 +108,7 @@ function parseProjectCsv(raw, categories) {
         if (price <= 0) {
             warnings.push(`Строка ${rowIndex + 2}: цена у «${name}» равна 0, позиция импортирована для последующего уточнения.`);
         }
-        const scope = detectScope(scopeRaw, categoryRaw);
+        const scope = detectScope(scopeRaw, categoryRaw, defaultSection);
         if (scope === 'operating') {
             operatingData.push({
                 id: createId('csv-opex', rowIndex),
@@ -117,11 +120,11 @@ function parseProjectCsv(raw, categories) {
         }
         capitalData.push({
             id: createId('csv-capex', rowIndex),
-            categoryId: resolveCategoryId(categories, 'capital', categoryRaw, detectKind(kindRaw, categoryRaw, name) === 'software' ? 'capital-software' : 'capital-client'),
+            categoryId: resolveCategoryId(categories, 'capital', categoryRaw, defaultSection === 'SOFTWARE' || detectKind(kindRaw, categoryRaw, name) === 'software' ? 'capital-software' : 'capital-client'),
             name,
             quantity,
             price,
-            kind: detectKind(kindRaw, categoryRaw, name),
+            kind: defaultSection === 'SOFTWARE' ? 'software' : defaultSection === 'HARDWARE' ? 'hardware' : detectKind(kindRaw, categoryRaw, name),
         });
     });
     return {

@@ -2,14 +2,15 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.buildFinancialChartData = buildFinancialChartData;
 const buildReport_1 = require("../../report/logic/buildReport");
-const DISCOUNT_RATE = 0.12;
 function buildFinancialChartData(state) {
     const report = (0, buildReport_1.buildReport)(state);
     const recurringAnnual = report.periodicTotalAnnual + report.electricityTotalAnnual;
     const oneTime = report.totalOneTimeExpenses;
-    const cumulativeTco = Array.from({ length: 6 }, (_, year) => oneTime + recurringAnnual * year);
-    const discountedTco = Array.from({ length: 6 }, (_, year) => {
-        const recurring = Array.from({ length: year }, (_, index) => index + 1).reduce((sum, currentYear) => sum + recurringAnnual / Math.pow(1 + DISCOUNT_RATE, currentYear), 0);
+    const horizonYears = Math.max(1, Math.min(10, Math.round(state.appSettings.calculationHorizonYears || 5)));
+    const discountRate = Math.max(0, Math.min(50, Number(state.appSettings.discountRatePercent) || 0)) / 100;
+    const cumulativeTco = Array.from({ length: horizonYears + 1 }, (_, year) => oneTime + recurringAnnual * year);
+    const discountedTco = Array.from({ length: horizonYears + 1 }, (_, year) => {
+        const recurring = Array.from({ length: year }, (_, index) => index + 1).reduce((sum, currentYear) => sum + recurringAnnual / Math.pow(1 + discountRate, currentYear), 0);
         return Math.round(oneTime + recurring);
     });
     return {
@@ -23,7 +24,7 @@ function buildFinancialChartData(state) {
         annualBars: [
             { id: 'one-time', title: 'Старт', value: oneTime },
             { id: 'recurring', title: 'Годовые', value: recurringAnnual },
-            { id: 'total', title: '1 год', value: report.grandTotalAnnual },
+            { id: 'total', title: `${horizonYears} г.`, value: oneTime + recurringAnnual * horizonYears },
         ],
         cumulativeTco,
         discountedTco,

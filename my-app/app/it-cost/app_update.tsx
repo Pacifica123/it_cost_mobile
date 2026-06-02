@@ -123,7 +123,7 @@ export default function AppUpdateScreen() {
           <>
             <Text style={local.resultTitle} maxFontSizeMultiplier={1.12}>{describeUpdateStatus(result)}</Text>
             <Text style={local.resultText} maxFontSizeMultiplier={1.12}>
-              Источник: {result.source === 'release' ? 'GitHub Releases' : result.source === 'app-json' ? 'app.json' : 'не найден'}
+              Источник: {result.source === 'release' ? 'GitHub Releases' : result.source === 'app-json' ? 'app.json' : result.source === 'package-json' ? 'package.json' : 'не найден'}
             </Text>
             <Text style={local.resultText} maxFontSizeMultiplier={1.12}>
               Последняя версия: {result.latestVersion || 'не определена'}
@@ -132,6 +132,21 @@ export default function AppUpdateScreen() {
               Проверено: {new Date(result.checkedAt).toLocaleString('ru-RU')}
             </Text>
             {result.message ? <Text style={local.resultHint} maxFontSizeMultiplier={1.12}>{result.message}</Text> : null}
+            {result.diagnostics?.length ? (
+              <View style={local.diagnosticsBox}>
+                <Text style={local.diagnosticsTitle} maxFontSizeMultiplier={1.1}>Диагностика запроса</Text>
+                {result.diagnostics.slice(0, 8).map((item, index) => (
+                  <Text key={`${item}-${index}`} style={local.diagnosticsText} maxFontSizeMultiplier={1.08}>
+                    • {item}
+                  </Text>
+                ))}
+                {result.diagnostics.length > 8 ? (
+                  <Text style={local.diagnosticsText} maxFontSizeMultiplier={1.08}>
+                    • ещё {result.diagnostics.length - 8} проверок скрыто
+                  </Text>
+                ) : null}
+              </View>
+            ) : null}
 
             <View style={local.actionRow}>
               <AnimatedPressable style={local.secondaryButton} pressedScale={0.97} onPress={() => openUrl(result.url || repoUrl)}>
@@ -150,7 +165,7 @@ export default function AppUpdateScreen() {
       <AppCard style={local.cardGap}>
         <Text style={local.cardTitle} maxFontSizeMultiplier={1.12}>Как подготовить обновление</Text>
         <Text style={local.resultText} maxFontSizeMultiplier={1.12}>
-          1. Увеличьте version в app.json и package.json.\n2. Соберите APK/AAB.\n3. Создайте GitHub Release с тегом вида v1.0.1.\n4. Прикрепите файл сборки к релизу.
+          1. Увеличьте version в app.json и package.json.\n2. Запушьте app.json/package.json в корень репозитория или в папку package.\n3. Для полноценной загрузки создайте GitHub Release с тегом вида v1.0.1.\n4. Прикрепите APK/AAB к релизу, иначе приложение сможет только открыть страницу источника.
         </Text>
       </AppCard>
     </AnimatedScreenScroll>
@@ -332,6 +347,26 @@ const local = StyleSheet.create({
     color: colors.textMuted,
     fontSize: 13,
     lineHeight: 19,
+    fontWeight: '700',
+  },
+  diagnosticsBox: {
+    gap: 6,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.borderSoft,
+    backgroundColor: colors.surfaceMuted,
+    padding: spacing.md,
+  },
+  diagnosticsTitle: {
+    color: colors.text,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '900',
+  },
+  diagnosticsText: {
+    color: colors.textMuted,
+    fontSize: 12,
+    lineHeight: 17,
     fontWeight: '700',
   },
 });

@@ -27,7 +27,7 @@ function buildDiagnostics(state) {
         {
             id: 'storage',
             title: 'Ключ локального сохранения',
-            value: 'itcost_store_v5',
+            value: 'itcost_store_v6',
             tone: 'info',
         },
         {
@@ -93,7 +93,7 @@ function buildDiagnostics(state) {
     ];
     return {
         schemaVersion: state.schemaVersion ?? 0,
-        storageKey: 'itcost_store_v5',
+        storageKey: 'itcost_store_v6',
         estimatedSizeBytes,
         estimatedSizeLabel: formatBytes(estimatedSizeBytes),
         items,

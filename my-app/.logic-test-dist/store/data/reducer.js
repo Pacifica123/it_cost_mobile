@@ -88,6 +88,18 @@ const buildBackup = (state, input) => {
         snapshot: (0, defaults_1.makeProjectSnapshot)(state),
     };
 };
+const withAutoBackup = (state, description) => {
+    if (!state.appSettings.autoBackupBeforeDangerousActions)
+        return state;
+    const backup = buildBackup(state, {
+        name: `Автобэкап — ${state.projectMeta.name || 'Проект'}`,
+        description,
+    });
+    return {
+        ...state,
+        projectBackups: [backup, ...(state.projectBackups ?? [])].slice(0, MAX_BACKUPS),
+    };
+};
 function dataReducer(state, action) {
     switch (action.type) {
         case 'HYDRATE_STATE':
@@ -140,7 +152,7 @@ function dataReducer(state, action) {
             }, 'Удалена резервная копия', backup.name, 'backup');
         }
         case 'APPLY_PROJECT_TEMPLATE': {
-            const undoState = withUndoPoint(state);
+            const undoState = withUndoPoint(withAutoBackup(state, 'Создано автоматически перед применением шаблона.'));
             const nextTemplate = {
                 ...action.payload,
                 schemaVersion: defaults_1.CURRENT_DATA_SCHEMA_VERSION,
@@ -155,7 +167,7 @@ function dataReducer(state, action) {
             return withEvent(nextTemplate, 'Применён шаблон проекта', action.payload.projectMeta.name, 'template');
         }
         case 'RESET_DEMO_DATA': {
-            const undoState = withUndoPoint(state);
+            const undoState = withUndoPoint(withAutoBackup(state, 'Создано автоматически перед загрузкой демо-данных.'));
             return withEvent({
                 ...defaults_1.initialState,
                 appSettings: state.appSettings,
@@ -168,7 +180,7 @@ function dataReducer(state, action) {
             }, 'Загружены демо-данные', 'Текущий проект заменён демонстрационным набором.', 'template');
         }
         case 'RESET_EMPTY_PROJECT': {
-            const undoState = withUndoPoint(state);
+            const undoState = withUndoPoint(withAutoBackup(state, 'Создано автоматически перед очисткой проекта.'));
             return withEvent({
                 ...defaults_1.emptyProjectState,
                 appSettings: state.appSettings,

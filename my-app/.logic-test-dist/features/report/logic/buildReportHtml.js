@@ -22,8 +22,13 @@ const renderGrouped = (title, grouped, getQty, getCost) => {
     </table>
   `;
 };
-function buildReportHtml(report, readiness, meta) {
+function buildReportHtml(report, readiness, meta, settings, events = []) {
     const title = meta?.name || 'Сводный отчёт по оценке ИТ-инфраструктуры';
+    const mode = settings?.reportMode ?? 'full';
+    const includeRisks = settings?.reportIncludeRisks ?? true;
+    const includeHistory = settings?.reportIncludeHistory ?? false;
+    const includeEmpty = settings?.reportIncludeEmptySections ?? false;
+    const includeCharts = settings?.reportIncludeCharts ?? true;
     const readinessBlock = readiness
         ? `<p><strong>Готовность расчёта:</strong> ${readiness.percent}%.</p><p>${escapeHtml(readiness.summary)}</p>`
         : '';
@@ -93,17 +98,30 @@ function buildReportHtml(report, readiness, meta) {
       </ul>
     </section>
 
-    <section class="risk">
+    ${includeCharts && mode !== 'short' ? `<section>
+      <h2>Параметры финансового анализа</h2>
+      <div class="grid">
+        <div class="pill"><div class="value">${escapeHtml(settings?.calculationHorizonYears ?? 5)} лет</div><div class="label">Горизонт расчёта</div></div>
+        <div class="pill"><div class="value">${escapeHtml(settings?.discountRatePercent ?? 12)}%</div><div class="label">Ставка дисконтирования</div></div>
+      </div>
+    </section>` : ''}
+
+    ${includeRisks ? `<section class="risk">
       <h2>Проверка данных и риски</h2>
       ${readinessBlock}
       <ul>${report.insights.map((insight) => renderInsight(insight.title, insight.description)).join('')}</ul>
-    </section>
+    </section>` : ''}
 
-    <section>
-      ${renderGrouped('Капитальные затраты', report.groupedCapital, (item) => item.quantity, (item) => item.quantity * item.price)}
-      ${renderGrouped('Разовые OPEX', report.groupedOneTimeOperating, () => 1, (item) => item.price)}
-      ${renderGrouped('Периодические OPEX в месяц', report.groupedPeriodicOperating, () => 1, (item) => item.price)}
-    </section>
+    ${mode === 'short' ? '' : `<section>
+      ${(Object.keys(report.groupedCapital).length || includeEmpty) ? renderGrouped('Капитальные затраты', report.groupedCapital, (item) => item.quantity, (item) => item.quantity * item.price) : ''}
+      ${(Object.keys(report.groupedOneTimeOperating).length || includeEmpty) ? renderGrouped('Разовые OPEX', report.groupedOneTimeOperating, () => 1, (item) => item.price) : ''}
+      ${(Object.keys(report.groupedPeriodicOperating).length || includeEmpty) ? renderGrouped('Периодические OPEX в месяц', report.groupedPeriodicOperating, () => 1, (item) => item.price) : ''}
+    </section>`}
+
+    ${includeHistory && events.length ? `<section>
+      <h2>Последние действия</h2>
+      <ul>${events.slice(0, 8).map((event) => renderInsight(new Date(event.createdAt).toLocaleString('ru-RU'), `${event.title}${event.description ? ` — ${event.description}` : ''}`)).join('')}</ul>
+    </section>` : ''}
 
     <section>
       <h2>Итоговая рекомендация</h2>

@@ -32,6 +32,12 @@ const normalizeProjectMeta = (input) => {
         updatedAt,
     };
 };
+const clampNumber = (value, fallback, min, max) => {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed))
+        return fallback;
+    return Math.min(max, Math.max(min, parsed));
+};
 const normalizeAppSettings = (input) => {
     if (!isObject(input))
         return defaults_1.defaultAppSettings;
@@ -44,11 +50,43 @@ const normalizeAppSettings = (input) => {
     const roundingMode = input.roundingMode === 'none' || input.roundingMode === 'rubles' || input.roundingMode === 'thousands'
         ? input.roundingMode
         : defaults_1.defaultAppSettings.roundingMode;
+    const uiDensity = input.uiDensity === 'compact' || input.uiDensity === 'large' || input.uiDensity === 'comfortable'
+        ? input.uiDensity
+        : defaults_1.defaultAppSettings.uiDensity;
+    const startScreen = input.startScreen === 'home' || input.startScreen === 'itMenu' || input.startScreen === 'dashboard' || input.startScreen === 'quickStart'
+        ? input.startScreen
+        : defaults_1.defaultAppSettings.startScreen;
+    const reportMode = input.reportMode === 'short' || input.reportMode === 'full' || input.reportMode === 'finance' || input.reportMode === 'technical'
+        ? input.reportMode
+        : defaults_1.defaultAppSettings.reportMode;
+    const csvDefaultSection = input.csvDefaultSection === 'CAPEX' || input.csvDefaultSection === 'OPEX' || input.csvDefaultSection === 'HARDWARE' || input.csvDefaultSection === 'SOFTWARE'
+        ? input.csvDefaultSection
+        : defaults_1.defaultAppSettings.csvDefaultSection;
     return {
         themeMode,
         currency,
         roundingMode,
         confirmDelete: typeof input.confirmDelete === 'boolean' ? input.confirmDelete : defaults_1.defaultAppSettings.confirmDelete,
+        uiDensity,
+        startScreen,
+        calculationHorizonYears: Math.round(clampNumber(input.calculationHorizonYears, defaults_1.defaultAppSettings.calculationHorizonYears, 1, 10)),
+        discountRatePercent: clampNumber(input.discountRatePercent, defaults_1.defaultAppSettings.discountRatePercent, 0, 50),
+        hardwareLifetimeMonths: Math.round(clampNumber(input.hardwareLifetimeMonths, defaults_1.defaultAppSettings.hardwareLifetimeMonths, 6, 120)),
+        serverLifetimeMonths: Math.round(clampNumber(input.serverLifetimeMonths, defaults_1.defaultAppSettings.serverLifetimeMonths, 6, 120)),
+        softwareLifetimeMonths: Math.round(clampNumber(input.softwareLifetimeMonths, defaults_1.defaultAppSettings.softwareLifetimeMonths, 1, 60)),
+        reportMode,
+        reportIncludeCharts: typeof input.reportIncludeCharts === 'boolean' ? input.reportIncludeCharts : defaults_1.defaultAppSettings.reportIncludeCharts,
+        reportIncludeRisks: typeof input.reportIncludeRisks === 'boolean' ? input.reportIncludeRisks : defaults_1.defaultAppSettings.reportIncludeRisks,
+        reportIncludeHistory: typeof input.reportIncludeHistory === 'boolean' ? input.reportIncludeHistory : defaults_1.defaultAppSettings.reportIncludeHistory,
+        reportIncludeEmptySections: typeof input.reportIncludeEmptySections === 'boolean' ? input.reportIncludeEmptySections : defaults_1.defaultAppSettings.reportIncludeEmptySections,
+        autoBackupBeforeDangerousActions: typeof input.autoBackupBeforeDangerousActions === 'boolean' ? input.autoBackupBeforeDangerousActions : defaults_1.defaultAppSettings.autoBackupBeforeDangerousActions,
+        checkUpdatesOnStart: typeof input.checkUpdatesOnStart === 'boolean' ? input.checkUpdatesOnStart : defaults_1.defaultAppSettings.checkUpdatesOnStart,
+        refreshRatesOnStart: typeof input.refreshRatesOnStart === 'boolean' ? input.refreshRatesOnStart : defaults_1.defaultAppSettings.refreshRatesOnStart,
+        csvRequirePreview: typeof input.csvRequirePreview === 'boolean' ? input.csvRequirePreview : defaults_1.defaultAppSettings.csvRequirePreview,
+        csvAutoMergeDuplicates: typeof input.csvAutoMergeDuplicates === 'boolean' ? input.csvAutoMergeDuplicates : defaults_1.defaultAppSettings.csvAutoMergeDuplicates,
+        csvDefaultSection,
+        minimumReadinessForReport: Math.round(clampNumber(input.minimumReadinessForReport, defaults_1.defaultAppSettings.minimumReadinessForReport, 0, 100)),
+        minimumDataQualityForReport: Math.round(clampNumber(input.minimumDataQualityForReport, defaults_1.defaultAppSettings.minimumDataQualityForReport, 0, 100)),
     };
 };
 const normalizeExchangeRates = (input) => {

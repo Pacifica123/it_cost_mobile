@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.emptyProjectState = exports.initialState = exports.makeProjectSnapshot = exports.initialCategories = exports.defaultExchangeRates = exports.defaultAppSettings = exports.createProjectEvent = exports.createDefaultProjectMeta = exports.CURRENT_DATA_SCHEMA_VERSION = void 0;
 const catalogRules_1 = require("./catalogRules");
 const now = '2026-01-01T00:00:00.000Z';
-exports.CURRENT_DATA_SCHEMA_VERSION = 5;
+exports.CURRENT_DATA_SCHEMA_VERSION = 6;
 const createDefaultProjectMeta = (patch = {}) => ({
     name: 'Расчёт ИТ-инфраструктуры',
     organization: 'Организация',
@@ -28,6 +28,26 @@ exports.defaultAppSettings = {
     currency: 'RUB',
     roundingMode: 'rubles',
     confirmDelete: true,
+    uiDensity: 'comfortable',
+    startScreen: 'home',
+    calculationHorizonYears: 5,
+    discountRatePercent: 12,
+    hardwareLifetimeMonths: 36,
+    serverLifetimeMonths: 48,
+    softwareLifetimeMonths: 12,
+    reportMode: 'full',
+    reportIncludeCharts: true,
+    reportIncludeRisks: true,
+    reportIncludeHistory: false,
+    reportIncludeEmptySections: false,
+    autoBackupBeforeDangerousActions: true,
+    checkUpdatesOnStart: false,
+    refreshRatesOnStart: true,
+    csvRequirePreview: true,
+    csvAutoMergeDuplicates: false,
+    csvDefaultSection: 'CAPEX',
+    minimumReadinessForReport: 80,
+    minimumDataQualityForReport: 70,
 };
 exports.defaultExchangeRates = {
     baseCurrency: 'RUB',
