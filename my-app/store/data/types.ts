@@ -86,6 +86,19 @@ export type ProjectSnapshot = {
   electricityTotal: number;
 };
 
+
+export type StoredProjectRecord = {
+  id: string;
+  name: string;
+  organization: string;
+  createdAt: string;
+  updatedAt: string;
+  capitalItemsCount: number;
+  operatingItemsCount: number;
+  budget: number;
+  snapshot: ProjectSnapshot;
+};
+
 export type ProjectBackup = {
   id: string;
   name: string;
@@ -102,6 +115,8 @@ export type DataState = {
   appSettings: AppSettings;
   exchangeRates: ExchangeRates;
   projectEvents: ProjectEvent[];
+  activeProjectId: string | null;
+  savedProjects: StoredProjectRecord[];
   projectBackups: ProjectBackup[];
   undoStack: ProjectSnapshot[];
   redoStack: ProjectSnapshot[];

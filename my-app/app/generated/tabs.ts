@@ -54,6 +54,12 @@ export const hiddenBlocks: ScreenLink[] = [
     "group": "/it-cost"
   },
   {
+    "id": "/it-cost/projects",
+    "title": "Мои проекты",
+    "route": "/it-cost/projects",
+    "group": "/it-cost"
+  },
+  {
     "id": "/it-cost/financial_charts",
     "title": "Финансовые графики",
     "route": "/it-cost/financial_charts",
@@ -66,6 +72,12 @@ export const hiddenBlocks: ScreenLink[] = [
     "group": "/it-cost"
   },
   {
+    "id": "/it-cost/item_catalog",
+    "title": "Каталог типовых позиций",
+    "route": "/it-cost/item_catalog",
+    "group": "/it-cost"
+  },
+  {
     "id": "/it-cost/templates",
     "title": "Шаблоны проектов",
     "route": "/it-cost/templates",
@@ -75,6 +87,36 @@ export const hiddenBlocks: ScreenLink[] = [
     "id": "/it-cost/quick_start",
     "title": "Быстрый расчёт",
     "route": "/it-cost/quick_start",
+    "group": "/it-cost"
+  },
+  {
+    "id": "/it-cost/it_kit_builder",
+    "title": "Конструктор ИТ-комплекта",
+    "route": "/it-cost/it_kit_builder",
+    "group": "/it-cost"
+  },
+  {
+    "id": "/it-cost/budget_autopick",
+    "title": "Автоподбор под бюджет",
+    "route": "/it-cost/budget_autopick",
+    "group": "/it-cost"
+  },
+  {
+    "id": "/it-cost/local_cloud_compare",
+    "title": "Локально vs облако",
+    "route": "/it-cost/local_cloud_compare",
+    "group": "/it-cost"
+  },
+  {
+    "id": "/it-cost/amortization",
+    "title": "Амортизация и срок службы",
+    "route": "/it-cost/amortization",
+    "group": "/it-cost"
+  },
+  {
+    "id": "/it-cost/implementation_plan",
+    "title": "План внедрения",
+    "route": "/it-cost/implementation_plan",
     "group": "/it-cost"
   },
   {
@@ -177,6 +219,24 @@ export const hiddenBlocks: ScreenLink[] = [
     "id": "/it-cost/method_comparison",
     "title": "Сравнение методов",
     "route": "/it-cost/method_comparison",
+    "group": "/it-cost"
+  },
+  {
+    "id": "/it-cost/scenarios",
+    "title": "Сценарии расчёта",
+    "route": "/it-cost/scenarios",
+    "group": "/it-cost"
+  },
+  {
+    "id": "/it-cost/risks",
+    "title": "Риски и рекомендации",
+    "route": "/it-cost/risks",
+    "group": "/it-cost"
+  },
+  {
+    "id": "/it-cost/app_update",
+    "title": "Обновление приложения",
+    "route": "/it-cost/app_update",
     "group": "/it-cost"
   }
 ] as const;

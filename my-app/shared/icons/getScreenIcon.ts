@@ -12,10 +12,18 @@ export function getScreenIcon(title: string): IoniconName {
   if (t.includes('резерв') || t.includes('копи')) return 'archive-outline';
   if (t.includes('диагност')) return 'bug-outline';
   if (t.includes('быстр')) return 'rocket-outline';
+  if (t.includes('каталог') || t.includes('справоч')) return 'library-outline';
   if (t.includes('шаблон')) return 'copy-outline';
   if (t.includes('истори') || t.includes('журнал')) return 'time-outline';
   if (t.includes('импорт') || t.includes('экспорт')) return 'swap-horizontal-outline';
   if (t.includes('провер')) return 'shield-checkmark-outline';
+  if (t.includes('риск') || t.includes('рекоменд')) return 'warning-outline';
+  if (t.includes('сценар')) return 'layers-outline';
+  if (t.includes('конструкт') || t.includes('комплект')) return 'construct-outline';
+  if (t.includes('автоподбор') || t.includes('подбор')) return 'options-outline';
+  if (t.includes('облак')) return 'cloud-outline';
+  if (t.includes('амортиза') || t.includes('срок службы')) return 'calculator-outline';
+  if (t.includes('внедрен') || t.includes('план')) return 'checkbox-outline';
   if (t.includes('сравнен') || t.includes('метод')) return 'analytics-outline';
   if (t.includes('проект')) return 'folder-open-outline';
   if (t.includes('экспорт') || t.includes('отч')) return 'download-outline';
@@ -29,6 +37,7 @@ export function getScreenIcon(title: string): IoniconName {
   if (t.includes('элект') || t.includes('энерг')) return 'flash-outline';
   if (t.includes('npv')) return 'stats-chart-outline';
   if (t.includes('ahp')) return 'git-compare-outline';
+  if (t.includes('обновлен') || t.includes('верс')) return 'cloud-download-outline';
   if (t.includes('настрой')) return 'settings-outline';
 
   return 'grid-outline';

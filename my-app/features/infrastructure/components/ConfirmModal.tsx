@@ -1,8 +1,12 @@
-import { Modal, Pressable, Text, View } from 'react-native';
+import { Modal, Pressable, Text, View, type GestureResponderEvent } from 'react-native';
 
 import { styles } from '../styles';
 import { AppButton } from './AppButton';
 import { AnimatedSurface } from '../../../shared/ui';
+
+const stopModalPress = (event: GestureResponderEvent) => {
+  event.stopPropagation();
+};
 
 export function ConfirmModal({
   visible,
@@ -26,7 +30,7 @@ export function ConfirmModal({
   return (
     <Modal visible={visible} animationType="fade" transparent onRequestClose={onCancel}>
       <Pressable style={styles.confirmOverlay} onPress={onCancel}>
-        <Pressable onPress={() => {}}>
+        <Pressable onPress={stopModalPress}>
           <AnimatedSurface style={styles.confirmCard}>
             <Text style={styles.confirmTitle}>{title}</Text>
             <Text style={styles.confirmText}>{message}</Text>

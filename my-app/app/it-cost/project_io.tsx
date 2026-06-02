@@ -4,6 +4,7 @@ import { router, type Href } from 'expo-router';
 
 import { projectStyles as styles } from '../../features/project/styles';
 import { validateProjectData } from '../../features/validation/logic/validateProjectData';
+import { parseProjectCsv } from '../../features/project/logic/importCsv';
 import { useData } from '../../store/data/DataContext';
 import { AnimatedPressable, AnimatedScreenScroll, AppCard } from '../../shared/ui';
 import { colors, radius, spacing } from '../../shared/theme';
@@ -28,8 +29,11 @@ export default function ProjectIoScreen() {
   const data = useData();
   const [importText, setImportText] = useState('');
   const [message, setMessage] = useState('');
+  const [csvText, setCsvText] = useState('');
+  const [csvMessage, setCsvMessage] = useState('');
   const exportJson = useMemo(() => data.getProjectExportJson(), [data]);
   const validation = useMemo(() => validateProjectData(data), [data]);
+  const csvPreview = useMemo(() => csvText.trim() ? parseProjectCsv(csvText, data.categories) : null, [csvText, data.categories]);
 
   const shareExport = async () => {
     try {
@@ -40,6 +44,35 @@ export default function ProjectIoScreen() {
     } catch {
       Alert.alert('Не удалось открыть системное меню экспорта', 'JSON можно скопировать вручную из поля предпросмотра.');
     }
+  };
+
+
+  const importCsv = () => {
+    const result = csvPreview ?? parseProjectCsv(csvText, data.categories);
+    setCsvMessage([
+      `Прочитано строк: ${result.rowsRead}.`,
+      `CAPEX: ${result.capitalData.length}. OPEX: ${result.operatingData.length}.`,
+      ...result.warnings,
+    ].join('\n'));
+
+    if (result.capitalData.length === 0 && result.operatingData.length === 0) {
+      Alert.alert('CSV не импортирован', result.warnings.join('\n') || 'Не найдено подходящих строк для импорта.');
+      return;
+    }
+
+    Alert.alert('Импортировать CSV?', `Будет добавлено CAPEX: ${result.capitalData.length}, OPEX: ${result.operatingData.length}.`, [
+      { text: 'Отмена', style: 'cancel' },
+      {
+        text: 'Импортировать',
+        onPress: () => {
+          data.setCapitalData((current) => [...result.capitalData, ...current]);
+          data.setOperatingData((current) => [...result.operatingData, ...current]);
+          setCsvText('');
+          setCsvMessage('');
+          Alert.alert('CSV импортирован', `Добавлено CAPEX: ${result.capitalData.length}, OPEX: ${result.operatingData.length}.`);
+        },
+      },
+    ]);
   };
 
   const importProject = () => {
@@ -83,6 +116,45 @@ export default function ProjectIoScreen() {
           style={local.codeBox}
           maxFontSizeMultiplier={1.05}
         />
+      </AppCard>
+
+
+      <AppCard delay={120} style={local.cardGap}>
+        <Text style={styles.cardTitle} maxFontSizeMultiplier={1.12}>Импорт CSV</Text>
+        <Text style={styles.cardText} maxFontSizeMultiplier={1.12}>
+          Вставьте таблицу с колонками name/название, price/цена, quantity/количество, type/раздел, category/категория. Разделы CAPEX/OPEX определяются автоматически по колонке type.
+        </Text>
+        <TextInput
+          value={csvText}
+          onChangeText={setCsvText}
+          placeholder={'name;price;quantity;type;category\nОфисный ПК;42000;5;CAPEX;Клиентское оборудование\nАдминистрирование;18000;1;OPEX;Администрирование серверов'}
+          placeholderTextColor={colors.textMuted}
+          multiline
+          textAlignVertical="top"
+          autoCapitalize="none"
+          autoCorrect={false}
+          style={[local.codeBox, local.importBox]}
+          maxFontSizeMultiplier={1.05}
+        />
+        {csvPreview ? (
+          <View style={local.previewBox}>
+            <Text style={local.previewTitle} maxFontSizeMultiplier={1.1}>Предпросмотр импорта</Text>
+            <Text style={local.message} maxFontSizeMultiplier={1.12}>
+              Строк: {csvPreview.rowsRead}. Будет добавлено CAPEX: {csvPreview.capitalData.length}, OPEX: {csvPreview.operatingData.length}.
+            </Text>
+            {[...csvPreview.capitalData.slice(0, 3), ...csvPreview.operatingData.slice(0, 3)].slice(0, 5).map((item) => (
+              <Text key={item.id} style={local.previewRow} numberOfLines={1} maxFontSizeMultiplier={1.05}>• {item.name}</Text>
+            ))}
+            {csvPreview.warnings.length > 0 ? (
+              <Text style={[local.message, { color: colors.warning }]} maxFontSizeMultiplier={1.12}>{csvPreview.warnings.join('\n')}</Text>
+            ) : null}
+          </View>
+        ) : null}
+        {csvMessage ? <Text style={local.message} maxFontSizeMultiplier={1.12}>{csvMessage}</Text> : null}
+        <View style={styles.actionRow}>
+          <ActionButton label="Импортировать CSV" onPress={importCsv} />
+          <ActionButton label="Очистить CSV" secondary onPress={() => { setCsvText(''); setCsvMessage(''); }} />
+        </View>
       </AppCard>
 
       <AppCard delay={80} style={local.cardGap}>
@@ -132,6 +204,26 @@ const local = StyleSheet.create({
   importBox: {
     minHeight: 190,
     backgroundColor: colors.surface,
+  },
+  previewBox: {
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.borderSoft,
+    backgroundColor: colors.surfaceMuted,
+    padding: spacing.md,
+    gap: 6,
+  },
+  previewTitle: {
+    color: colors.text,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '900',
+  },
+  previewRow: {
+    color: colors.textSoft,
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: '700',
   },
   message: {
     color: colors.textSoft,

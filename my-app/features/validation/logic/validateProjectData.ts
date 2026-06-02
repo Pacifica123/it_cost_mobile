@@ -22,6 +22,11 @@ export type ValidationReport = {
 
 const hasText = (value: string) => value.trim().length > 0;
 
+const normalizeKey = (value: string) => value.trim().toLowerCase().replace(/\s+/g, ' ');
+const categoryNameById = (state: DataState, categoryId: string) =>
+  state.categories.find((category) => category.id === categoryId)?.name ?? '';
+const itemLooksLike = (name: string, pattern: RegExp) => pattern.test(name.toLowerCase());
+
 export function validateProjectData(state: DataState): ValidationReport {
   const issues: ValidationIssue[] = [];
   const categoryIds = new Set(state.categories.map((category) => category.id));
@@ -58,6 +63,100 @@ export function validateProjectData(state: DataState): ValidationReport {
         description: `Капитальные затраты выше указанного бюджета на ${Math.round(capexTotal - state.projectMeta.budget)} ₽.`,
       });
     }
+  }
+
+
+  const capitalNameCounts = new Map<string, number>();
+  state.capitalData.forEach((item) => {
+    const key = `${normalizeKey(item.name)}:${item.categoryId}:${item.kind ?? 'unknown'}`;
+    capitalNameCounts.set(key, (capitalNameCounts.get(key) ?? 0) + 1);
+  });
+  capitalNameCounts.forEach((count, key) => {
+    if (count > 1) {
+      issues.push({
+        id: `capex-duplicate-${key}`,
+        severity: 'warning',
+        area: 'CAPEX',
+        title: 'Найдены похожие CAPEX-позиции',
+        description: 'Одинаковые позиции лучше объединить количеством, чтобы не раздувать расчёт и отчёт.',
+      });
+    }
+  });
+
+  const operatingNameCounts = new Map<string, number>();
+  state.operatingData.forEach((item) => {
+    const key = `${normalizeKey(item.name)}:${item.categoryId}`;
+    operatingNameCounts.set(key, (operatingNameCounts.get(key) ?? 0) + 1);
+  });
+  operatingNameCounts.forEach((count, key) => {
+    if (count > 1) {
+      issues.push({
+        id: `opex-duplicate-${key}`,
+        severity: 'warning',
+        area: 'OPEX',
+        title: 'Найдены похожие OPEX-позиции',
+        description: 'Повторяющиеся эксплуатационные расходы лучше объединить или проверить на ошибку импорта.',
+      });
+    }
+  });
+
+  const hasServer = state.capitalData.some((item) => /сервер|server|nas|хранилищ|виртуализац/i.test(`${item.name} ${categoryNameById(state, item.categoryId)}`));
+  const hasNetwork = state.capitalData.some((item) => /сеть|network|коммутатор|switch|маршрутиз|router|wi-?fi/i.test(`${item.name} ${categoryNameById(state, item.categoryId)}`));
+  const hasClient = state.capitalData.some((item) => /клиент|рабоч|пк|pc|ноутбук|laptop|workstation/i.test(`${item.name} ${categoryNameById(state, item.categoryId)}`));
+  const hasSoftware = state.capitalData.some((item) => item.kind === 'software' || /по|лиценз|software|windows|office|антивирус|saas/i.test(`${item.name} ${categoryNameById(state, item.categoryId)}`));
+  const hasBackup = [...state.capitalData, ...state.operatingData].some((item) => /backup|бэкап|резервн|копирован/i.test(item.name));
+  const hasSecurity = state.capitalData.some((item) => itemLooksLike(item.name, /антивирус|security|защит|endpoint|edr/));
+
+  if (hasServer && !hasNetwork) {
+    issues.push({
+      id: 'smart-server-without-network',
+      severity: 'warning',
+      area: 'CAPEX',
+      title: 'Есть сервер, но нет сетевого оборудования',
+      description: 'Для локального сервера обычно нужен коммутатор, маршрутизатор или иной сетевой контур.',
+    });
+  }
+
+  if (hasClient && !hasSoftware) {
+    issues.push({
+      id: 'smart-clients-without-software',
+      severity: 'warning',
+      area: 'CAPEX',
+      title: 'Есть рабочие места, но нет ПО',
+      description: 'Для клиентских устройств желательно учесть ОС, офисный пакет и базовые лицензии.',
+    });
+  }
+
+  if ((hasServer || hasClient) && !hasBackup) {
+    issues.push({
+      id: 'smart-no-backup',
+      severity: 'info',
+      area: 'OPEX',
+      title: 'Не найдено резервное копирование',
+      description: 'Резервное копирование снижает риск потери данных и обычно должно быть отражено в OPEX.',
+    });
+  }
+
+  if (hasClient && !hasSecurity) {
+    issues.push({
+      id: 'smart-no-security',
+      severity: 'info',
+      area: 'CAPEX',
+      title: 'Не найдена защита рабочих мест',
+      description: 'Можно добавить антивирусную или endpoint-защиту в ПО.',
+    });
+  }
+
+  const capexTotal = state.capitalData.reduce((sum, item) => sum + item.quantity * item.price, 0);
+  const largestCapex = state.capitalData.reduce((max, item) => Math.max(max, item.quantity * item.price), 0);
+  if (capexTotal > 0 && largestCapex / capexTotal >= 0.55 && state.capitalData.length > 1) {
+    issues.push({
+      id: 'smart-one-large-capex-item',
+      severity: 'info',
+      area: 'CAPEX',
+      title: 'Одна CAPEX-позиция занимает большую долю бюджета',
+      description: 'Проверьте цену крупной позиции или подготовьте альтернативу на случай превышения бюджета.',
+    });
   }
 
   if (!state.categories.length) {

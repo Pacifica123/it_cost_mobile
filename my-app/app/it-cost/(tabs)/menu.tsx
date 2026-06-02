@@ -14,6 +14,13 @@ export const entry = true;
 export const title = 'Меню ИТ';
 export const tab = true;
 
+const MAIN_SERVICE_ROUTES = [
+  '/it-cost/settings',
+  '/it-cost/diagnostics',
+  '/it-cost/app_update',
+];
+
+
 function ProjectStatusCard() {
   const data = useData();
   const hardwareCount = data.capitalData.filter((item) => item.kind === 'hardware').length;
@@ -88,6 +95,12 @@ function ProjectStatusCard() {
         <AnimatedPressable style={styles.actionButton} onPress={() => router.push('/it-cost/dashboard' as Href)} pressedScale={0.97}>
           <Text style={styles.actionButtonText} maxFontSizeMultiplier={1.1}>Сводка</Text>
         </AnimatedPressable>
+        <AnimatedPressable style={styles.actionButton} onPress={() => router.push('/it-cost/projects' as Href)} pressedScale={0.97}>
+          <Text style={styles.actionButtonText} maxFontSizeMultiplier={1.1}>Проекты</Text>
+        </AnimatedPressable>
+        <AnimatedPressable style={styles.actionButton} onPress={() => router.push('/it-cost/item_catalog' as Href)} pressedScale={0.97}>
+          <Text style={styles.actionButtonText} maxFontSizeMultiplier={1.1}>Каталог</Text>
+        </AnimatedPressable>
         <AnimatedPressable style={styles.actionButton} onPress={() => router.push('/it-cost/backups' as Href)} pressedScale={0.97}>
           <Text style={styles.actionButtonText} maxFontSizeMultiplier={1.1}>Копии</Text>
         </AnimatedPressable>
@@ -105,6 +118,7 @@ function ProjectStatusCard() {
   );
 }
 
+
 export default function MenuInTabs() {
   const tabBarHeight = useBottomTabBarHeight();
 
@@ -118,7 +132,7 @@ export default function MenuInTabs() {
 
       <AppCard style={styles.menuCard} delay={80}>
         <Text style={styles.sectionTitle} maxFontSizeMultiplier={1.12}>Разделы</Text>
-        <SectionsMenu variant="all" hideEntries searchable mode="grouped" />
+        <SectionsMenu variant="all" hideEntries searchable mode="grouped" excludeRoutes={MAIN_SERVICE_ROUTES} />
       </AppCard>
     </AnimatedScreenScroll>
   );

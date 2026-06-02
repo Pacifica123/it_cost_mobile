@@ -3,7 +3,7 @@ import { ensureCapitalKinds } from './catalogRules';
 
 const now = '2026-01-01T00:00:00.000Z';
 
-export const CURRENT_DATA_SCHEMA_VERSION = 4;
+export const CURRENT_DATA_SCHEMA_VERSION = 5;
 
 export const createDefaultProjectMeta = (patch: Partial<ProjectMeta> = {}): ProjectMeta => ({
   name: 'Расчёт ИТ-инфраструктуры',
@@ -84,6 +84,8 @@ export const initialState: DataState = {
   projectEvents: [
     createProjectEvent('Создан демо-проект', 'Загружены стартовые категории и демонстрационные позиции.', 'template'),
   ],
+  activeProjectId: null,
+  savedProjects: [],
   projectBackups: [],
   undoStack: [],
   redoStack: [],
@@ -123,6 +125,8 @@ export const emptyProjectState: DataState = {
   projectEvents: [
     createProjectEvent('Создан пустой проект', 'Позиции очищены, базовые категории сохранены.', 'reset'),
   ],
+  activeProjectId: null,
+  savedProjects: [],
   projectBackups: [],
   undoStack: [],
   redoStack: [],

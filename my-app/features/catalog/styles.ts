@@ -161,6 +161,10 @@ export const exploreStyles = StyleSheet.create({
     fontWeight: '900',
   },
 
+  sortChipTextActive: {
+    color: '#1D4ED8',
+  },
+
   undoBox: {
     borderRadius: 16,
     borderWidth: 1,

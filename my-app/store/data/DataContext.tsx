@@ -23,6 +23,10 @@ interface DataContextType extends DataState {
   isHydrated: boolean;
   lastSavedAt: Date | null;
   setProjectMeta: (patch: Partial<ProjectMeta>) => void;
+  saveCurrentProject: (input?: { name?: string }) => void;
+  openSavedProject: (projectId: string) => void;
+  duplicateSavedProject: (projectId: string) => void;
+  deleteSavedProject: (projectId: string) => void;
   setAppSettings: (patch: Partial<AppSettings>) => void;
   setCapitalData: Dispatch<SetStateAction<CapitalEquipment[]>>;
   setOperatingData: Dispatch<SetStateAction<OperatingEquipment[]>>;
@@ -85,6 +89,22 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
 
   const setProjectMeta = useCallback((patch: Partial<ProjectMeta>) => {
     dispatch({ type: 'SET_PROJECT_META', payload: patch });
+  }, []);
+
+  const saveCurrentProject = useCallback((input?: { name?: string }) => {
+    dispatch({ type: 'SAVE_CURRENT_PROJECT', payload: input });
+  }, []);
+
+  const openSavedProject = useCallback((projectId: string) => {
+    dispatch({ type: 'OPEN_SAVED_PROJECT', payload: { projectId } });
+  }, []);
+
+  const duplicateSavedProject = useCallback((projectId: string) => {
+    dispatch({ type: 'DUPLICATE_SAVED_PROJECT', payload: { projectId } });
+  }, []);
+
+  const deleteSavedProject = useCallback((projectId: string) => {
+    dispatch({ type: 'DELETE_SAVED_PROJECT', payload: { projectId } });
   }, []);
 
   const setAppSettings = useCallback((patch: Partial<AppSettings>) => {
@@ -198,6 +218,10 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     isHydrated,
     lastSavedAt,
     setProjectMeta,
+    saveCurrentProject,
+    openSavedProject,
+    duplicateSavedProject,
+    deleteSavedProject,
     setAppSettings,
     setCapitalData,
     setOperatingData,
@@ -224,6 +248,10 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     isHydrated,
     lastSavedAt,
     setProjectMeta,
+    saveCurrentProject,
+    openSavedProject,
+    duplicateSavedProject,
+    deleteSavedProject,
     setAppSettings,
     setCapitalData,
     setOperatingData,
@@ -258,5 +286,5 @@ export const useData = () => {
   return context;
 };
 
-export type { AppSettings, CapitalEquipment, CategoryMode, CategoryScope, DataState, ExpenseCategory, OperatingEquipment, ProjectMeta, ProjectBackup, ProjectSnapshot } from './types';
+export type { AppSettings, CapitalEquipment, CategoryMode, CategoryScope, DataState, ExpenseCategory, OperatingEquipment, ProjectMeta, ProjectBackup, StoredProjectRecord, ProjectSnapshot } from './types';
 export * from './selectors';

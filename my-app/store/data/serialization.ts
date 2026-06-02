@@ -9,6 +9,7 @@ import type {
   ExchangeRates,
   ProjectBackup,
   ProjectSnapshot,
+  StoredProjectRecord,
   ProjectEvent,
   ProjectEventType,
   ProjectMeta,
@@ -261,6 +262,32 @@ const normalizeSnapshot = (input: unknown, fallbackState: DataState): ProjectSna
   });
 };
 
+
+const normalizeSavedProjects = (input: unknown, fallbackState: DataState): StoredProjectRecord[] => {
+  if (!Array.isArray(input)) return [];
+  return input
+    .filter(isObject)
+    .map<StoredProjectRecord | null>((project, index) => {
+      const snapshot = normalizeSnapshot(project.snapshot, fallbackState);
+      const fallbackName = snapshot.projectMeta.name || `Проект ${index + 1}`;
+      const createdAt = toIsoSafe(project.createdAt, snapshot.projectMeta.createdAt || new Date().toISOString());
+      const updatedAt = toIsoSafe(project.updatedAt, snapshot.projectMeta.updatedAt || createdAt);
+      return {
+        id: toStringSafe(project.id, `import-project-${index + 1}`),
+        name: toStringSafe(project.name, fallbackName).trim() || fallbackName,
+        organization: toStringSafe(project.organization, snapshot.projectMeta.organization).trim(),
+        createdAt,
+        updatedAt,
+        capitalItemsCount: Math.max(0, Math.round(toNumber(project.capitalItemsCount, snapshot.capitalData.length))),
+        operatingItemsCount: Math.max(0, Math.round(toNumber(project.operatingItemsCount, snapshot.operatingData.length))),
+        budget: Math.max(0, toNumber(project.budget, snapshot.projectMeta.budget)),
+        snapshot,
+      };
+    })
+    .filter((project): project is StoredProjectRecord => project !== null)
+    .slice(0, 30);
+};
+
 const normalizeBackups = (input: unknown, fallbackState: DataState): ProjectBackup[] => {
   if (!Array.isArray(input)) return [];
   return input
@@ -304,6 +331,8 @@ export const normalizeDataState = (value: unknown): DataState => {
     projectMeta: normalizeProjectMeta(isObject(projectObject) ? projectObject.projectMeta : undefined),
     appSettings: normalizeAppSettings(isObject(projectObject) ? projectObject.appSettings : undefined),
     exchangeRates: normalizeExchangeRates(isObject(projectObject) ? projectObject.exchangeRates : undefined),
+    activeProjectId: isObject(projectObject) ? toStringSafe(projectObject.activeProjectId).trim() || null : null,
+    savedProjects: [],
     projectEvents: normalizeProjectEvents(isObject(projectObject) ? projectObject.projectEvents : undefined),
     projectBackups: [],
     undoStack: [],
@@ -314,8 +343,15 @@ export const normalizeDataState = (value: unknown): DataState => {
     electricityTotal: Math.max(0, toNumber(isObject(projectObject) ? projectObject.electricityTotal : 0)),
   };
 
+  const savedProjects = normalizeSavedProjects(isObject(projectObject) ? projectObject.savedProjects : undefined, baseState);
+  const activeProjectId = baseState.activeProjectId && savedProjects.some((item) => item.id === baseState.activeProjectId)
+    ? baseState.activeProjectId
+    : null;
+
   return {
     ...baseState,
+    activeProjectId,
+    savedProjects,
     projectBackups: normalizeBackups(isObject(projectObject) ? projectObject.projectBackups : undefined, baseState),
   };
 };
@@ -377,6 +413,9 @@ export const parseProjectDataState = (raw: string): ProjectImportResult => {
   }
   if (isObject(projectObject) && !isObject(projectObject.exchangeRates)) {
     warnings.push('Курсы валют не найдены, их можно обновить в настройках.');
+  }
+  if (isObject(projectObject) && !Array.isArray(projectObject.savedProjects)) {
+    warnings.push('Список сохранённых проектов не найден, будет создан пустой список.');
   }
 
   return {

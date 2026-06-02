@@ -9,9 +9,11 @@ export type ProjectTemplate = {
   state: DataState;
 };
 
-const buildTemplateState = (_id: string, patch: Omit<DataState, 'schemaVersion' | 'projectEvents' | 'projectBackups' | 'undoStack' | 'redoStack'>): DataState => ({
+const buildTemplateState = (_id: string, patch: Omit<DataState, 'schemaVersion' | 'projectEvents' | 'activeProjectId' | 'savedProjects' | 'projectBackups' | 'undoStack' | 'redoStack'>): DataState => ({
   schemaVersion: CURRENT_DATA_SCHEMA_VERSION,
   ...patch,
+  activeProjectId: null,
+  savedProjects: [],
   projectBackups: [],
   undoStack: [],
   redoStack: [],

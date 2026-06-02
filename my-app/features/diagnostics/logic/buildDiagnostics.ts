@@ -36,12 +36,12 @@ export function buildDiagnostics(state: DataState): DiagnosticReport {
       id: 'schema',
       title: 'Версия структуры данных',
       value: String(state.schemaVersion ?? 0),
-      tone: (state.schemaVersion ?? 0) >= 4 ? 'ok' : 'warning',
+      tone: (state.schemaVersion ?? 0) >= 5 ? 'ok' : 'warning',
     },
     {
       id: 'storage',
       title: 'Ключ локального сохранения',
-      value: 'itcost_store_v4',
+      value: 'itcost_store_v5',
       tone: 'info',
     },
     {
@@ -80,6 +80,13 @@ export function buildDiagnostics(state: DataState): DiagnosticReport {
       value: `${state.undoStack.length}/${state.redoStack.length}`,
       tone: 'info',
     },
+
+    {
+      id: 'projects',
+      title: 'Сохранённые проекты',
+      value: `${state.savedProjects?.length ?? 0} шт.`,
+      tone: (state.savedProjects?.length ?? 0) ? 'ok' : 'info',
+    },
     {
       id: 'backups',
       title: 'Резервные копии',
@@ -102,7 +109,7 @@ export function buildDiagnostics(state: DataState): DiagnosticReport {
 
   return {
     schemaVersion: state.schemaVersion ?? 0,
-    storageKey: 'itcost_store_v4',
+    storageKey: 'itcost_store_v5',
     estimatedSizeBytes,
     estimatedSizeLabel: formatBytes(estimatedSizeBytes),
     items,

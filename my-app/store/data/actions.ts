@@ -5,6 +5,10 @@ export type DataAction =
   | { type: 'SET_PROJECT_META'; payload: Partial<ProjectMeta> }
   | { type: 'SET_APP_SETTINGS'; payload: Partial<AppSettings> }
   | { type: 'SET_EXCHANGE_RATES'; payload: ExchangeRates }
+  | { type: 'SAVE_CURRENT_PROJECT'; payload?: { name?: string } }
+  | { type: 'OPEN_SAVED_PROJECT'; payload: { projectId: string } }
+  | { type: 'DUPLICATE_SAVED_PROJECT'; payload: { projectId: string } }
+  | { type: 'DELETE_SAVED_PROJECT'; payload: { projectId: string } }
   | { type: 'SET_CAPITAL_DATA'; payload: CapitalEquipment[] }
   | { type: 'SET_OPERATING_DATA'; payload: OperatingEquipment[] }
   | { type: 'SET_ELECTRICITY_TOTAL'; payload: number }

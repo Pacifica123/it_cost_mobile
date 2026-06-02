@@ -10,6 +10,7 @@ import {
 import type { ItemKind } from '../../../store/data/types';
 import { onlyDigits } from '../../../shared/utils/number';
 import { getDefaultCategoryId } from '../helpers';
+import { inferCapitalKindByText, getCategoryNameById } from '../../../store/data/catalogRules';
 import {
   buildCapitalItem,
   buildOperatingItem,
@@ -46,7 +47,7 @@ const getCatalogFormErrors = (mode: CatalogMode, form: CatalogFormState): Catalo
 const hasErrors = (errors: CatalogFormErrors) => Object.keys(errors).length > 0;
 
 export function useCatalogCrud(mode: CatalogMode, categories: ExpenseCategory[], capitalKind?: ItemKind) {
-  const { capitalData, operatingData, setCapitalData, setOperatingData, appSettings } = useData();
+  const { capitalData, operatingData, categories: allCategories, setCapitalData, setOperatingData, appSettings } = useData();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -188,6 +189,120 @@ export function useCatalogCrud(mode: CatalogMode, categories: ExpenseCategory[],
     ]);
   };
 
+
+  const getDefaultCapitalCategoryForKind = (targetKind: ItemKind) => {
+    if (targetKind === 'software') return allCategories.find((category) => category.id === 'capital-software')?.id ?? getDefaultCategoryId(allCategories, 'capital');
+    return allCategories.find((category) => category.id === 'capital-client')?.id ?? getDefaultCategoryId(allCategories, 'capital');
+  };
+
+  const getDefaultOperatingCategory = () =>
+    allCategories.find((category) => category.id === 'operating-subscriptions')?.id ?? getDefaultCategoryId(allCategories, 'operating');
+
+  const moveItem = (item: CapitalEquipment | OperatingEquipment, target: 'hardware' | 'software' | 'operating') => {
+    const nextId = `${Date.now().toString(36)}-move-${Math.random().toString(36).slice(2, 7)}`;
+
+    if (mode === 'capital') {
+      const capitalItem = item as CapitalEquipment;
+      if (target === 'operating') {
+        setCapitalData((prev) => prev.filter((entry) => entry.id !== capitalItem.id));
+        setOperatingData((prev) => [
+          ...prev,
+          {
+            id: nextId,
+            categoryId: getDefaultOperatingCategory(),
+            name: capitalItem.name,
+            price: capitalItem.quantity * capitalItem.price,
+          },
+        ]);
+      } else {
+        setCapitalData((prev) =>
+          prev.map((entry) =>
+            entry.id === capitalItem.id
+              ? { ...entry, kind: target, categoryId: getDefaultCapitalCategoryForKind(target) }
+              : entry
+          )
+        );
+      }
+    } else {
+      const operatingItem = item as OperatingEquipment;
+      setOperatingData((prev) => prev.filter((entry) => entry.id !== operatingItem.id));
+      setCapitalData((prev) => [
+        ...prev,
+        {
+          id: nextId,
+          categoryId: getDefaultCapitalCategoryForKind(target === 'software' ? 'software' : 'hardware'),
+          name: operatingItem.name,
+          quantity: 1,
+          price: operatingItem.price,
+          kind: target === 'software' ? 'software' : 'hardware',
+        },
+      ]);
+    }
+
+    setSelectedId(null);
+  };
+
+  const mergeDuplicates = () => {
+    if (mode === 'capital') {
+      let mergedCount = 0;
+      const relevant = (item: CapitalEquipment) => {
+        if (!capitalKind) return true;
+        const categoryName = getCategoryNameById(allCategories, item.categoryId);
+        const kind = item.kind ?? inferCapitalKindByText(categoryName, item.name);
+        return kind === capitalKind;
+      };
+
+      const kept: CapitalEquipment[] = [];
+      const map = new Map<string, CapitalEquipment>();
+      for (const item of capitalData) {
+        if (!relevant(item)) {
+          kept.push(item);
+          continue;
+        }
+        const key = `${item.name.trim().toLowerCase()}::${item.categoryId}::${item.kind ?? 'unknown'}::${item.price}`;
+        const existing = map.get(key);
+        if (existing) {
+          existing.quantity += item.quantity;
+          mergedCount += 1;
+        } else {
+          map.set(key, { ...item });
+        }
+      }
+
+      if (mergedCount === 0) {
+        Alert.alert('Дубли не найдены', 'Одинаковых позиций для объединения нет.');
+        return;
+      }
+
+      setCapitalData([...kept, ...Array.from(map.values())]);
+      setSelectedId(null);
+      Alert.alert('Дубли объединены', `Объединено повторов: ${mergedCount}.`);
+      return;
+    }
+
+    let mergedCount = 0;
+    const map = new Map<string, OperatingEquipment>();
+    for (const item of operatingData) {
+      const key = `${item.name.trim().toLowerCase()}::${item.categoryId}`;
+      const existing = map.get(key);
+      if (existing) {
+        existing.price += item.price;
+        mergedCount += 1;
+      } else {
+        map.set(key, { ...item });
+      }
+    }
+
+    if (mergedCount === 0) {
+      Alert.alert('Дубли не найдены', 'Одинаковых OPEX-позиций для объединения нет.');
+      return;
+    }
+
+    setOperatingData(Array.from(map.values()));
+    setSelectedId(null);
+    Alert.alert('Дубли объединены', `Объединено повторов: ${mergedCount}.`);
+  };
+
   const setQuantityRaw = (value: string) => updateField('quantityRaw', onlyDigits(value));
   const setPriceRaw = (value: string) => updateField('priceRaw', onlyDigits(value));
 
@@ -206,6 +321,8 @@ export function useCatalogCrud(mode: CatalogMode, categories: ExpenseCategory[],
     saveItem,
     deleteItem,
     duplicateItem,
+    moveItem,
+    mergeDuplicates,
     deleteCategoryItems,
     restoreLastDeleted,
     updateField,

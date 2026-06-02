@@ -25,8 +25,10 @@ type MenuGroup = {
 
 const NON_CALCULATION_ROUTES = new Set([
   '/it-cost/dashboard',
+  '/it-cost/projects',
   '/it-cost/financial_charts',
   '/it-cost/project',
+  '/it-cost/item_catalog',
   '/it-cost/templates',
   '/it-cost/quick_start',
   '/it-cost/project_io',
@@ -34,6 +36,7 @@ const NON_CALCULATION_ROUTES = new Set([
   '/it-cost/history',
   '/it-cost/settings',
   '/it-cost/diagnostics',
+  '/it-cost/app_update',
   '/it-cost/validation',
 ]);
 
@@ -42,6 +45,9 @@ const MENU_GROUPS: MenuGroup[] = [
     id: 'calc',
     title: 'Расчёты',
     routes: [
+      '/it-cost/item_catalog',
+      '/it-cost/it_kit_builder',
+      '/it-cost/budget_autopick',
       '/it-cost/it_infrastructure',
       '/it-cost/capital_expenditures',
       '/it-cost/technical_equipment',
@@ -55,17 +61,22 @@ const MENU_GROUPS: MenuGroup[] = [
     title: 'Аналитика',
     routes: [
       '/it-cost/financial_charts',
+      '/it-cost/local_cloud_compare',
+      '/it-cost/amortization',
       '/it-cost/NPV',
       '/it-cost/ahp',
       '/it-cost/criteria_importance',
       '/it-cost/genetic_optimization',
       '/it-cost/method_comparison',
+      '/it-cost/scenarios',
+      '/it-cost/risks',
     ],
   },
   {
     id: 'service',
     title: 'Сервис',
     routes: [
+      '/it-cost/projects',
       '/it-cost/project',
       '/it-cost/quick_start',
       '/it-cost/validation',
@@ -75,6 +86,8 @@ const MENU_GROUPS: MenuGroup[] = [
       '/it-cost/history',
       '/it-cost/settings',
       '/it-cost/diagnostics',
+      '/it-cost/app_update',
+      '/it-cost/implementation_plan',
     ],
   },
 ];
@@ -124,11 +137,13 @@ export function SectionsMenu({
   hideEntries = false,
   searchable = false,
   mode = 'all',
+  excludeRoutes = [],
 }: {
   variant?: MenuVariant;
   hideEntries?: boolean;
   searchable?: boolean;
   mode?: MenuMode;
+  excludeRoutes?: string[];
 }) {
   const [query, setQuery] = useState('');
   const safeEntryBlocks: RouteItem[] = entryBlocks ?? [];
@@ -138,9 +153,11 @@ export function SectionsMenu({
   const data = useMemo(() => {
     const entryIds = new Set(safeEntryBlocks.map((item) => item.id));
     const normalizedQuery = query.trim().toLowerCase();
+    const excludedRouteSet = new Set(excludeRoutes);
+    const filteredByExcludedRoutes = baseData.filter((item) => !excludedRouteSet.has(item.route));
     const filteredByEntry = variant === 'all' && hideEntries
-      ? baseData.filter((item) => !entryIds.has(item.id) && !item.route.endsWith('/menu'))
-      : baseData;
+      ? filteredByExcludedRoutes.filter((item) => !entryIds.has(item.id) && !item.route.endsWith('/menu'))
+      : filteredByExcludedRoutes;
     const filteredByMenuMode = mode === 'calculation'
       ? filteredByEntry.filter((item) => !NON_CALCULATION_ROUTES.has(item.route))
       : filteredByEntry;
@@ -154,7 +171,7 @@ export function SectionsMenu({
       const groupB = getGroupForRoute(b.route)?.id ?? 'z';
       return groupA.localeCompare(groupB) || orderInGroup(a) - orderInGroup(b) || a.title.localeCompare(b.title, 'ru');
     });
-  }, [baseData, hideEntries, mode, query, safeEntryBlocks, variant]);
+  }, [baseData, excludeRoutes, hideEntries, mode, query, safeEntryBlocks, variant]);
 
   const groupedData = useMemo(() => {
     if (mode !== 'grouped') return [];

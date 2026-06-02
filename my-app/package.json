@@ -3,7 +3,7 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "preflight": "npm run cleanup:stale-tabs && npm run gen:tabs && npm run check:router && npm run check:duplicates",
+    "preflight": "npm run cleanup:stale-tabs && npm run gen:tabs && npm run check:router && npm run check:duplicates && npm run check:functionality",
     "start": "expo start",
     "dev": "expo start",
     "fresh": "expo start -c",
@@ -29,7 +29,8 @@
     "preios": "npm run preflight",
     "preweb": "npm run preflight",
     "prebuild": "npm run preflight",
-    "check:duplicates": "node scripts/check-duplicates.mjs"
+    "check:duplicates": "node scripts/check-duplicates.mjs",
+    "check:functionality": "node scripts/check-functionality.mjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

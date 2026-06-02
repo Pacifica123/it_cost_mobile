@@ -75,7 +75,14 @@ export function CatalogScreen({ mode, title, capitalKind }: { mode: CatalogMode;
         total: getCategoryTotal(mode, visibleItems),
         originalCount: items.length,
       };
-    }).filter((entry) => query.trim() ? entry.items.length > 0 : true),
+    })
+      .filter((entry) => query.trim() ? entry.items.length > 0 : true)
+      .sort((a, b) => {
+        if (sortMode === 'priceDesc') return b.total - a.total;
+        if (sortMode === 'priceAsc') return a.total - b.total;
+        if (sortMode === 'name') return a.category.name.localeCompare(b.category.name, 'ru');
+        return 0;
+      }),
     [allCategories, capitalData, capitalKind, categories, mode, operatingData, query, sortMode]
   );
 
@@ -131,9 +138,12 @@ export function CatalogScreen({ mode, title, capitalKind }: { mode: CatalogMode;
               onPress={() => setSortMode(option.id)}
               pressedScale={0.96}
             >
-              <Text style={styles.sortChipText} maxFontSizeMultiplier={1.1}>{option.label}</Text>
+              <Text style={[styles.sortChipText, option.id === sortMode && styles.sortChipTextActive]} maxFontSizeMultiplier={1.1}>{option.label}</Text>
             </AnimatedPressable>
           ))}
+          <AnimatedPressable style={[styles.sortChip, styles.sortChipActive]} onPress={catalog.mergeDuplicates} pressedScale={0.96}>
+            <Text style={[styles.sortChipText, styles.sortChipTextActive]} maxFontSizeMultiplier={1.1}>Объединить дубли</Text>
+          </AnimatedPressable>
         </View>
       </AnimatedSurface>
 
@@ -177,6 +187,7 @@ export function CatalogScreen({ mode, title, capitalKind }: { mode: CatalogMode;
           onEdit={catalog.openEdit}
           onDelete={catalog.deleteItem}
           onDuplicate={catalog.duplicateItem}
+          onMove={catalog.moveItem}
           onDeleteAll={() => catalog.deleteCategoryItems(category.id)}
         />
       ))}

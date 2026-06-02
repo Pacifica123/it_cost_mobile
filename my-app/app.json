@@ -2,7 +2,7 @@
   "expo": {
     "name": "ITCostMobile",
     "slug": "itcostmobile",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "itcostmobile",
@@ -50,6 +50,11 @@
       "router": {},
       "eas": {
         "projectId": "d8c1a862-5d67-4f4f-b9de-e090e2b35cd2"
+      },
+      "updates": {
+        "githubOwner": "Pacifica123",
+        "githubRepo": "it_cost_mobile",
+        "githubBranch": "main"
       }
     },
     "owner": "aaskry"

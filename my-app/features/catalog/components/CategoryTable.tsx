@@ -20,9 +20,10 @@ export function CategoryTable(props: {
   onEdit: (item: CapitalEquipment | OperatingEquipment) => void;
   onDelete: (itemId: string) => void;
   onDuplicate: (item: CapitalEquipment | OperatingEquipment) => void;
+  onMove: (item: CapitalEquipment | OperatingEquipment, target: 'hardware' | 'software' | 'operating') => void;
   onDeleteAll: () => void;
 }) {
-  const { mode, categoryName, items, total, selectedId, onToggleSelect, onEdit, onDelete, onDuplicate, onDeleteAll } = props;
+  const { mode, categoryName, items, total, selectedId, onToggleSelect, onEdit, onDelete, onDuplicate, onMove, onDeleteAll } = props;
   const showQuantity = mode === 'capital';
 
   return (
@@ -94,6 +95,35 @@ export function CategoryTable(props: {
             <Text style={styles.actionText}>Дублировать</Text>
           </AnimatedPressable>
 
+          {(() => {
+            const selectedItem = items.find((item) => item.id === selectedId);
+            if (!selectedItem) return null;
+            const isCapital = mode === 'capital';
+            const currentKind = isCapital && 'kind' in selectedItem ? selectedItem.kind : undefined;
+            return (
+              <>
+                {(!isCapital || currentKind !== 'hardware') ? (
+                  <AnimatedPressable style={[styles.actionBtn, localStyles.actionMove]} onPress={() => onMove(selectedItem, 'hardware')}>
+                    <Ionicons name="hardware-chip-outline" size={18} color="#111827" />
+                    <Text style={styles.actionText}>В ТО</Text>
+                  </AnimatedPressable>
+                ) : null}
+                {(!isCapital || currentKind !== 'software') ? (
+                  <AnimatedPressable style={[styles.actionBtn, localStyles.actionMove]} onPress={() => onMove(selectedItem, 'software')}>
+                    <Ionicons name="code-slash-outline" size={18} color="#111827" />
+                    <Text style={styles.actionText}>В ПО</Text>
+                  </AnimatedPressable>
+                ) : null}
+                {isCapital ? (
+                  <AnimatedPressable style={[styles.actionBtn, localStyles.actionMove]} onPress={() => onMove(selectedItem, 'operating')}>
+                    <Ionicons name="wallet-outline" size={18} color="#111827" />
+                    <Text style={styles.actionText}>В OPEX</Text>
+                  </AnimatedPressable>
+                ) : null}
+              </>
+            );
+          })()}
+
           <AnimatedPressable
             style={[styles.actionBtn, styles.actionEdit]}
             onPress={() => {
@@ -131,6 +161,10 @@ const localStyles = StyleSheet.create({
   actionDuplicate: {
     backgroundColor: 'rgba(99,102,241,0.12)',
     borderColor: 'rgba(99,102,241,0.2)',
+  },
+  actionMove: {
+    backgroundColor: 'rgba(59,130,246,0.10)',
+    borderColor: 'rgba(59,130,246,0.20)',
   },
   actionBulkDelete: {
     backgroundColor: 'rgba(239,68,68,0.08)',

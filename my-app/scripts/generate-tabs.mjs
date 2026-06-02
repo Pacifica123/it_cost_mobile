@@ -10,10 +10,17 @@ const exts = new Set(['.ts', '.tsx', '.js', '.jsx']);
 const IGNORED_DIRS = new Set(['generated', 'styles', 'data', 'components', 'assets', 'node_modules']);
 const MENU_ORDER = [
   '/it-cost/dashboard',
+  '/it-cost/projects',
   '/it-cost/financial_charts',
   '/it-cost/project',
+  '/it-cost/item_catalog',
   '/it-cost/templates',
   '/it-cost/quick_start',
+  '/it-cost/it_kit_builder',
+  '/it-cost/budget_autopick',
+  '/it-cost/local_cloud_compare',
+  '/it-cost/amortization',
+  '/it-cost/implementation_plan',
   '/it-cost/project_io',
   '/it-cost/backups',
   '/it-cost/history',
@@ -31,6 +38,8 @@ const MENU_ORDER = [
   '/it-cost/NPV',
   '/it-cost/genetic_optimization',
   '/it-cost/method_comparison',
+  '/it-cost/scenarios',
+  '/it-cost/risks',
 ];
 const TAB_ORDER = ['/it-cost/menu', '/it-cost/export'];
 const LEGACY_TAB_ROUTE_FILES = new Set([

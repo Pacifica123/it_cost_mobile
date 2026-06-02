@@ -1,6 +1,6 @@
 import type { DataAction } from './actions';
 import { CURRENT_DATA_SCHEMA_VERSION, createProjectEvent, emptyProjectState, initialState, makeProjectSnapshot } from './defaults';
-import type { DataState, ProjectBackup, ProjectEvent, ProjectEventType, ProjectSnapshot } from './types';
+import type { DataState, ProjectBackup, ProjectEvent, ProjectEventType, ProjectSnapshot, StoredProjectRecord } from './types';
 import { ensureCapitalKinds, ensureUniqueCategories } from './catalogRules';
 
 export { initialState } from './defaults';
@@ -66,6 +66,29 @@ const resetRuntimeStacks = (state: DataState): DataState => ({
   undoStack: [],
   redoStack: [],
 });
+
+
+const buildSavedProjectRecord = (state: DataState, input?: { name?: string }): StoredProjectRecord => {
+  const now = nowIso();
+  const projectId = state.activeProjectId || `${Date.now().toString(36)}-project-${Math.random().toString(36).slice(2, 8)}`;
+  const snapshot = makeProjectSnapshot(state);
+  return {
+    id: projectId,
+    name: input?.name?.trim() || state.projectMeta.name || 'Проект без названия',
+    organization: state.projectMeta.organization || '',
+    createdAt: state.savedProjects.find((item) => item.id === projectId)?.createdAt || state.projectMeta.createdAt || now,
+    updatedAt: now,
+    capitalItemsCount: state.capitalData.length,
+    operatingItemsCount: state.operatingData.length,
+    budget: state.projectMeta.budget,
+    snapshot,
+  };
+};
+
+const upsertSavedProject = (projects: StoredProjectRecord[], record: StoredProjectRecord) => {
+  const withoutCurrent = projects.filter((item) => item.id !== record.id);
+  return [record, ...withoutCurrent].slice(0, 30);
+};
 
 const buildBackup = (state: DataState, input?: { name?: string; description?: string }): ProjectBackup => {
   const createdAt = nowIso();
@@ -150,6 +173,8 @@ export function dataReducer(state: DataState, action: DataAction): DataState {
         schemaVersion: CURRENT_DATA_SCHEMA_VERSION,
         appSettings: state.appSettings,
         exchangeRates: state.exchangeRates,
+        activeProjectId: null,
+        savedProjects: state.savedProjects,
         projectBackups: state.projectBackups,
         undoStack: undoState.undoStack,
         redoStack: [],
@@ -163,6 +188,8 @@ export function dataReducer(state: DataState, action: DataAction): DataState {
           ...initialState,
           appSettings: state.appSettings,
           exchangeRates: state.exchangeRates,
+          activeProjectId: null,
+          savedProjects: state.savedProjects,
           projectBackups: state.projectBackups,
           undoStack: undoState.undoStack,
           redoStack: [],
@@ -179,6 +206,8 @@ export function dataReducer(state: DataState, action: DataAction): DataState {
           ...emptyProjectState,
           appSettings: state.appSettings,
           exchangeRates: state.exchangeRates,
+          activeProjectId: null,
+          savedProjects: state.savedProjects,
           projectBackups: state.projectBackups,
           undoStack: undoState.undoStack,
           redoStack: [],
@@ -216,6 +245,83 @@ export function dataReducer(state: DataState, action: DataAction): DataState {
         ...withMetaUpdate(state),
         exchangeRates: action.payload,
       };
+
+    case 'SAVE_CURRENT_PROJECT': {
+      const record = buildSavedProjectRecord(state, action.payload);
+      return withEvent(
+        {
+          ...state,
+          activeProjectId: record.id,
+          savedProjects: upsertSavedProject(state.savedProjects ?? [], record),
+        },
+        'Проект сохранён в список',
+        record.name,
+        'project'
+      );
+    }
+    case 'OPEN_SAVED_PROJECT': {
+      const record = (state.savedProjects ?? []).find((item) => item.id === action.payload.projectId);
+      if (!record) return state;
+      const opened = applySnapshot(withUndoPoint(state), record.snapshot);
+      return withEvent(
+        {
+          ...opened,
+          activeProjectId: record.id,
+          savedProjects: state.savedProjects,
+          projectBackups: state.projectBackups,
+          exchangeRates: state.exchangeRates,
+          undoStack: opened.undoStack,
+          redoStack: [],
+        },
+        'Открыт сохранённый проект',
+        record.name,
+        'project'
+      );
+    }
+    case 'DUPLICATE_SAVED_PROJECT': {
+      const source = (state.savedProjects ?? []).find((item) => item.id === action.payload.projectId);
+      if (!source) return state;
+      const now = nowIso();
+      const copy: StoredProjectRecord = {
+        ...source,
+        id: `${Date.now().toString(36)}-project-copy-${Math.random().toString(36).slice(2, 8)}`,
+        name: `${source.name} — копия`,
+        createdAt: now,
+        updatedAt: now,
+        snapshot: {
+          ...source.snapshot,
+          projectMeta: {
+            ...source.snapshot.projectMeta,
+            name: `${source.snapshot.projectMeta.name} — копия`,
+            createdAt: now,
+            updatedAt: now,
+          },
+        },
+      };
+      return withEvent(
+        {
+          ...state,
+          savedProjects: [copy, ...(state.savedProjects ?? [])].slice(0, 30),
+        },
+        'Создана копия проекта',
+        copy.name,
+        'project'
+      );
+    }
+    case 'DELETE_SAVED_PROJECT': {
+      const record = (state.savedProjects ?? []).find((item) => item.id === action.payload.projectId);
+      if (!record) return state;
+      return withEvent(
+        {
+          ...state,
+          activeProjectId: state.activeProjectId === record.id ? null : state.activeProjectId,
+          savedProjects: (state.savedProjects ?? []).filter((item) => item.id !== record.id),
+        },
+        'Удалён сохранённый проект',
+        record.name,
+        'project'
+      );
+    }
     case 'SET_PROJECT_META': {
       const nextState = {
         ...withUndoPoint(state),

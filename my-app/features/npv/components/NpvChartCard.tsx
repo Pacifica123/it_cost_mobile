@@ -1,12 +1,13 @@
-import { Dimensions, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, useWindowDimensions } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 
 import { styles } from '../styles';
 import { AnimatedSurface } from '../../../shared/ui';
 
-const screenWidth = Dimensions.get('window').width;
-
 export function NpvChartCard({ values }: { values: number[] }) {
+  const { width } = useWindowDimensions();
+  const chartWidth = Math.max(width - 64 + 24, values.length * 58);
+
   if (!values.length) {
     return null;
   }
@@ -20,7 +21,7 @@ export function NpvChartCard({ values }: { values: number[] }) {
             labels: values.map((_, index) => `${index}`),
             datasets: [{ data: values }],
           }}
-          width={Math.max(screenWidth - 42, values.length * 58)}
+          width={chartWidth}
           height={220}
           yAxisLabel=""
           yAxisSuffix=""
