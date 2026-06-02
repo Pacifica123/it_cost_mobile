@@ -103,6 +103,18 @@ const buildBackup = (state: DataState, input?: { name?: string; description?: st
   };
 };
 
+const withAutoBackup = (state: DataState, description: string): DataState => {
+  if (!state.appSettings.autoBackupBeforeDangerousActions) return state;
+  const backup = buildBackup(state, {
+    name: `Автобэкап — ${state.projectMeta.name || 'Проект'}`,
+    description,
+  });
+  return {
+    ...state,
+    projectBackups: [backup, ...(state.projectBackups ?? [])].slice(0, MAX_BACKUPS),
+  };
+};
+
 export function dataReducer(state: DataState, action: DataAction): DataState {
   switch (action.type) {
     case 'HYDRATE_STATE':
@@ -167,7 +179,7 @@ export function dataReducer(state: DataState, action: DataAction): DataState {
       );
     }
     case 'APPLY_PROJECT_TEMPLATE': {
-      const undoState = withUndoPoint(state);
+      const undoState = withUndoPoint(withAutoBackup(state, 'Создано автоматически перед применением шаблона.'));
       const nextTemplate: DataState = {
         ...action.payload,
         schemaVersion: CURRENT_DATA_SCHEMA_VERSION,
@@ -182,7 +194,7 @@ export function dataReducer(state: DataState, action: DataAction): DataState {
       return withEvent(nextTemplate, 'Применён шаблон проекта', action.payload.projectMeta.name, 'template');
     }
     case 'RESET_DEMO_DATA': {
-      const undoState = withUndoPoint(state);
+      const undoState = withUndoPoint(withAutoBackup(state, 'Создано автоматически перед загрузкой демо-данных.'));
       return withEvent(
         {
           ...initialState,
@@ -200,7 +212,7 @@ export function dataReducer(state: DataState, action: DataAction): DataState {
       );
     }
     case 'RESET_EMPTY_PROJECT': {
-      const undoState = withUndoPoint(state);
+      const undoState = withUndoPoint(withAutoBackup(state, 'Создано автоматически перед очисткой проекта.'));
       return withEvent(
         {
           ...emptyProjectState,

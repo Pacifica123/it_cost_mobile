@@ -3,8 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { hydrateDataState, serializeDataState } from './serialization';
 import type { DataState } from './types';
 
-export const DATA_STORAGE_KEY = 'itcost_store_v5';
-const LEGACY_STORAGE_KEYS = ['itcost_store_v4', 'itcost_store_v3', 'itcost_store_v2'];
+export const DATA_STORAGE_KEY = 'itcost_store_v6';
+const LEGACY_STORAGE_KEYS = ['itcost_store_v5', 'itcost_store_v4', 'itcost_store_v3', 'itcost_store_v2'];
 
 export { hydrateDataState, serializeDataState };
 

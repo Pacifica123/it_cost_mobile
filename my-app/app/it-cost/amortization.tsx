@@ -12,7 +12,7 @@ export const title = 'Амортизация и срок службы';
 
 export default function AmortizationScreen() {
   const data = useData();
-  const rows = useMemo(() => buildAmortizationRows(data.capitalData, data.categories), [data.capitalData, data.categories]);
+  const rows = useMemo(() => buildAmortizationRows(data.capitalData, data.categories, data.appSettings), [data.appSettings, data.capitalData, data.categories]);
   const summary = useMemo(() => getAmortizationSummary(rows), [rows]);
 
   return (
@@ -34,7 +34,7 @@ export default function AmortizationScreen() {
           <Metric label="ПО/мес" value={formatCurrencyRU(summary.softwareMonthly)} />
         </View>
         <Text style={styles.cardText}>
-          Сроки применяются автоматически: ПО — 12 месяцев, клиентское оборудование — 36 месяцев, серверы и сеть — 48 месяцев.
+          Сроки применяются из настроек: ПО, клиентское оборудование, серверы и сеть можно настроить отдельно.
         </Text>
       </AppCard>
 

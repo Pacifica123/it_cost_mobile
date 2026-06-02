@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
 import { colors, radius, shadows, spacing } from '../theme';
+import { getUiDensityPadding } from '../utils/appPreferences';
 import { AnimatedSurface } from './AnimatedSurface';
 
 export function AppCard({
@@ -13,7 +14,7 @@ export function AppCard({
   style?: StyleProp<ViewStyle>;
   delay?: number;
 }) {
-  return <AnimatedSurface delay={delay} style={[styles.card, style]}>{children}</AnimatedSurface>;
+  return <AnimatedSurface delay={delay} style={[styles.card, { padding: getUiDensityPadding(spacing.lg) }, style]}>{children}</AnimatedSurface>;
 }
 
 const styles = StyleSheet.create({

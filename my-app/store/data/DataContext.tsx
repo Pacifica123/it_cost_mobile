@@ -2,11 +2,12 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import type { Dispatch, ReactNode, SetStateAction } from 'react';
 
 import { dataReducer } from './reducer';
-import { initialState } from './defaults';
+import { initialState, makeProjectSnapshot } from './defaults';
 import { loadStoredDataState, persistDataState } from './storage';
 import { fetchExchangeRatesFromCbr, markExchangeRatesError, shouldRefreshExchangeRates, type ExchangeRatesRefreshResult } from './exchangeRates';
 import { parseProjectDataState, serializeDataState, type ProjectImportResult } from './serialization';
 import { configureMoneyFormat } from '../../shared/utils/currency';
+import { configureAppPreferences } from '../../shared/utils/appPreferences';
 import { createCategoryId } from './catalogRules';
 import type {
   AppSettings,
@@ -55,6 +56,7 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 export const DataProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(dataReducer, initialState);
   configureMoneyFormat(state.appSettings, state.exchangeRates);
+  configureAppPreferences(state.appSettings);
   const [isHydrated, setIsHydrated] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [isRefreshingRates, setIsRefreshingRates] = useState(false);
@@ -201,17 +203,34 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (!isHydrated || isRefreshingRates) return;
+    if (!state.appSettings.refreshRatesOnStart) return;
     if (!shouldRefreshExchangeRates(state.exchangeRates)) return;
     void refreshExchangeRates();
-  }, [isHydrated, isRefreshingRates, refreshExchangeRates, state.exchangeRates]);
+  }, [isHydrated, isRefreshingRates, refreshExchangeRates, state.appSettings.refreshRatesOnStart, state.exchangeRates]);
 
   const importProjectJson = useCallback((raw: string) => {
     const result = parseProjectDataState(raw);
     if (result.ok) {
-      dispatch({ type: 'HYDRATE_STATE', payload: result.state });
+      const backup = state.appSettings.autoBackupBeforeDangerousActions
+        ? {
+            id: `${Date.now().toString(36)}-backup-import-${Math.random().toString(36).slice(2, 8)}`,
+            name: `Автобэкап — ${state.projectMeta.name || 'Проект'}`,
+            createdAt: new Date().toISOString(),
+            description: 'Создано автоматически перед импортом JSON-проекта.',
+            capitalItemsCount: state.capitalData.length,
+            operatingItemsCount: state.operatingData.length,
+            snapshot: makeProjectSnapshot(state),
+          }
+        : null;
+      dispatch({
+        type: 'HYDRATE_STATE',
+        payload: backup
+          ? { ...result.state, projectBackups: [backup, ...(result.state.projectBackups ?? [])].slice(0, 12) }
+          : result.state,
+      });
     }
     return result;
-  }, []);
+  }, [state]);
 
   const value = useMemo<DataContextType>(() => ({
     ...state,

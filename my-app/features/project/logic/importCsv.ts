@@ -1,6 +1,10 @@
-import type { CapitalEquipment, ExpenseCategory, OperatingEquipment } from '../../../store/data/types';
+import type { CapitalEquipment, CsvDefaultSection, ExpenseCategory, OperatingEquipment } from '../../../store/data/types';
 
 export type CsvImportRow = CapitalEquipment | OperatingEquipment;
+export type CsvImportOptions = {
+  defaultSection?: CsvDefaultSection;
+};
+
 export type CsvImportResult = {
   capitalData: CapitalEquipment[];
   operatingData: OperatingEquipment[];
@@ -65,10 +69,11 @@ const resolveCategoryId = (categories: ExpenseCategory[], scope: 'capital' | 'op
   return byName?.id ?? fallback;
 };
 
-const detectScope = (raw: string, categoryRaw: string): 'capital' | 'operating' => {
+const detectScope = (raw: string, categoryRaw: string, defaultSection: CsvDefaultSection = 'CAPEX'): 'capital' | 'operating' => {
   const value = `${raw} ${categoryRaw}`.toLowerCase();
   if (/opex|operating|операц|эксплуатац|подпис|аренд|администр/i.test(value)) return 'operating';
-  return 'capital';
+  if (/capex|capital|капит|то|техничес|hardware|оборуд|по|software|лиценз/i.test(value)) return 'capital';
+  return defaultSection === 'OPEX' ? 'operating' : 'capital';
 };
 
 const detectKind = (rawKind: string, categoryRaw: string, name: string): 'hardware' | 'software' => {
@@ -77,7 +82,8 @@ const detectKind = (rawKind: string, categoryRaw: string, name: string): 'hardwa
   return 'hardware';
 };
 
-export function parseProjectCsv(raw: string, categories: ExpenseCategory[]): CsvImportResult {
+export function parseProjectCsv(raw: string, categories: ExpenseCategory[], options: CsvImportOptions = {}): CsvImportResult {
+  const defaultSection = options.defaultSection ?? 'CAPEX';
   const warnings: string[] = [];
   const lines = raw
     .split(/\r?\n/g)
@@ -126,7 +132,7 @@ export function parseProjectCsv(raw: string, categories: ExpenseCategory[]): Csv
       warnings.push(`Строка ${rowIndex + 2}: цена у «${name}» равна 0, позиция импортирована для последующего уточнения.`);
     }
 
-    const scope = detectScope(scopeRaw, categoryRaw);
+    const scope = detectScope(scopeRaw, categoryRaw, defaultSection);
     if (scope === 'operating') {
       operatingData.push({
         id: createId('csv-opex', rowIndex),
@@ -139,11 +145,11 @@ export function parseProjectCsv(raw: string, categories: ExpenseCategory[]): Csv
 
     capitalData.push({
       id: createId('csv-capex', rowIndex),
-      categoryId: resolveCategoryId(categories, 'capital', categoryRaw, detectKind(kindRaw, categoryRaw, name) === 'software' ? 'capital-software' : 'capital-client'),
+      categoryId: resolveCategoryId(categories, 'capital', categoryRaw, defaultSection === 'SOFTWARE' || detectKind(kindRaw, categoryRaw, name) === 'software' ? 'capital-software' : 'capital-client'),
       name,
       quantity,
       price,
-      kind: detectKind(kindRaw, categoryRaw, name),
+      kind: defaultSection === 'SOFTWARE' ? 'software' : defaultSection === 'HARDWARE' ? 'hardware' : detectKind(kindRaw, categoryRaw, name),
     });
   });
 

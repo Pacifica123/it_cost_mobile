@@ -44,8 +44,8 @@ export default function SummaryScreen() {
     [data.capitalData, data.categories, data.electricityTotal, data.operatingData]
   );
   const readiness = useMemo(() => buildProjectReadiness(data), [data]);
-  const markdown = useMemo(() => buildReportMarkdown(report, readiness, data.projectMeta), [data.projectMeta, readiness, report]);
-  const html = useMemo(() => buildReportHtml(report, readiness, data.projectMeta), [data.projectMeta, readiness, report]);
+  const markdown = useMemo(() => buildReportMarkdown(report, readiness, data.projectMeta, data.appSettings, data.projectEvents), [data.appSettings, data.projectEvents, data.projectMeta, readiness, report]);
+  const html = useMemo(() => buildReportHtml(report, readiness, data.projectMeta, data.appSettings, data.projectEvents), [data.appSettings, data.projectEvents, data.projectMeta, readiness, report]);
 
   const COL_NAME = isPhone ? 260 : 360;
   const COL_QTY = 90;

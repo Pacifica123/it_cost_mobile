@@ -168,7 +168,7 @@ export default function FinancialChartsScreen() {
           </View>
         </View>
         <Text style={local.note} maxFontSizeMultiplier={1.12}>
-          Дисконтированная линия использует условную ставку 12% годовых и нужна для ориентировочного сравнения горизонта владения.
+          Дисконтированная линия использует ставку из настроек приложения и нужна для ориентировочного сравнения горизонта владения.
         </Text>
       </AppCard>
     </AnimatedScreenScroll>

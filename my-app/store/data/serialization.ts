@@ -64,6 +64,12 @@ const normalizeProjectMeta = (input: unknown): ProjectMeta => {
   };
 };
 
+const clampNumber = (value: unknown, fallback: number, min: number, max: number) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(min, parsed));
+};
+
 const normalizeAppSettings = (input: unknown): AppSettings => {
   if (!isObject(input)) return defaultAppSettings;
 
@@ -76,12 +82,44 @@ const normalizeAppSettings = (input: unknown): AppSettings => {
   const roundingMode = input.roundingMode === 'none' || input.roundingMode === 'rubles' || input.roundingMode === 'thousands'
     ? input.roundingMode
     : defaultAppSettings.roundingMode;
+  const uiDensity = input.uiDensity === 'compact' || input.uiDensity === 'large' || input.uiDensity === 'comfortable'
+    ? input.uiDensity
+    : defaultAppSettings.uiDensity;
+  const startScreen = input.startScreen === 'home' || input.startScreen === 'itMenu' || input.startScreen === 'dashboard' || input.startScreen === 'quickStart'
+    ? input.startScreen
+    : defaultAppSettings.startScreen;
+  const reportMode = input.reportMode === 'short' || input.reportMode === 'full' || input.reportMode === 'finance' || input.reportMode === 'technical'
+    ? input.reportMode
+    : defaultAppSettings.reportMode;
+  const csvDefaultSection = input.csvDefaultSection === 'CAPEX' || input.csvDefaultSection === 'OPEX' || input.csvDefaultSection === 'HARDWARE' || input.csvDefaultSection === 'SOFTWARE'
+    ? input.csvDefaultSection
+    : defaultAppSettings.csvDefaultSection;
 
   return {
     themeMode,
     currency,
     roundingMode,
     confirmDelete: typeof input.confirmDelete === 'boolean' ? input.confirmDelete : defaultAppSettings.confirmDelete,
+    uiDensity,
+    startScreen,
+    calculationHorizonYears: Math.round(clampNumber(input.calculationHorizonYears, defaultAppSettings.calculationHorizonYears, 1, 10)),
+    discountRatePercent: clampNumber(input.discountRatePercent, defaultAppSettings.discountRatePercent, 0, 50),
+    hardwareLifetimeMonths: Math.round(clampNumber(input.hardwareLifetimeMonths, defaultAppSettings.hardwareLifetimeMonths, 6, 120)),
+    serverLifetimeMonths: Math.round(clampNumber(input.serverLifetimeMonths, defaultAppSettings.serverLifetimeMonths, 6, 120)),
+    softwareLifetimeMonths: Math.round(clampNumber(input.softwareLifetimeMonths, defaultAppSettings.softwareLifetimeMonths, 1, 60)),
+    reportMode,
+    reportIncludeCharts: typeof input.reportIncludeCharts === 'boolean' ? input.reportIncludeCharts : defaultAppSettings.reportIncludeCharts,
+    reportIncludeRisks: typeof input.reportIncludeRisks === 'boolean' ? input.reportIncludeRisks : defaultAppSettings.reportIncludeRisks,
+    reportIncludeHistory: typeof input.reportIncludeHistory === 'boolean' ? input.reportIncludeHistory : defaultAppSettings.reportIncludeHistory,
+    reportIncludeEmptySections: typeof input.reportIncludeEmptySections === 'boolean' ? input.reportIncludeEmptySections : defaultAppSettings.reportIncludeEmptySections,
+    autoBackupBeforeDangerousActions: typeof input.autoBackupBeforeDangerousActions === 'boolean' ? input.autoBackupBeforeDangerousActions : defaultAppSettings.autoBackupBeforeDangerousActions,
+    checkUpdatesOnStart: typeof input.checkUpdatesOnStart === 'boolean' ? input.checkUpdatesOnStart : defaultAppSettings.checkUpdatesOnStart,
+    refreshRatesOnStart: typeof input.refreshRatesOnStart === 'boolean' ? input.refreshRatesOnStart : defaultAppSettings.refreshRatesOnStart,
+    csvRequirePreview: typeof input.csvRequirePreview === 'boolean' ? input.csvRequirePreview : defaultAppSettings.csvRequirePreview,
+    csvAutoMergeDuplicates: typeof input.csvAutoMergeDuplicates === 'boolean' ? input.csvAutoMergeDuplicates : defaultAppSettings.csvAutoMergeDuplicates,
+    csvDefaultSection,
+    minimumReadinessForReport: Math.round(clampNumber(input.minimumReadinessForReport, defaultAppSettings.minimumReadinessForReport, 0, 100)),
+    minimumDataQualityForReport: Math.round(clampNumber(input.minimumDataQualityForReport, defaultAppSettings.minimumDataQualityForReport, 0, 100)),
   };
 };
 

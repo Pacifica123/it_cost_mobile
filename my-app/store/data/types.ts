@@ -38,6 +38,10 @@ export type ProjectMeta = {
 export type AppThemeMode = 'system' | 'light' | 'dark';
 export type AppCurrency = 'RUB' | 'USD' | 'EUR';
 export type AppRoundingMode = 'none' | 'rubles' | 'thousands';
+export type AppUiDensity = 'compact' | 'comfortable' | 'large';
+export type AppStartScreen = 'home' | 'itMenu' | 'dashboard' | 'quickStart';
+export type AppReportMode = 'short' | 'full' | 'finance' | 'technical';
+export type CsvDefaultSection = 'CAPEX' | 'OPEX' | 'HARDWARE' | 'SOFTWARE';
 
 export type ExchangeRates = {
   baseCurrency: 'RUB';
@@ -55,6 +59,26 @@ export type AppSettings = {
   currency: AppCurrency;
   roundingMode: AppRoundingMode;
   confirmDelete: boolean;
+  uiDensity: AppUiDensity;
+  startScreen: AppStartScreen;
+  calculationHorizonYears: number;
+  discountRatePercent: number;
+  hardwareLifetimeMonths: number;
+  serverLifetimeMonths: number;
+  softwareLifetimeMonths: number;
+  reportMode: AppReportMode;
+  reportIncludeCharts: boolean;
+  reportIncludeRisks: boolean;
+  reportIncludeHistory: boolean;
+  reportIncludeEmptySections: boolean;
+  autoBackupBeforeDangerousActions: boolean;
+  checkUpdatesOnStart: boolean;
+  refreshRatesOnStart: boolean;
+  csvRequirePreview: boolean;
+  csvAutoMergeDuplicates: boolean;
+  csvDefaultSection: CsvDefaultSection;
+  minimumReadinessForReport: number;
+  minimumDataQualityForReport: number;
 };
 
 export type ProjectEventType =

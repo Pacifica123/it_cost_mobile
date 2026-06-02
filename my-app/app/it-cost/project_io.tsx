@@ -6,6 +6,7 @@ import { projectStyles as styles } from '../../features/project/styles';
 import { validateProjectData } from '../../features/validation/logic/validateProjectData';
 import { parseProjectCsv } from '../../features/project/logic/importCsv';
 import { useData } from '../../store/data/DataContext';
+import type { CapitalEquipment, OperatingEquipment } from '../../store/data/types';
 import { AnimatedPressable, AnimatedScreenScroll, AppCard } from '../../shared/ui';
 import { colors, radius, spacing } from '../../shared/theme';
 
@@ -25,6 +26,28 @@ function ActionButton({ label, onPress, secondary = false }: { label: string; on
   );
 }
 
+const mergeCapitalDuplicates = (items: CapitalEquipment[]) => {
+  const map = new Map<string, CapitalEquipment>();
+  items.forEach((item) => {
+    const key = `${item.name.trim().toLowerCase()}::${item.categoryId}::${item.kind ?? 'unknown'}::${item.price}`;
+    const existing = map.get(key);
+    if (existing) existing.quantity += item.quantity;
+    else map.set(key, { ...item });
+  });
+  return Array.from(map.values());
+};
+
+const mergeOperatingDuplicates = (items: OperatingEquipment[]) => {
+  const map = new Map<string, OperatingEquipment>();
+  items.forEach((item) => {
+    const key = `${item.name.trim().toLowerCase()}::${item.categoryId}`;
+    const existing = map.get(key);
+    if (existing) existing.price += item.price;
+    else map.set(key, { ...item });
+  });
+  return Array.from(map.values());
+};
+
 export default function ProjectIoScreen() {
   const data = useData();
   const [importText, setImportText] = useState('');
@@ -33,7 +56,7 @@ export default function ProjectIoScreen() {
   const [csvMessage, setCsvMessage] = useState('');
   const exportJson = useMemo(() => data.getProjectExportJson(), [data]);
   const validation = useMemo(() => validateProjectData(data), [data]);
-  const csvPreview = useMemo(() => csvText.trim() ? parseProjectCsv(csvText, data.categories) : null, [csvText, data.categories]);
+  const csvPreview = useMemo(() => csvText.trim() ? parseProjectCsv(csvText, data.categories, { defaultSection: data.appSettings.csvDefaultSection }) : null, [csvText, data.appSettings.csvDefaultSection, data.categories]);
 
   const shareExport = async () => {
     try {
@@ -48,7 +71,7 @@ export default function ProjectIoScreen() {
 
 
   const importCsv = () => {
-    const result = csvPreview ?? parseProjectCsv(csvText, data.categories);
+    const result = csvPreview ?? parseProjectCsv(csvText, data.categories, { defaultSection: data.appSettings.csvDefaultSection });
     setCsvMessage([
       `Прочитано строк: ${result.rowsRead}.`,
       `CAPEX: ${result.capitalData.length}. OPEX: ${result.operatingData.length}.`,
@@ -65,8 +88,17 @@ export default function ProjectIoScreen() {
       {
         text: 'Импортировать',
         onPress: () => {
-          data.setCapitalData((current) => [...result.capitalData, ...current]);
-          data.setOperatingData((current) => [...result.operatingData, ...current]);
+          if (data.appSettings.autoBackupBeforeDangerousActions) {
+            data.createProjectBackup({ name: 'Автобэкап перед CSV', description: 'Создано автоматически перед импортом CSV.' });
+          }
+          data.setCapitalData((current) => {
+            const next = [...result.capitalData, ...current];
+            return data.appSettings.csvAutoMergeDuplicates ? mergeCapitalDuplicates(next) : next;
+          });
+          data.setOperatingData((current) => {
+            const next = [...result.operatingData, ...current];
+            return data.appSettings.csvAutoMergeDuplicates ? mergeOperatingDuplicates(next) : next;
+          });
           setCsvText('');
           setCsvMessage('');
           Alert.alert('CSV импортирован', `Добавлено CAPEX: ${result.capitalData.length}, OPEX: ${result.operatingData.length}.`);
@@ -122,7 +154,7 @@ export default function ProjectIoScreen() {
       <AppCard delay={120} style={local.cardGap}>
         <Text style={styles.cardTitle} maxFontSizeMultiplier={1.12}>Импорт CSV</Text>
         <Text style={styles.cardText} maxFontSizeMultiplier={1.12}>
-          Вставьте таблицу с колонками name/название, price/цена, quantity/количество, type/раздел, category/категория. Разделы CAPEX/OPEX определяются автоматически по колонке type.
+          Вставьте таблицу с колонками name/название, price/цена, quantity/количество, type/раздел, category/категория. Разделы CAPEX/OPEX определяются по колонке type; если раздел не указан, применяется значение из настроек CSV.
         </Text>
         <TextInput
           value={csvText}

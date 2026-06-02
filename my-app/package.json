@@ -1,7 +1,7 @@
 {
   "name": "it-cost-mobile",
   "main": "expo-router/entry",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "scripts": {
     "preflight": "npm run cleanup:stale-tabs && npm run gen:tabs && npm run check:router && npm run check:duplicates && npm run check:functionality",
     "start": "expo start",
