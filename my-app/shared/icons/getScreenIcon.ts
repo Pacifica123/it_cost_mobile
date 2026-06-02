@@ -7,6 +7,10 @@ export function getScreenIcon(title: string): IoniconName {
   const t = String(title ?? '').toLowerCase();
 
   if (t.includes('меню')) return 'grid-outline';
+  if (t.includes('сводк')) return 'speedometer-outline';
+  if (t.includes('график')) return 'bar-chart-outline';
+  if (t.includes('резерв') || t.includes('копи')) return 'archive-outline';
+  if (t.includes('диагност')) return 'bug-outline';
   if (t.includes('быстр')) return 'rocket-outline';
   if (t.includes('шаблон')) return 'copy-outline';
   if (t.includes('истори') || t.includes('журнал')) return 'time-outline';

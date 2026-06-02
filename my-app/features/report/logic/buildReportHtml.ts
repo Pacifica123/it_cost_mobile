@@ -63,11 +63,16 @@ export function buildReportHtml(report: BuiltReport, readiness?: ProjectReadines
     th, td { padding: 10px 12px; border: 1px solid #e5e7eb; text-align: left; }
     th { background: #f3f4f6; }
     .category td { background: #eef2ff; font-weight: 800; }
-    @media print { body { background: #fff; } main { padding: 0; } .hero, section { break-inside: avoid; border-color: #d1d5db; } }
+    .print-actions { position: sticky; top: 0; z-index: 2; background: rgba(246,247,251,0.92); backdrop-filter: blur(10px); padding: 12px 0; margin-bottom: 10px; }
+    .print-actions button { border: 0; border-radius: 999px; background: #2563eb; color: #fff; font-weight: 800; padding: 10px 16px; cursor: pointer; }
+    .muted { color: #6b7280; }
+    .risk { border-left: 4px solid #f59e0b; }
+    @media print { body { background: #fff; } main { padding: 0; } .hero, section { break-inside: avoid; border-color: #d1d5db; } .print-actions { display: none; } }
   </style>
 </head>
 <body>
   <main>
+    <div class="print-actions"><button onclick="window.print()">Печать / сохранить PDF</button> <span class="muted">Откройте меню печати и выберите сохранение в PDF.</span></div>
     <div class="hero">
       <h1>${escapeHtml(title)}</h1>
       <p>${escapeHtml(meta?.organization || 'Организация не указана')}</p>
@@ -103,8 +108,8 @@ export function buildReportHtml(report: BuiltReport, readiness?: ProjectReadines
       </ul>
     </section>
 
-    <section>
-      <h2>Проверка данных</h2>
+    <section class="risk">
+      <h2>Проверка данных и риски</h2>
       ${readinessBlock}
       <ul>${report.insights.map((insight) => renderInsight(insight.title, insight.description)).join('')}</ul>
     </section>
@@ -116,7 +121,7 @@ export function buildReportHtml(report: BuiltReport, readiness?: ProjectReadines
     </section>
 
     <section>
-      <h2>Вывод</h2>
+      <h2>Итоговая рекомендация</h2>
       <p>${escapeHtml(report.summaryText)}</p>
     </section>
   </main>

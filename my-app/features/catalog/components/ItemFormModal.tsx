@@ -6,6 +6,7 @@ import { exploreStyles as styles } from '../styles';
 import { AnimatedPressable, AnimatedSurface } from '../../../shared/ui';
 import { formatNumber } from '../../../shared/utils/number';
 import type { CategoryOption } from '../types';
+import type { CatalogFormErrors } from '../hooks/useCatalogCrud';
 
 export function ItemFormModal(props: {
   visible: boolean;
@@ -16,6 +17,7 @@ export function ItemFormModal(props: {
   quantityRaw: string;
   priceRaw: string;
   showQuantity: boolean;
+  errors?: CatalogFormErrors;
   onChangeCategory: (value: string) => void;
   onChangeName: (value: string) => void;
   onChangeQuantity: (value: string) => void;
@@ -32,6 +34,7 @@ export function ItemFormModal(props: {
     quantityRaw,
     priceRaw,
     showQuantity,
+    errors = {},
     onChangeCategory,
     onChangeName,
     onChangeQuantity,
@@ -63,22 +66,24 @@ export function ItemFormModal(props: {
             </View>
 
             <Text style={styles.label}>Категория</Text>
-            <View style={styles.pickerWrap}>
+            <View style={[styles.pickerWrap, errors.categoryId && styles.inputError]}>
               <Picker selectedValue={categoryId} onValueChange={onChangeCategory} style={styles.picker}>
                 {categories.map((category) => (
                   <Picker.Item key={category.id} label={category.name} value={category.id} />
                 ))}
               </Picker>
             </View>
+            {errors.categoryId ? <Text style={styles.errorText}>{errors.categoryId}</Text> : null}
 
             <Text style={styles.label}>Наименование</Text>
             <TextInput
               placeholder="Например: сервер"
               value={name}
               onChangeText={onChangeName}
-              style={styles.input}
+              style={[styles.input, errors.name && styles.inputError]}
               placeholderTextColor="rgba(17,24,39,0.45)"
             />
+            {errors.name ? <Text style={styles.errorText}>{errors.name}</Text> : null}
 
             {showQuantity ? (
               <View style={localStyles.row2}>
@@ -89,9 +94,10 @@ export function ItemFormModal(props: {
                     value={quantityRaw ? formatNumber(quantityRaw) : ''}
                     onChangeText={onChangeQuantity}
                     keyboardType="numeric"
-                    style={styles.input}
+                    style={[styles.input, errors.quantityRaw && styles.inputError]}
                     placeholderTextColor="rgba(17,24,39,0.45)"
                   />
+                  {errors.quantityRaw ? <Text style={styles.errorText}>{errors.quantityRaw}</Text> : null}
                 </View>
 
                 <View style={localStyles.col}>
@@ -101,9 +107,10 @@ export function ItemFormModal(props: {
                     value={priceRaw ? formatNumber(priceRaw) : ''}
                     onChangeText={onChangePrice}
                     keyboardType="numeric"
-                    style={styles.input}
+                    style={[styles.input, errors.priceRaw && styles.inputError]}
                     placeholderTextColor="rgba(17,24,39,0.45)"
                   />
+                  {errors.priceRaw ? <Text style={styles.errorText}>{errors.priceRaw}</Text> : null}
                 </View>
               </View>
             ) : (
@@ -114,9 +121,10 @@ export function ItemFormModal(props: {
                   value={priceRaw ? formatNumber(priceRaw) : ''}
                   onChangeText={onChangePrice}
                   keyboardType="numeric"
-                  style={styles.input}
+                  style={[styles.input, errors.priceRaw && styles.inputError]}
                   placeholderTextColor="rgba(17,24,39,0.45)"
                 />
+                {errors.priceRaw ? <Text style={styles.errorText}>{errors.priceRaw}</Text> : null}
               </>
             )}
 

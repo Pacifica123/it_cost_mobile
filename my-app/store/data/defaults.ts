@@ -1,7 +1,9 @@
-import type { DataState, ExpenseCategory, ProjectEvent, ProjectMeta } from './types';
+import type { AppSettings, DataState, ExchangeRates, ExpenseCategory, ProjectEvent, ProjectMeta, ProjectSnapshot } from './types';
 import { ensureCapitalKinds } from './catalogRules';
 
 const now = '2026-01-01T00:00:00.000Z';
+
+export const CURRENT_DATA_SCHEMA_VERSION = 4;
 
 export const createDefaultProjectMeta = (patch: Partial<ProjectMeta> = {}): ProjectMeta => ({
   name: 'Расчёт ИТ-инфраструктуры',
@@ -27,6 +29,24 @@ export const createProjectEvent = (
   createdAt,
 });
 
+
+export const defaultAppSettings: AppSettings = {
+  themeMode: 'system',
+  currency: 'RUB',
+  roundingMode: 'rubles',
+  confirmDelete: true,
+};
+
+export const defaultExchangeRates: ExchangeRates = {
+  baseCurrency: 'RUB',
+  rates: {
+    USD: null,
+    EUR: null,
+  },
+  updatedAt: null,
+  source: 'ЦБ РФ',
+};
+
 export const initialCategories: ExpenseCategory[] = [
   { id: 'capital-server', name: 'Серверное оборудование', scope: 'capital' },
   { id: 'capital-network', name: 'Сетевое оборудование', scope: 'capital' },
@@ -41,7 +61,17 @@ export const initialCategories: ExpenseCategory[] = [
   { id: 'operating-admin', name: 'Администрирование серверов', scope: 'operating', mode: 'periodic' },
 ];
 
+export const makeProjectSnapshot = (state: Pick<DataState, 'projectMeta' | 'appSettings' | 'capitalData' | 'operatingData' | 'categories' | 'electricityTotal'>): ProjectSnapshot => ({
+  projectMeta: state.projectMeta,
+  appSettings: state.appSettings,
+  capitalData: state.capitalData,
+  operatingData: state.operatingData,
+  categories: state.categories,
+  electricityTotal: state.electricityTotal,
+});
+
 export const initialState: DataState = {
+  schemaVersion: CURRENT_DATA_SCHEMA_VERSION,
   projectMeta: createDefaultProjectMeta({
     name: 'Демо-проект ИТ-инфраструктуры',
     organization: 'Локальная компания',
@@ -49,9 +79,14 @@ export const initialState: DataState = {
     targetClientSeats: 10,
     note: 'Демонстрационный набор данных с разделением ТО, ПО, OPEX и отчётом.',
   }),
+  appSettings: defaultAppSettings,
+  exchangeRates: defaultExchangeRates,
   projectEvents: [
     createProjectEvent('Создан демо-проект', 'Загружены стартовые категории и демонстрационные позиции.', 'template'),
   ],
+  projectBackups: [],
+  undoStack: [],
+  redoStack: [],
   capitalData: ensureCapitalKinds(
     [
       { id: '1', categoryId: 'capital-server', name: 'Сервер HP ProLiant', quantity: 5, price: 50000 },
@@ -75,6 +110,7 @@ export const initialState: DataState = {
 };
 
 export const emptyProjectState: DataState = {
+  schemaVersion: CURRENT_DATA_SCHEMA_VERSION,
   projectMeta: createDefaultProjectMeta({
     name: 'Новый расчёт ИТ-инфраструктуры',
     organization: '',
@@ -82,9 +118,14 @@ export const emptyProjectState: DataState = {
     targetClientSeats: 0,
     note: '',
   }),
+  appSettings: defaultAppSettings,
+  exchangeRates: defaultExchangeRates,
   projectEvents: [
     createProjectEvent('Создан пустой проект', 'Позиции очищены, базовые категории сохранены.', 'reset'),
   ],
+  projectBackups: [],
+  undoStack: [],
+  redoStack: [],
   categories: initialCategories,
   capitalData: [],
   operatingData: [],

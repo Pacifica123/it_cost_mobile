@@ -35,6 +35,28 @@ export type ProjectMeta = {
   updatedAt: string;
 };
 
+export type AppThemeMode = 'system' | 'light' | 'dark';
+export type AppCurrency = 'RUB' | 'USD' | 'EUR';
+export type AppRoundingMode = 'none' | 'rubles' | 'thousands';
+
+export type ExchangeRates = {
+  baseCurrency: 'RUB';
+  rates: {
+    USD: number | null;
+    EUR: number | null;
+  };
+  updatedAt: string | null;
+  source: string;
+  error?: string;
+};
+
+export type AppSettings = {
+  themeMode: AppThemeMode;
+  currency: AppCurrency;
+  roundingMode: AppRoundingMode;
+  confirmDelete: boolean;
+};
+
 export type ProjectEventType =
   | 'project'
   | 'data'
@@ -43,7 +65,9 @@ export type ProjectEventType =
   | 'import'
   | 'export'
   | 'reset'
-  | 'report';
+  | 'report'
+  | 'backup'
+  | 'history';
 
 export type ProjectEvent = {
   id: string;
@@ -53,9 +77,34 @@ export type ProjectEvent = {
   createdAt: string;
 };
 
-export type DataState = {
+export type ProjectSnapshot = {
   projectMeta: ProjectMeta;
+  appSettings: AppSettings;
+  capitalData: CapitalEquipment[];
+  operatingData: OperatingEquipment[];
+  categories: ExpenseCategory[];
+  electricityTotal: number;
+};
+
+export type ProjectBackup = {
+  id: string;
+  name: string;
+  createdAt: string;
+  description: string;
+  capitalItemsCount: number;
+  operatingItemsCount: number;
+  snapshot: ProjectSnapshot;
+};
+
+export type DataState = {
+  schemaVersion: number;
+  projectMeta: ProjectMeta;
+  appSettings: AppSettings;
+  exchangeRates: ExchangeRates;
   projectEvents: ProjectEvent[];
+  projectBackups: ProjectBackup[];
+  undoStack: ProjectSnapshot[];
+  redoStack: ProjectSnapshot[];
   capitalData: CapitalEquipment[];
   operatingData: OperatingEquipment[];
   categories: ExpenseCategory[];

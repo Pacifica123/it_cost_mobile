@@ -4,7 +4,7 @@ import { Stack, router } from 'expo-router';
 import { StyleSheet, Text } from 'react-native';
 
 import { hiddenBlocks } from '../generated/tabs';
-import { colors, radius } from '../../shared/theme';
+import { colors, radius, useThemePalette } from '../../shared/theme';
 import { AnimatedPressable } from '../../shared/ui';
 
 const getRouteName = (route: string) => {
@@ -32,10 +32,12 @@ const getStackTitle = (routeName: string) => {
 function HeaderIconButton({
   icon,
   label,
+  color = colors.text,
   onPress,
 }: {
   icon: ComponentProps<typeof Ionicons>['name'];
   label: string;
+  color?: string;
   onPress: () => void;
 }) {
   return (
@@ -47,20 +49,22 @@ function HeaderIconButton({
       accessibilityRole="button"
       accessibilityLabel={label}
     >
-      <Ionicons name={icon} size={24} color={colors.text} />
+      <Ionicons name={icon} size={24} color={color} />
     </AnimatedPressable>
   );
 }
 
-function HeaderTitle({ title }: { title: string }) {
+function HeaderTitle({ title, color = colors.text }: { title: string; color?: string }) {
   return (
-    <Text style={styles.headerTitle} numberOfLines={2} maxFontSizeMultiplier={1.08}>
+    <Text style={[styles.headerTitle, { color }]} numberOfLines={2} maxFontSizeMultiplier={1.08}>
       {title}
     </Text>
   );
 }
 
 export default function ItCostLayout() {
+  const palette = useThemePalette();
+
   return (
     <Stack
       screenOptions={({ route }) => {
@@ -72,15 +76,16 @@ export default function ItCostLayout() {
           animation: 'slide_from_right',
           gestureEnabled: true,
           fullScreenGestureEnabled: false,
-          contentStyle: { backgroundColor: colors.bg },
+          contentStyle: { backgroundColor: palette.bg },
           headerShadowVisible: false,
-          headerStyle: { backgroundColor: colors.bg },
+          headerStyle: { backgroundColor: palette.bg },
           headerTitleAlign: 'left',
-          headerTitle: () => <HeaderTitle title={title} />,
+          headerTitle: () => <HeaderTitle title={title} color={palette.text} />,
           headerLeft: () => (
             <HeaderIconButton
               icon="chevron-back"
               label="Назад"
+              color={palette.text}
               onPress={() => (router.canGoBack() ? router.back() : router.replace('/it-cost/menu'))}
             />
           ),
@@ -88,6 +93,7 @@ export default function ItCostLayout() {
             <HeaderIconButton
               icon="home-outline"
               label="На главный экран"
+              color={palette.text}
               onPress={() => router.replace('/')}
             />
           ),

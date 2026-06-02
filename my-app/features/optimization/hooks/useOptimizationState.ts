@@ -23,7 +23,7 @@ export function useOptimizationState(capitalData: CapitalEquipment[], categories
   const [report, setReport] = useState<OptimizationReport | null>(null);
 
   const capitalTotal = useMemo(
-    () => selectCapitalTotal({ projectMeta: { name: '', organization: '', budget: 0, targetClientSeats: 0, note: '', createdAt: '', updatedAt: '' }, projectEvents: [], capitalData, operatingData: [], categories, electricityTotal: 0 }),
+    () => selectCapitalTotal({ schemaVersion: 3, projectMeta: { name: '', organization: '', budget: 0, targetClientSeats: 0, note: '', createdAt: '', updatedAt: '' }, appSettings: { themeMode: 'system', currency: 'RUB', roundingMode: 'rubles', confirmDelete: true }, projectEvents: [], projectBackups: [], undoStack: [], redoStack: [], capitalData, operatingData: [], categories, electricityTotal: 0 }),
     [capitalData, categories]
   );
 

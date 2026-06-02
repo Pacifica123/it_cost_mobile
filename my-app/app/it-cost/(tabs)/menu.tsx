@@ -2,8 +2,9 @@ import { Alert, Text, View } from 'react-native';
 import { router, type Href } from 'expo-router';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
-import { ReadinessCard } from '../../../features/project/components/ReadinessCard';
 import { buildProjectReadiness } from '../../../features/project/logic/readiness';
+import { getNextCalculationStep } from '../../../features/project/logic/nextStep';
+import { validateProjectData } from '../../../features/validation/logic/validateProjectData';
 import { SectionsMenu } from '../../../components/SectionsMenu';
 import { AppCard, AnimatedPressable, AnimatedScreenScroll } from '../../../shared/ui';
 import { styles } from '../../../features/home/styles';
@@ -18,6 +19,8 @@ function ProjectStatusCard() {
   const hardwareCount = data.capitalData.filter((item) => item.kind === 'hardware').length;
   const softwareCount = data.capitalData.filter((item) => item.kind === 'software').length;
   const readiness = buildProjectReadiness(data);
+  const validation = validateProjectData(data);
+  const nextStep = getNextCalculationStep(data);
   const savedLabel = data.lastSavedAt
     ? data.lastSavedAt.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
     : data.isHydrated
@@ -48,16 +51,20 @@ function ProjectStatusCard() {
 
   return (
     <AppCard style={styles.statusCard} delay={40}>
-      <Text style={styles.sectionTitle} maxFontSizeMultiplier={1.12}>Состояние проекта · готовность {readiness.percent}%</Text>
+      <Text style={styles.sectionTitle} maxFontSizeMultiplier={1.12}>Состояние проекта</Text>
 
       <View style={styles.statusGrid}>
         <View style={styles.statusPill}>
-          <Text style={styles.statusValue} maxFontSizeMultiplier={1.1}>{data.capitalData.length}</Text>
-          <Text style={styles.statusLabel} maxFontSizeMultiplier={1.1}>CAPEX позиций</Text>
+          <Text style={styles.statusValue} maxFontSizeMultiplier={1.1}>{readiness.percent}%</Text>
+          <Text style={styles.statusLabel} maxFontSizeMultiplier={1.1}>готовность</Text>
         </View>
         <View style={styles.statusPill}>
-          <Text style={styles.statusValue} maxFontSizeMultiplier={1.1}>{data.operatingData.length}</Text>
-          <Text style={styles.statusLabel} maxFontSizeMultiplier={1.1}>OPEX позиций</Text>
+          <Text style={styles.statusValue} maxFontSizeMultiplier={1.1}>{validation.score}/100</Text>
+          <Text style={styles.statusLabel} maxFontSizeMultiplier={1.1}>качество данных</Text>
+        </View>
+        <View style={styles.statusPill}>
+          <Text style={styles.statusValue} maxFontSizeMultiplier={1.1}>{data.capitalData.length}/{data.operatingData.length}</Text>
+          <Text style={styles.statusLabel} maxFontSizeMultiplier={1.1}>CAPEX / OPEX</Text>
         </View>
         <View style={styles.statusPill}>
           <Text style={styles.statusValue} maxFontSizeMultiplier={1.1}>{hardwareCount}/{softwareCount}</Text>
@@ -69,31 +76,29 @@ function ProjectStatusCard() {
         </View>
       </View>
 
-      <Text style={styles.statusHint} maxFontSizeMultiplier={1.12}>
-        Данные сохраняются локально на устройстве через AsyncStorage после каждого изменения.
-      </Text>
+      <View style={styles.continueBox}>
+        <Text style={styles.continueTitle} maxFontSizeMultiplier={1.12}>Продолжить: {nextStep.title}</Text>
+        <Text style={styles.continueText} maxFontSizeMultiplier={1.12}>{nextStep.description}</Text>
+        <AnimatedPressable style={styles.continueButton} onPress={() => router.push(nextStep.route)} pressedScale={0.97}>
+          <Text style={styles.continueButtonText} maxFontSizeMultiplier={1.1}>{nextStep.actionLabel}</Text>
+        </AnimatedPressable>
+      </View>
 
-      <View style={styles.actionRow}>
-        <AnimatedPressable style={styles.actionButton} onPress={() => router.push('/it-cost/templates' as Href)} pressedScale={0.97}>
-          <Text style={styles.actionButtonText} maxFontSizeMultiplier={1.1}>Шаблоны</Text>
+      <View style={styles.actionRowCompact}>
+        <AnimatedPressable style={styles.actionButton} onPress={() => router.push('/it-cost/dashboard' as Href)} pressedScale={0.97}>
+          <Text style={styles.actionButtonText} maxFontSizeMultiplier={1.1}>Сводка</Text>
         </AnimatedPressable>
-        <AnimatedPressable style={styles.actionButton} onPress={() => router.push('/it-cost/history' as Href)} pressedScale={0.97}>
-          <Text style={styles.actionButtonText} maxFontSizeMultiplier={1.1}>История</Text>
+        <AnimatedPressable style={styles.actionButton} onPress={() => router.push('/it-cost/backups' as Href)} pressedScale={0.97}>
+          <Text style={styles.actionButtonText} maxFontSizeMultiplier={1.1}>Копии</Text>
         </AnimatedPressable>
-        <AnimatedPressable style={styles.actionButton} onPress={() => router.push('/it-cost/quick_start' as Href)} pressedScale={0.97}>
-          <Text style={styles.actionButtonText} maxFontSizeMultiplier={1.1}>Быстрый расчёт</Text>
-        </AnimatedPressable>
-        <AnimatedPressable style={styles.actionButton} onPress={() => router.push('/it-cost/validation' as Href)} pressedScale={0.97}>
-          <Text style={styles.actionButtonText} maxFontSizeMultiplier={1.1}>Проверка данных</Text>
-        </AnimatedPressable>
-        <AnimatedPressable style={styles.actionButton} onPress={() => router.push('/it-cost/project_io' as Href)} pressedScale={0.97}>
-          <Text style={styles.actionButtonText} maxFontSizeMultiplier={1.1}>Импорт/экспорт</Text>
+        <AnimatedPressable style={styles.actionButton} onPress={() => router.push('/it-cost/financial_charts' as Href)} pressedScale={0.97}>
+          <Text style={styles.actionButtonText} maxFontSizeMultiplier={1.1}>Графики</Text>
         </AnimatedPressable>
         <AnimatedPressable style={styles.actionButton} onPress={confirmDemoReset} pressedScale={0.97}>
-          <Text style={styles.actionButtonText} maxFontSizeMultiplier={1.1}>Загрузить демо</Text>
+          <Text style={styles.actionButtonText} maxFontSizeMultiplier={1.1}>Демо</Text>
         </AnimatedPressable>
         <AnimatedPressable style={[styles.actionButton, styles.actionButtonDanger]} onPress={confirmEmptyReset} pressedScale={0.97}>
-          <Text style={styles.actionButtonText} maxFontSizeMultiplier={1.1}>Очистить расчёт</Text>
+          <Text style={styles.actionButtonText} maxFontSizeMultiplier={1.1}>Очистить</Text>
         </AnimatedPressable>
       </View>
     </AppCard>
@@ -102,8 +107,6 @@ function ProjectStatusCard() {
 
 export default function MenuInTabs() {
   const tabBarHeight = useBottomTabBarHeight();
-  const data = useData();
-  const readiness = buildProjectReadiness(data);
 
   return (
     <AnimatedScreenScroll
@@ -113,11 +116,9 @@ export default function MenuInTabs() {
     >
       <ProjectStatusCard />
 
-      <ReadinessCard readiness={readiness} compact />
-
       <AppCard style={styles.menuCard} delay={80}>
-        <Text style={styles.sectionTitle} maxFontSizeMultiplier={1.12}>Разделы расчёта</Text>
-        <SectionsMenu variant="all" hideEntries searchable />
+        <Text style={styles.sectionTitle} maxFontSizeMultiplier={1.12}>Разделы</Text>
+        <SectionsMenu variant="all" hideEntries searchable mode="grouped" />
       </AppCard>
     </AnimatedScreenScroll>
   );

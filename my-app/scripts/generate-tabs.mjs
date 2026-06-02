@@ -9,11 +9,16 @@ const outFile = path.join(outDir, 'tabs.ts');
 const exts = new Set(['.ts', '.tsx', '.js', '.jsx']);
 const IGNORED_DIRS = new Set(['generated', 'styles', 'data', 'components', 'assets', 'node_modules']);
 const MENU_ORDER = [
+  '/it-cost/dashboard',
+  '/it-cost/financial_charts',
   '/it-cost/project',
   '/it-cost/templates',
   '/it-cost/quick_start',
   '/it-cost/project_io',
+  '/it-cost/backups',
   '/it-cost/history',
+  '/it-cost/settings',
+  '/it-cost/diagnostics',
   '/it-cost/validation',
   '/it-cost/it_infrastructure',
   '/it-cost/capital_expenditures',

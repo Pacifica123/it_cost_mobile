@@ -48,6 +48,18 @@ export const entryBlocks: ScreenLink[] = [
 ] as const;
 export const hiddenBlocks: ScreenLink[] = [
   {
+    "id": "/it-cost/dashboard",
+    "title": "Сводка проекта",
+    "route": "/it-cost/dashboard",
+    "group": "/it-cost"
+  },
+  {
+    "id": "/it-cost/financial_charts",
+    "title": "Финансовые графики",
+    "route": "/it-cost/financial_charts",
+    "group": "/it-cost"
+  },
+  {
     "id": "/it-cost/project",
     "title": "Проект расчёта",
     "route": "/it-cost/project",
@@ -72,9 +84,27 @@ export const hiddenBlocks: ScreenLink[] = [
     "group": "/it-cost"
   },
   {
+    "id": "/it-cost/backups",
+    "title": "Резервные копии",
+    "route": "/it-cost/backups",
+    "group": "/it-cost"
+  },
+  {
     "id": "/it-cost/history",
     "title": "История изменений",
     "route": "/it-cost/history",
+    "group": "/it-cost"
+  },
+  {
+    "id": "/it-cost/settings",
+    "title": "Настройки",
+    "route": "/it-cost/settings",
+    "group": "/it-cost"
+  },
+  {
+    "id": "/it-cost/diagnostics",
+    "title": "Диагностика приложения",
+    "route": "/it-cost/diagnostics",
     "group": "/it-cost"
   },
   {

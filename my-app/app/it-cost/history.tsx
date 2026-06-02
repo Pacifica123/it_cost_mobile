@@ -17,6 +17,8 @@ const typeLabel: Record<ProjectEventType, string> = {
   export: 'Экспорт',
   reset: 'Сброс',
   report: 'Отчёт',
+  backup: 'Копия',
+  history: 'История',
 };
 
 const formatDate = (value: string) => {
@@ -54,9 +56,18 @@ export default function HistoryScreen() {
 
       <AppCard style={local.actionsCard}>
         <Text style={styles.cardTitle} maxFontSizeMultiplier={1.12}>Всего записей: {data.projectEvents.length}</Text>
-        <AnimatedPressable style={[styles.actionButton, styles.dangerButton]} pressedScale={0.97} onPress={clearHistory}>
-          <Text style={[styles.actionButtonText, styles.secondaryButtonText]} maxFontSizeMultiplier={1.1}>Очистить историю</Text>
-        </AnimatedPressable>
+        <Text style={styles.cardText} maxFontSizeMultiplier={1.12}>Отмена доступна для последних изменений данных, паспорта, настроек, шаблонов и очистки.</Text>
+        <View style={local.actionsRow}>
+          <AnimatedPressable style={[styles.actionButton, !data.canUndo && local.disabled]} disabled={!data.canUndo} pressedScale={0.97} onPress={data.undoLastAction}>
+            <Text style={styles.actionButtonText} maxFontSizeMultiplier={1.1}>Отменить</Text>
+          </AnimatedPressable>
+          <AnimatedPressable style={[styles.actionButton, !data.canRedo && local.disabled]} disabled={!data.canRedo} pressedScale={0.97} onPress={data.redoLastAction}>
+            <Text style={styles.actionButtonText} maxFontSizeMultiplier={1.1}>Повторить</Text>
+          </AnimatedPressable>
+          <AnimatedPressable style={[styles.actionButton, styles.dangerButton]} pressedScale={0.97} onPress={clearHistory}>
+            <Text style={[styles.actionButtonText, styles.secondaryButtonText]} maxFontSizeMultiplier={1.1}>Очистить историю</Text>
+          </AnimatedPressable>
+        </View>
       </AppCard>
 
       {data.projectEvents.length ? (
@@ -82,6 +93,14 @@ export default function HistoryScreen() {
 const local = StyleSheet.create({
   actionsCard: {
     gap: spacing.md,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  disabled: {
+    opacity: 0.45,
   },
   eventCard: {
     gap: 6,

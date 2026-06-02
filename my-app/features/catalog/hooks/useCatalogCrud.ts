@@ -14,19 +14,47 @@ import {
   buildCapitalItem,
   buildOperatingItem,
   getInitialCatalogForm,
-  hasRequiredCatalogFields,
   mapItemToCatalogForm,
 } from '../logic/catalogForm';
 import type { CatalogFormState, CatalogMode } from '../types';
 
+export type CatalogFormErrors = Partial<Record<'categoryId' | 'name' | 'quantityRaw' | 'priceRaw', string>>;
+
+type DeletedSnapshot = {
+  item: CapitalEquipment | OperatingEquipment;
+  mode: CatalogMode;
+} | null;
+
+const getCatalogFormErrors = (mode: CatalogMode, form: CatalogFormState): CatalogFormErrors => {
+  const errors: CatalogFormErrors = {};
+  const price = Number(form.priceRaw || 0);
+  const quantity = Number(form.quantityRaw || 0);
+
+  if (!form.categoryId.trim()) errors.categoryId = 'Выберите категорию.';
+  if (!form.name.trim()) errors.name = 'Введите название позиции.';
+  if (!form.priceRaw.trim()) errors.priceRaw = 'Введите сумму.';
+  else if (!Number.isFinite(price) || price < 0) errors.priceRaw = 'Сумма не должна быть отрицательной.';
+
+  if (mode === 'capital') {
+    if (!form.quantityRaw.trim()) errors.quantityRaw = 'Введите количество.';
+    else if (!Number.isFinite(quantity) || quantity <= 0) errors.quantityRaw = 'Количество должно быть больше 0.';
+  }
+
+  return errors;
+};
+
+const hasErrors = (errors: CatalogFormErrors) => Object.keys(errors).length > 0;
+
 export function useCatalogCrud(mode: CatalogMode, categories: ExpenseCategory[], capitalKind?: ItemKind) {
-  const { capitalData, operatingData, setCapitalData, setOperatingData } = useData();
+  const { capitalData, operatingData, setCapitalData, setOperatingData, appSettings } = useData();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<CatalogFormState>(() =>
     getInitialCatalogForm(getDefaultCategoryId(categories, mode))
   );
+  const [formErrors, setFormErrors] = useState<CatalogFormErrors>({});
+  const [lastDeleted, setLastDeleted] = useState<DeletedSnapshot>(null);
 
   const items = useMemo(
     () => (mode === 'capital' ? capitalData : operatingData),
@@ -36,6 +64,7 @@ export function useCatalogCrud(mode: CatalogMode, categories: ExpenseCategory[],
   const resetForm = () => {
     setEditingId(null);
     setForm(getInitialCatalogForm(getDefaultCategoryId(categories, mode)));
+    setFormErrors({});
   };
 
   const openCreate = () => {
@@ -46,6 +75,7 @@ export function useCatalogCrud(mode: CatalogMode, categories: ExpenseCategory[],
   const openEdit = (item: CapitalEquipment | OperatingEquipment) => {
     setEditingId(item.id);
     setForm(mapItemToCatalogForm(mode, item));
+    setFormErrors({});
     setModalVisible(true);
   };
 
@@ -56,6 +86,7 @@ export function useCatalogCrud(mode: CatalogMode, categories: ExpenseCategory[],
 
   const updateField = (field: keyof CatalogFormState, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+    setFormErrors((prev) => ({ ...prev, [field]: undefined }));
   };
 
   const persistCapitalItem = (nextItem: CapitalEquipment) => {
@@ -71,10 +102,9 @@ export function useCatalogCrud(mode: CatalogMode, categories: ExpenseCategory[],
   };
 
   const saveItem = () => {
-    if (!hasRequiredCatalogFields(mode, form)) {
-      Alert.alert('Ошибка', 'Заполните все поля');
-      return;
-    }
+    const errors = getCatalogFormErrors(mode, form);
+    setFormErrors(errors);
+    if (hasErrors(errors)) return;
 
     if (mode === 'capital') {
       persistCapitalItem(buildCapitalItem(form, categories, editingId, capitalKind));
@@ -85,24 +115,39 @@ export function useCatalogCrud(mode: CatalogMode, categories: ExpenseCategory[],
     closeModal();
   };
 
+  const deleteNow = (id: string) => {
+    const deleted = items.find((item) => item.id === id);
+    if (mode === 'capital') {
+      setCapitalData((prev) => prev.filter((item) => item.id !== id));
+    } else {
+      setOperatingData((prev) => prev.filter((item) => item.id !== id));
+    }
+    if (deleted) setLastDeleted({ item: deleted, mode });
+    setSelectedId(null);
+  };
+
   const deleteItem = (id: string) => {
+    if (!appSettings.confirmDelete) {
+      deleteNow(id);
+      return;
+    }
+
     Alert.alert('Удаление', 'Вы уверены?', [
       { text: 'Отмена', style: 'cancel' },
-      {
-        text: 'Удалить',
-        style: 'destructive',
-        onPress: () => {
-          if (mode === 'capital') {
-            setCapitalData((prev) => prev.filter((item) => item.id !== id));
-          } else {
-            setOperatingData((prev) => prev.filter((item) => item.id !== id));
-          }
-          setSelectedId(null);
-        },
-      },
+      { text: 'Удалить', style: 'destructive', onPress: () => deleteNow(id) },
     ]);
   };
 
+  const restoreLastDeleted = () => {
+    if (!lastDeleted || lastDeleted.mode !== mode) return;
+
+    if (mode === 'capital') {
+      setCapitalData((prev) => [...prev, lastDeleted.item as CapitalEquipment]);
+    } else {
+      setOperatingData((prev) => [...prev, lastDeleted.item as OperatingEquipment]);
+    }
+    setLastDeleted(null);
+  };
 
   const duplicateItem = (item: CapitalEquipment | OperatingEquipment) => {
     const copyId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
@@ -111,21 +156,13 @@ export function useCatalogCrud(mode: CatalogMode, categories: ExpenseCategory[],
       const capitalItem = item as CapitalEquipment;
       setCapitalData((prev) => [
         ...prev,
-        {
-          ...capitalItem,
-          id: copyId,
-          name: `${capitalItem.name} — копия`,
-        },
+        { ...capitalItem, id: copyId, name: `${capitalItem.name} — копия` },
       ]);
     } else {
       const operatingItem = item as OperatingEquipment;
       setOperatingData((prev) => [
         ...prev,
-        {
-          ...operatingItem,
-          id: copyId,
-          name: `${operatingItem.name} — копия`,
-        },
+        { ...operatingItem, id: copyId, name: `${operatingItem.name} — копия` },
       ]);
     }
   };
@@ -159,6 +196,8 @@ export function useCatalogCrud(mode: CatalogMode, categories: ExpenseCategory[],
     modalVisible,
     editingId,
     form,
+    formErrors,
+    lastDeleted,
     selectedId,
     setSelectedId,
     openCreate,
@@ -168,6 +207,7 @@ export function useCatalogCrud(mode: CatalogMode, categories: ExpenseCategory[],
     deleteItem,
     duplicateItem,
     deleteCategoryItems,
+    restoreLastDeleted,
     updateField,
     setQuantityRaw,
     setPriceRaw,

@@ -1,4 +1,4 @@
-import { createDefaultProjectMeta, createProjectEvent, initialCategories } from '../../../store/data/defaults';
+import { CURRENT_DATA_SCHEMA_VERSION, createDefaultProjectMeta, createProjectEvent, defaultAppSettings, defaultExchangeRates, initialCategories } from '../../../store/data/defaults';
 import { ensureCapitalKinds } from '../../../store/data/catalogRules';
 import type { DataState } from '../../../store/data/types';
 
@@ -9,8 +9,12 @@ export type ProjectTemplate = {
   state: DataState;
 };
 
-const buildTemplateState = (id: string, patch: Omit<DataState, 'projectEvents'>): DataState => ({
+const buildTemplateState = (_id: string, patch: Omit<DataState, 'schemaVersion' | 'projectEvents' | 'projectBackups' | 'undoStack' | 'redoStack'>): DataState => ({
+  schemaVersion: CURRENT_DATA_SCHEMA_VERSION,
   ...patch,
+  projectBackups: [],
+  undoStack: [],
+  redoStack: [],
   projectEvents: [
     createProjectEvent('Применён шаблон', `Шаблон: ${patch.projectMeta.name}.`, 'template', patch.projectMeta.updatedAt),
   ],
@@ -31,6 +35,8 @@ export const projectTemplates: ProjectTemplate[] = [
         createdAt: '2026-01-01T00:00:00.000Z',
         updatedAt: '2026-01-01T00:00:00.000Z',
       }),
+      appSettings: defaultAppSettings,
+      exchangeRates: defaultExchangeRates,
       categories: initialCategories,
       capitalData: ensureCapitalKinds(
         [
@@ -63,6 +69,8 @@ export const projectTemplates: ProjectTemplate[] = [
         createdAt: '2026-01-01T00:00:00.000Z',
         updatedAt: '2026-01-01T00:00:00.000Z',
       }),
+      appSettings: defaultAppSettings,
+      exchangeRates: defaultExchangeRates,
       categories: initialCategories,
       capitalData: ensureCapitalKinds(
         [
@@ -96,6 +104,8 @@ export const projectTemplates: ProjectTemplate[] = [
         createdAt: '2026-01-01T00:00:00.000Z',
         updatedAt: '2026-01-01T00:00:00.000Z',
       }),
+      appSettings: defaultAppSettings,
+      exchangeRates: defaultExchangeRates,
       categories: initialCategories,
       capitalData: ensureCapitalKinds(
         [

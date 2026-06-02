@@ -4,9 +4,12 @@ import type { Dispatch, ReactNode, SetStateAction } from 'react';
 import { dataReducer } from './reducer';
 import { initialState } from './defaults';
 import { loadStoredDataState, persistDataState } from './storage';
+import { fetchExchangeRatesFromCbr, markExchangeRatesError, shouldRefreshExchangeRates, type ExchangeRatesRefreshResult } from './exchangeRates';
 import { parseProjectDataState, serializeDataState, type ProjectImportResult } from './serialization';
+import { configureMoneyFormat } from '../../shared/utils/currency';
 import { createCategoryId } from './catalogRules';
 import type {
+  AppSettings,
   CapitalEquipment,
   CategoryMode,
   CategoryScope,
@@ -20,6 +23,7 @@ interface DataContextType extends DataState {
   isHydrated: boolean;
   lastSavedAt: Date | null;
   setProjectMeta: (patch: Partial<ProjectMeta>) => void;
+  setAppSettings: (patch: Partial<AppSettings>) => void;
   setCapitalData: Dispatch<SetStateAction<CapitalEquipment[]>>;
   setOperatingData: Dispatch<SetStateAction<OperatingEquipment[]>>;
   setElectricityTotal: Dispatch<SetStateAction<number>>;
@@ -27,18 +31,29 @@ interface DataContextType extends DataState {
   deleteCategory: (categoryId: string) => void;
   applyProjectTemplate: (state: DataState) => void;
   clearProjectEvents: () => void;
+  createProjectBackup: (input?: { name?: string; description?: string }) => void;
+  restoreProjectBackup: (backupId: string) => void;
+  deleteProjectBackup: (backupId: string) => void;
+  undoLastAction: () => void;
+  redoLastAction: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
   resetDemoData: () => void;
   resetEmptyProject: () => void;
   getProjectExportJson: () => string;
   importProjectJson: (raw: string) => ProjectImportResult;
+  refreshExchangeRates: () => Promise<ExchangeRatesRefreshResult>;
+  isRefreshingRates: boolean;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(dataReducer, initialState);
+  configureMoneyFormat(state.appSettings, state.exchangeRates);
   const [isHydrated, setIsHydrated] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  const [isRefreshingRates, setIsRefreshingRates] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -70,6 +85,10 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
 
   const setProjectMeta = useCallback((patch: Partial<ProjectMeta>) => {
     dispatch({ type: 'SET_PROJECT_META', payload: patch });
+  }, []);
+
+  const setAppSettings = useCallback((patch: Partial<AppSettings>) => {
+    dispatch({ type: 'SET_APP_SETTINGS', payload: patch });
   }, []);
 
   const setCapitalData = useCallback<Dispatch<SetStateAction<CapitalEquipment[]>>>((next) => {
@@ -114,6 +133,26 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     dispatch({ type: 'CLEAR_PROJECT_EVENTS' });
   }, []);
 
+  const createProjectBackup = useCallback((input?: { name?: string; description?: string }) => {
+    dispatch({ type: 'CREATE_PROJECT_BACKUP', payload: input });
+  }, []);
+
+  const restoreProjectBackup = useCallback((backupId: string) => {
+    dispatch({ type: 'RESTORE_PROJECT_BACKUP', payload: { backupId } });
+  }, []);
+
+  const deleteProjectBackup = useCallback((backupId: string) => {
+    dispatch({ type: 'DELETE_PROJECT_BACKUP', payload: { backupId } });
+  }, []);
+
+  const undoLastAction = useCallback(() => {
+    dispatch({ type: 'UNDO_LAST_ACTION' });
+  }, []);
+
+  const redoLastAction = useCallback(() => {
+    dispatch({ type: 'REDO_LAST_ACTION' });
+  }, []);
+
   const resetDemoData = useCallback(() => {
     dispatch({ type: 'RESET_DEMO_DATA' });
   }, []);
@@ -123,6 +162,28 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const getProjectExportJson = useCallback(() => serializeDataState(state), [state]);
+
+  const refreshExchangeRates = useCallback(async (): Promise<ExchangeRatesRefreshResult> => {
+    setIsRefreshingRates(true);
+    try {
+      const exchangeRates = await fetchExchangeRatesFromCbr(state.exchangeRates);
+      dispatch({ type: 'SET_EXCHANGE_RATES', payload: exchangeRates });
+      return { ok: true, exchangeRates, message: 'Курсы валют обновлены.' };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Не удалось обновить курсы валют.';
+      const exchangeRates = markExchangeRatesError(state.exchangeRates, message);
+      dispatch({ type: 'SET_EXCHANGE_RATES', payload: exchangeRates });
+      return { ok: false, exchangeRates, message };
+    } finally {
+      setIsRefreshingRates(false);
+    }
+  }, [state.exchangeRates]);
+
+  useEffect(() => {
+    if (!isHydrated || isRefreshingRates) return;
+    if (!shouldRefreshExchangeRates(state.exchangeRates)) return;
+    void refreshExchangeRates();
+  }, [isHydrated, isRefreshingRates, refreshExchangeRates, state.exchangeRates]);
 
   const importProjectJson = useCallback((raw: string) => {
     const result = parseProjectDataState(raw);
@@ -137,6 +198,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     isHydrated,
     lastSavedAt,
     setProjectMeta,
+    setAppSettings,
     setCapitalData,
     setOperatingData,
     setElectricityTotal,
@@ -144,15 +206,25 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     deleteCategory,
     applyProjectTemplate,
     clearProjectEvents,
+    createProjectBackup,
+    restoreProjectBackup,
+    deleteProjectBackup,
+    undoLastAction,
+    redoLastAction,
+    canUndo: state.undoStack.length > 0,
+    canRedo: state.redoStack.length > 0,
     resetDemoData,
     resetEmptyProject,
     getProjectExportJson,
     importProjectJson,
+    refreshExchangeRates,
+    isRefreshingRates,
   }), [
     state,
     isHydrated,
     lastSavedAt,
     setProjectMeta,
+    setAppSettings,
     setCapitalData,
     setOperatingData,
     setElectricityTotal,
@@ -160,10 +232,19 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     deleteCategory,
     applyProjectTemplate,
     clearProjectEvents,
+    createProjectBackup,
+    restoreProjectBackup,
+    deleteProjectBackup,
+    undoLastAction,
+    redoLastAction,
+    state.undoStack.length,
+    state.redoStack.length,
     resetDemoData,
     resetEmptyProject,
     getProjectExportJson,
     importProjectJson,
+    refreshExchangeRates,
+    isRefreshingRates,
   ]);
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
@@ -177,5 +258,5 @@ export const useData = () => {
   return context;
 };
 
-export type { CapitalEquipment, CategoryMode, CategoryScope, DataState, ExpenseCategory, OperatingEquipment, ProjectMeta } from './types';
+export type { AppSettings, CapitalEquipment, CategoryMode, CategoryScope, DataState, ExpenseCategory, OperatingEquipment, ProjectMeta, ProjectBackup, ProjectSnapshot } from './types';
 export * from './selectors';

@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { allTabScreens, hiddenBlocks } from '../../generated/tabs';
 import { getScreenIcon } from '../../../shared/icons/getScreenIcon';
-import { colors, radius } from '../../../shared/theme';
+import { colors, radius, useThemePalette } from '../../../shared/theme';
 import { AnimatedPressable } from '../../../shared/ui';
 
 const getRouteName = (route: string) => {
@@ -23,10 +23,12 @@ const routeTitleByName: Record<string, string> = Object.fromEntries(
 function HeaderIconButton({
   icon,
   label,
+  color = colors.text,
   onPress,
 }: {
   icon: ComponentProps<typeof Ionicons>['name'];
   label: string;
+  color?: string;
   onPress: () => void;
 }) {
   return (
@@ -38,40 +40,43 @@ function HeaderIconButton({
       accessibilityRole="button"
       accessibilityLabel={label}
     >
-      <Ionicons name={icon} size={24} color={colors.text} />
+      <Ionicons name={icon} size={24} color={color} />
     </AnimatedPressable>
   );
 }
 
-function HeaderTitle({ title }: { title: string }) {
+function HeaderTitle({ title, color = colors.text }: { title: string; color?: string }) {
   return (
-    <Text style={styles.headerTitle} numberOfLines={2} maxFontSizeMultiplier={1.08}>
+    <Text style={[styles.headerTitle, { color }]} numberOfLines={2} maxFontSizeMultiplier={1.08}>
       {title}
     </Text>
   );
 }
 
-function HomeButton() {
+function HomeButton({ color = colors.text }: { color?: string }) {
   return (
     <HeaderIconButton
       icon="home-outline"
       label="На главный экран"
+      color={color}
       onPress={() => router.replace('/')}
     />
   );
 }
 
-function BackButton() {
+function BackButton({ color = colors.text }: { color?: string }) {
   return (
     <HeaderIconButton
       icon="chevron-back"
       label="Назад"
+      color={color}
       onPress={() => (router.canGoBack() ? router.back() : router.replace('/it-cost/menu'))}
     />
   );
 }
 
 export default function TabsLayout() {
+  const palette = useThemePalette();
   const insets = useSafeAreaInsets();
   const bottomInset = Math.max(insets.bottom, 10);
 
@@ -86,12 +91,12 @@ export default function TabsLayout() {
           title,
           headerShown: true,
           headerShadowVisible: false,
-          headerStyle: { backgroundColor: colors.bg },
-          headerTitle: () => <HeaderTitle title={title} />,
-          sceneStyle: { backgroundColor: colors.bg },
+          headerStyle: { backgroundColor: palette.bg },
+          headerTitle: () => <HeaderTitle title={title} color={palette.text} />,
+          sceneStyle: { backgroundColor: palette.bg },
           tabBarHideOnKeyboard: true,
-          headerLeft: isVisibleTab ? undefined : () => <BackButton />,
-          headerRight: () => <HomeButton />,
+          headerLeft: isVisibleTab ? undefined : () => <BackButton color={palette.text} />,
+          headerRight: () => <HomeButton color={palette.text} />,
           headerLeftContainerStyle: {
             paddingLeft: 8,
           },
@@ -102,9 +107,9 @@ export default function TabsLayout() {
             height: 60 + bottomInset,
             paddingTop: 6,
             paddingBottom: bottomInset,
-            backgroundColor: colors.surface,
+            backgroundColor: palette.surface,
             borderTopWidth: 1,
-            borderTopColor: colors.border,
+            borderTopColor: palette.border,
           },
           tabBarItemStyle: isVisibleTab
             ? {
@@ -122,8 +127,8 @@ export default function TabsLayout() {
             marginBottom: 0,
             fontWeight: '700',
           },
-          tabBarActiveTintColor: colors.primary,
-          tabBarInactiveTintColor: colors.textMuted,
+          tabBarActiveTintColor: palette.primary,
+          tabBarInactiveTintColor: palette.textMuted,
           href: isVisibleTab ? undefined : null,
         };
       }}

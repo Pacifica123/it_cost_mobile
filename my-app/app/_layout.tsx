@@ -3,23 +3,33 @@ import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { DataProvider } from '../store/data/DataContext';
-import { colors } from '../shared/theme';
+import { colors, useThemePalette } from '../shared/theme';
+
+function RootStack() {
+  const palette = useThemePalette();
+
+  return (
+    <>
+      <StatusBar style={palette.isDark ? 'light' : 'dark'} backgroundColor={palette.bg} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          animation: 'fade_from_bottom',
+          contentStyle: { backgroundColor: palette.bg },
+        }}
+      >
+        <Stack.Screen name="index" />
+        <Stack.Screen name="it-cost" />
+      </Stack>
+    </>
+  );
+}
 
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg }}>
       <DataProvider>
-        <StatusBar style="dark" backgroundColor={colors.bg} />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            animation: 'fade_from_bottom',
-            contentStyle: { backgroundColor: colors.bg },
-          }}
-        >
-          <Stack.Screen name="index" />
-          <Stack.Screen name="it-cost" />
-        </Stack>
+        <RootStack />
       </DataProvider>
     </GestureHandlerRootView>
   );

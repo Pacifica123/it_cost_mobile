@@ -94,6 +94,89 @@ export const exploreStyles = StyleSheet.create({
     textAlign: 'center',
   },
 
+  menuSearchBox: {
+    minHeight: 48,
+    borderRadius: 16,
+    backgroundColor: 'rgba(17,24,39,0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(17,24,39,0.08)',
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+
+  menuSearchInput: {
+    flex: 1,
+    minHeight: 44,
+    color: '#111827',
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: '700',
+    paddingVertical: 0,
+  },
+
+  menuSearchClear: {
+    width: 32,
+    height: 32,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+
+  catalogTools: {
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.94)',
+    borderWidth: 1,
+    borderColor: 'rgba(17,24,39,0.06)',
+    padding: 12,
+    gap: 10,
+  },
+
+  sortRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+
+  sortChip: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(17,24,39,0.08)',
+    backgroundColor: 'rgba(17,24,39,0.04)',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
+
+  sortChipActive: {
+    borderColor: 'rgba(59,130,246,0.35)',
+    backgroundColor: 'rgba(59,130,246,0.12)',
+  },
+
+  sortChipText: {
+    color: '#111827',
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '900',
+  },
+
+  undoBox: {
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(245,158,11,0.22)',
+    backgroundColor: 'rgba(245,158,11,0.12)',
+    padding: 12,
+    gap: 8,
+  },
+
+  undoText: {
+    color: '#92400E',
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: '800',
+  },
+
   categoryCard: {
     backgroundColor: 'rgba(255,255,255,0.94)',
     borderRadius: 22,
@@ -326,6 +409,19 @@ export const exploreStyles = StyleSheet.create({
     borderRadius: 14,
     fontSize: 14,
     color: '#111827',
+  },
+
+  inputError: {
+    borderColor: 'rgba(220,38,38,0.55)',
+    backgroundColor: 'rgba(239,68,68,0.08)',
+  },
+
+  errorText: {
+    marginTop: 5,
+    color: '#B91C1C',
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '800',
   },
 
   hint: {

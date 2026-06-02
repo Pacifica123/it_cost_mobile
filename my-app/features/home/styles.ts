@@ -125,6 +125,24 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
+
+  menuGroup: {
+    gap: spacing.sm,
+  },
+  menuGroupTitle: {
+    color: colors.textMuted,
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    paddingHorizontal: 4,
+    paddingTop: 6,
+  },
+  menuGroupList: {
+    gap: spacing.sm,
+  },
+
   menuItem: {
     minHeight: 72,
     borderRadius: radius.lg,
@@ -214,6 +232,48 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 10,
   },
+
+  continueBox: {
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(59,130,246,0.22)',
+    backgroundColor: colors.primarySoft,
+    padding: spacing.md,
+    gap: 6,
+    marginBottom: 10,
+  },
+  continueTitle: {
+    color: colors.text,
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: '900',
+  },
+  continueText: {
+    color: colors.textSoft,
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: '700',
+  },
+  continueButton: {
+    alignSelf: 'flex-start',
+    borderRadius: radius.pill,
+    backgroundColor: colors.primary,
+    paddingVertical: 9,
+    paddingHorizontal: 14,
+    marginTop: 4,
+  },
+  continueButtonText: {
+    color: colors.textOnDark,
+    fontSize: 13,
+    lineHeight: 17,
+    fontWeight: '900',
+  },
+  actionRowCompact: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+
   actionRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',

@@ -1,17 +1,21 @@
 import { getCategoryModeFallback, createCategoryId, ensureCapitalKinds } from './catalogRules';
-import { createDefaultProjectMeta, initialCategories, initialState } from './defaults';
+import { CURRENT_DATA_SCHEMA_VERSION, createDefaultProjectMeta, defaultAppSettings, defaultExchangeRates, initialCategories, initialState, makeProjectSnapshot } from './defaults';
 import type {
   CapitalEquipment,
   DataState,
   ExpenseCategory,
   OperatingEquipment,
+  AppSettings,
+  ExchangeRates,
+  ProjectBackup,
+  ProjectSnapshot,
   ProjectEvent,
   ProjectEventType,
   ProjectMeta,
 } from './types';
 
 export const PROJECT_EXPORT_SCHEMA = 'it-cost-mobile-project';
-export const PROJECT_EXPORT_VERSION = 2;
+export const PROJECT_EXPORT_VERSION = CURRENT_DATA_SCHEMA_VERSION;
 
 export type ProjectExportEnvelope = {
   schema: typeof PROJECT_EXPORT_SCHEMA;
@@ -59,9 +63,64 @@ const normalizeProjectMeta = (input: unknown): ProjectMeta => {
   };
 };
 
+const normalizeAppSettings = (input: unknown): AppSettings => {
+  if (!isObject(input)) return defaultAppSettings;
+
+  const themeMode = input.themeMode === 'light' || input.themeMode === 'dark' || input.themeMode === 'system'
+    ? input.themeMode
+    : defaultAppSettings.themeMode;
+  const currency = input.currency === 'USD' || input.currency === 'EUR' || input.currency === 'RUB'
+    ? input.currency
+    : defaultAppSettings.currency;
+  const roundingMode = input.roundingMode === 'none' || input.roundingMode === 'rubles' || input.roundingMode === 'thousands'
+    ? input.roundingMode
+    : defaultAppSettings.roundingMode;
+
+  return {
+    themeMode,
+    currency,
+    roundingMode,
+    confirmDelete: typeof input.confirmDelete === 'boolean' ? input.confirmDelete : defaultAppSettings.confirmDelete,
+  };
+};
+
+const normalizeExchangeRates = (input: unknown): ExchangeRates => {
+  if (!isObject(input)) return defaultExchangeRates;
+  const ratesObject = isObject(input.rates) ? input.rates : {};
+  const normalizeRate = (value: unknown) => {
+    const rate = Number(value);
+    return Number.isFinite(rate) && rate > 0 ? rate : null;
+  };
+
+  const updatedAt = toStringSafe(input.updatedAt);
+  const updatedAtIso = updatedAt ? toIsoSafe(updatedAt, defaultExchangeRates.updatedAt ?? new Date().toISOString()) : null;
+
+  return {
+    baseCurrency: 'RUB',
+    rates: {
+      USD: normalizeRate(ratesObject.USD),
+      EUR: normalizeRate(ratesObject.EUR),
+    },
+    updatedAt: updatedAtIso,
+    source: toStringSafe(input.source, defaultExchangeRates.source).trim() || defaultExchangeRates.source,
+    error: toStringSafe(input.error).trim() || undefined,
+  };
+};
+
 const normalizeProjectEvents = (input: unknown): ProjectEvent[] => {
   if (!Array.isArray(input)) return [];
-  const allowedTypes = new Set<ProjectEventType>(['project', 'data', 'catalog', 'template', 'import', 'export', 'reset', 'report']);
+  const allowedTypes = new Set<ProjectEventType>([
+    'project',
+    'data',
+    'catalog',
+    'template',
+    'import',
+    'export',
+    'reset',
+    'report',
+    'backup',
+    'history',
+  ]);
 
   return input
     .filter(isObject)
@@ -83,8 +142,8 @@ const normalizeProjectEvents = (input: unknown): ProjectEvent[] => {
     .slice(0, 80);
 };
 
-const normalizeCategories = (input: unknown): ExpenseCategory[] => {
-  if (!Array.isArray(input)) return initialCategories;
+const normalizeCategories = (input: unknown, fallback: ExpenseCategory[] = initialCategories): ExpenseCategory[] => {
+  if (!Array.isArray(input)) return fallback;
 
   const seen = new Set<string>();
   const normalized = input
@@ -114,7 +173,7 @@ const normalizeCategories = (input: unknown): ExpenseCategory[] => {
     })
     .filter((category): category is ExpenseCategory => category !== null);
 
-  return normalized.length ? normalized : initialCategories;
+  return normalized.length ? normalized : fallback;
 };
 
 const buildLegacyCategoryIdMap = (categories: ExpenseCategory[]) => {
@@ -125,8 +184,12 @@ const buildLegacyCategoryIdMap = (categories: ExpenseCategory[]) => {
   return byNameScope;
 };
 
-const normalizeCapitalData = (input: unknown, categories: ExpenseCategory[]): CapitalEquipment[] => {
-  if (!Array.isArray(input)) return initialState.capitalData;
+const normalizeCapitalData = (
+  input: unknown,
+  categories: ExpenseCategory[],
+  fallback: CapitalEquipment[] = initialState.capitalData
+): CapitalEquipment[] => {
+  if (!Array.isArray(input)) return fallback;
   const byNameScope = buildLegacyCategoryIdMap(categories);
 
   return ensureCapitalKinds(
@@ -144,8 +207,8 @@ const normalizeCapitalData = (input: unknown, categories: ExpenseCategory[]): Ca
           id: toStringSafe(item.id, `capital-import-${index + 1}`),
           categoryId,
           name: toStringSafe(item.name, 'Без названия'),
-          quantity: toNumber(item.quantity),
-          price: toNumber(item.price),
+          quantity: Math.max(0, toNumber(item.quantity)),
+          price: Math.max(0, toNumber(item.price)),
           kind: item.kind === 'hardware' || item.kind === 'software' ? item.kind : undefined,
         };
       })
@@ -154,8 +217,12 @@ const normalizeCapitalData = (input: unknown, categories: ExpenseCategory[]): Ca
   );
 };
 
-const normalizeOperatingData = (input: unknown, categories: ExpenseCategory[]): OperatingEquipment[] => {
-  if (!Array.isArray(input)) return initialState.operatingData;
+const normalizeOperatingData = (
+  input: unknown,
+  categories: ExpenseCategory[],
+  fallback: OperatingEquipment[] = initialState.operatingData
+): OperatingEquipment[] => {
+  if (!Array.isArray(input)) return fallback;
   const byNameScope = buildLegacyCategoryIdMap(categories);
 
   return input
@@ -172,10 +239,47 @@ const normalizeOperatingData = (input: unknown, categories: ExpenseCategory[]): 
         id: toStringSafe(item.id, `operating-import-${index + 1}`),
         categoryId,
         name: toStringSafe(item.name, 'Без названия'),
-        price: toNumber(item.price),
+        price: Math.max(0, toNumber(item.price)),
       };
     })
     .filter((item): item is OperatingEquipment => item !== null);
+};
+
+const normalizeSnapshot = (input: unknown, fallbackState: DataState): ProjectSnapshot => {
+  const projectObject = isObject(input) ? input : {};
+  const categories = normalizeCategories(projectObject.categories, fallbackState.categories);
+  const capitalData = normalizeCapitalData(projectObject.capitalData, categories, fallbackState.capitalData);
+  const operatingData = normalizeOperatingData(projectObject.operatingData, categories, fallbackState.operatingData);
+
+  return makeProjectSnapshot({
+    projectMeta: normalizeProjectMeta(projectObject.projectMeta),
+    appSettings: normalizeAppSettings(projectObject.appSettings),
+    categories,
+    capitalData,
+    operatingData,
+    electricityTotal: Math.max(0, toNumber(projectObject.electricityTotal, fallbackState.electricityTotal)),
+  });
+};
+
+const normalizeBackups = (input: unknown, fallbackState: DataState): ProjectBackup[] => {
+  if (!Array.isArray(input)) return [];
+  return input
+    .filter(isObject)
+    .map<ProjectBackup | null>((backup, index) => {
+      const snapshot = normalizeSnapshot(backup.snapshot, fallbackState);
+      const name = toStringSafe(backup.name, `Резервная копия ${index + 1}`).trim();
+      return {
+        id: toStringSafe(backup.id, `import-backup-${index + 1}`),
+        name: name || `Резервная копия ${index + 1}`,
+        description: toStringSafe(backup.description, 'Импортированная резервная копия.').trim(),
+        createdAt: toIsoSafe(backup.createdAt, new Date().toISOString()),
+        capitalItemsCount: Math.max(0, Math.round(toNumber(backup.capitalItemsCount, snapshot.capitalData.length))),
+        operatingItemsCount: Math.max(0, Math.round(toNumber(backup.operatingItemsCount, snapshot.operatingData.length))),
+        snapshot,
+      };
+    })
+    .filter((backup): backup is ProjectBackup => backup !== null)
+    .slice(0, 12);
 };
 
 const extractProjectObject = (parsed: unknown) => {
@@ -194,14 +298,25 @@ export const normalizeDataState = (value: unknown): DataState => {
   const categories = normalizeCategories(isObject(projectObject) ? projectObject.categories : undefined);
   const capitalData = normalizeCapitalData(isObject(projectObject) ? projectObject.capitalData : undefined, categories);
   const operatingData = normalizeOperatingData(isObject(projectObject) ? projectObject.operatingData : undefined, categories);
-
-  return {
+  const baseState: DataState = {
+    ...initialState,
+    schemaVersion: CURRENT_DATA_SCHEMA_VERSION,
     projectMeta: normalizeProjectMeta(isObject(projectObject) ? projectObject.projectMeta : undefined),
+    appSettings: normalizeAppSettings(isObject(projectObject) ? projectObject.appSettings : undefined),
+    exchangeRates: normalizeExchangeRates(isObject(projectObject) ? projectObject.exchangeRates : undefined),
     projectEvents: normalizeProjectEvents(isObject(projectObject) ? projectObject.projectEvents : undefined),
+    projectBackups: [],
+    undoStack: [],
+    redoStack: [],
     categories,
     capitalData,
     operatingData,
     electricityTotal: Math.max(0, toNumber(isObject(projectObject) ? projectObject.electricityTotal : 0)),
+  };
+
+  return {
+    ...baseState,
+    projectBackups: normalizeBackups(isObject(projectObject) ? projectObject.projectBackups : undefined, baseState),
   };
 };
 
@@ -211,7 +326,12 @@ export const serializeDataState = (state: DataState): string =>
       schema: PROJECT_EXPORT_SCHEMA,
       version: PROJECT_EXPORT_VERSION,
       exportedAt: new Date().toISOString(),
-      data: state,
+      data: {
+        ...state,
+        schemaVersion: CURRENT_DATA_SCHEMA_VERSION,
+        undoStack: [],
+        redoStack: [],
+      },
     } satisfies ProjectExportEnvelope,
     null,
     2
@@ -243,11 +363,20 @@ export const parseProjectDataState = (raw: string): ProjectImportResult => {
   if (isObject(parsed) && 'schema' in parsed && parsed.schema !== PROJECT_EXPORT_SCHEMA) {
     warnings.push('Схема экспорта отличается от текущей, данные будут импортированы в режиме совместимости.');
   }
+  const rawVersion = isObject(parsed) ? Number(parsed.version) : NaN;
+  const rawDataVersion = isObject(projectObject) ? Number(projectObject.schemaVersion) : NaN;
+  const detectedVersion = Number.isFinite(rawVersion) ? rawVersion : rawDataVersion;
+  if (!Number.isFinite(detectedVersion) || detectedVersion < CURRENT_DATA_SCHEMA_VERSION) {
+    warnings.push('Проект обновлён до текущей версии структуры данных.');
+  }
   if (isObject(projectObject) && !Array.isArray(projectObject.categories)) {
     warnings.push('Категории не найдены, будут использованы базовые категории приложения.');
   }
   if (isObject(projectObject) && !isObject(projectObject.projectMeta)) {
     warnings.push('Паспорт проекта не найден, будет создан базовый паспорт.');
+  }
+  if (isObject(projectObject) && !isObject(projectObject.exchangeRates)) {
+    warnings.push('Курсы валют не найдены, их можно обновить в настройках.');
   }
 
   return {

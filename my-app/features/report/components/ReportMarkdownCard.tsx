@@ -35,7 +35,7 @@ export function ReportMarkdownCard({ markdown, html }: { markdown: string; html?
     <AppCard style={styles.card}>
       <Text style={styles.cardTitle} maxFontSizeMultiplier={1.12}>Экспорт отчёта</Text>
       <Text style={styles.insightLead} maxFontSizeMultiplier={1.12}>
-        Markdown удобно вставлять в документ, а HTML можно открыть в браузере и распечатать через системное меню.
+        Markdown удобно отправлять как текст, а HTML-версия подготовлена для печати или сохранения в PDF через системное меню браузера.
       </Text>
 
       <View style={styles.exportActions}>
@@ -45,7 +45,7 @@ export function ReportMarkdownCard({ markdown, html }: { markdown: string; html?
         {html ? (
           <>
             <AnimatedPressable style={styles.exportButton} pressedScale={0.97} onPress={openHtmlPreview}>
-              <Text style={styles.exportButtonText} maxFontSizeMultiplier={1.1}>Открыть HTML</Text>
+              <Text style={styles.exportButtonText} maxFontSizeMultiplier={1.1}>Открыть HTML/PDF</Text>
             </AnimatedPressable>
             <AnimatedPressable style={styles.exportButton} pressedScale={0.97} onPress={shareHtml}>
               <Text style={styles.exportButtonText} maxFontSizeMultiplier={1.1}>Поделиться HTML</Text>
