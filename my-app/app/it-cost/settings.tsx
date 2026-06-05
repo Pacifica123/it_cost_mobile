@@ -1,5 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useEffect } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
+import Animated, {
+  interpolateColor,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { projectStyles as styles } from '../../features/project/styles';
 import { useData } from '../../store/data/DataContext';
@@ -14,6 +21,7 @@ import type {
 } from '../../store/data/types';
 import { AnimatedPressable, AnimatedScreenScroll, AppCard } from '../../shared/ui';
 import { colors, radius, spacing } from '../../shared/theme';
+import { getUiDensityValueFor } from '../../shared/utils/appPreferences';
 import { formatCurrencyPreview, formatExchangeRate, getCurrencyRate } from '../../shared/utils/currency';
 
 export const title = 'Настройки';
@@ -74,12 +82,22 @@ function OptionGroup<T extends string>({
   value,
   options,
   onChange,
+  density,
 }: {
   title: string;
   value: T;
   options: Option<T>[];
   onChange: (value: T) => void;
+  density: AppUiDensity;
 }) {
+  const rowMinHeight = getUiDensityValueFor(density, 48, 58, 70);
+  const rowPaddingVertical = getUiDensityValueFor(density, 8, 12, 16);
+  const rowPaddingHorizontal = getUiDensityValueFor(density, 10, 12, 16);
+  const titleSize = getUiDensityValueFor(density, 13, 14, 16);
+  const titleLineHeight = getUiDensityValueFor(density, 17, 18, 21);
+  const descriptionSize = getUiDensityValueFor(density, 11, 12, 13);
+  const descriptionLineHeight = getUiDensityValueFor(density, 15, 17, 19);
+
   return (
     <AppCard style={local.cardGap}>
       <Text style={styles.cardTitle} maxFontSizeMultiplier={1.12}>{title}</Text>
@@ -91,14 +109,31 @@ function OptionGroup<T extends string>({
               key={option.value}
               onPress={() => onChange(option.value)}
               pressedScale={0.98}
-              style={[local.optionButton, active && local.optionButtonActive]}
+              style={[
+                local.optionButton,
+                {
+                  minHeight: rowMinHeight,
+                  paddingHorizontal: rowPaddingHorizontal,
+                  paddingVertical: rowPaddingVertical,
+                },
+                active && local.optionButtonActive,
+              ]}
             >
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Text style={[local.optionTitle, active && local.optionTitleActive]} maxFontSizeMultiplier={1.1}>
+                <Text style={[
+                    local.optionTitle,
+                    { fontSize: titleSize, lineHeight: titleLineHeight },
+                    active && local.optionTitleActive,
+                  ]} maxFontSizeMultiplier={1.1}>
                   {option.label}
                 </Text>
                 {option.description ? (
-                  <Text style={local.optionText} maxFontSizeMultiplier={1.1}>{option.description}</Text>
+                  <Text
+                    style={[local.optionText, { fontSize: descriptionSize, lineHeight: descriptionLineHeight }]}
+                    maxFontSizeMultiplier={1.1}
+                  >
+                    {option.description}
+                  </Text>
                 ) : null}
               </View>
               {active ? <Ionicons name="checkmark-circle" size={20} color={colors.primary} /> : null}
@@ -110,32 +145,93 @@ function OptionGroup<T extends string>({
   );
 }
 
+function AnimatedToggle({ value, density }: { value: boolean; density: AppUiDensity }) {
+  const progress = useSharedValue(value ? 1 : 0);
+  const trackWidth = getUiDensityValueFor(density, 46, 54, 62);
+  const trackHeight = getUiDensityValueFor(density, 26, 32, 36);
+  const thumbSize = getUiDensityValueFor(density, 20, 26, 30);
+  const trackPadding = Math.round((trackHeight - thumbSize) / 2);
+  const translateMax = trackWidth - thumbSize - trackPadding * 2;
+
+  useEffect(() => {
+    progress.value = withTiming(value ? 1 : 0, { duration: 220 });
+  }, [progress, value]);
+
+  const trackStyle = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(
+      progress.value,
+      [0, 1],
+      [colors.surfaceMuted, colors.primarySoft]
+    ),
+    borderColor: interpolateColor(
+      progress.value,
+      [0, 1],
+      [colors.borderSoft, 'rgba(59,130,246,0.35)']
+    ),
+  }));
+
+  const thumbStyle = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(
+      progress.value,
+      [0, 1],
+      [colors.textMuted, colors.primary]
+    ),
+    transform: [{ translateX: progress.value * translateMax }],
+  }));
+
+  return (
+    <Animated.View
+      style={[
+        local.switchTrack,
+        { width: trackWidth, height: trackHeight, borderRadius: trackHeight / 2, padding: trackPadding },
+        trackStyle,
+      ]}
+    >
+      <Animated.View style={[local.switchThumb, { width: thumbSize, height: thumbSize, borderRadius: thumbSize / 2 }, thumbStyle]} />
+    </Animated.View>
+  );
+}
+
 function ToggleSetting({
   label,
   description,
   value,
   onChange,
+  density,
 }: {
   label: string;
   description: string;
   value: boolean;
   onChange: (value: boolean) => void;
+  density: AppUiDensity;
 }) {
+  const rowMinHeight = getUiDensityValueFor(density, 54, 66, 78);
+  const rowPaddingVertical = getUiDensityValueFor(density, 8, 12, 16);
+  const rowPaddingHorizontal = getUiDensityValueFor(density, 10, 12, 16);
+  const titleSize = getUiDensityValueFor(density, 13, 14, 16);
+  const titleLineHeight = getUiDensityValueFor(density, 17, 18, 21);
+  const descriptionSize = getUiDensityValueFor(density, 11, 12, 13);
+  const descriptionLineHeight = getUiDensityValueFor(density, 15, 17, 19);
+
   return (
     <AnimatedPressable
       onPress={() => onChange(!value)}
       pressedScale={0.98}
-      style={[local.toggleRow, value && local.optionButtonActive]}
+      style={[
+        local.toggleRow,
+        {
+          minHeight: rowMinHeight,
+          paddingHorizontal: rowPaddingHorizontal,
+          paddingVertical: rowPaddingVertical,
+        },
+        value && local.optionButtonActive,
+      ]}
     >
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Text style={local.optionTitle} maxFontSizeMultiplier={1.1}>{label}</Text>
-        <Text style={local.optionText} maxFontSizeMultiplier={1.1}>{description}</Text>
+        <Text style={[local.optionTitle, { fontSize: titleSize, lineHeight: titleLineHeight }]} maxFontSizeMultiplier={1.1}>{label}</Text>
+        <Text style={[local.optionText, { fontSize: descriptionSize, lineHeight: descriptionLineHeight }]} maxFontSizeMultiplier={1.1}>{description}</Text>
       </View>
-      <Ionicons
-        name={value ? 'toggle' : 'toggle-outline'}
-        size={34}
-        color={value ? colors.primary : colors.textMuted}
-      />
+      <AnimatedToggle value={value} density={density} />
     </AnimatedPressable>
   );
 }
@@ -149,6 +245,7 @@ function StepperSetting({
   max,
   step,
   onChange,
+  density,
 }: {
   label: string;
   description: string;
@@ -158,25 +255,35 @@ function StepperSetting({
   max: number;
   step: number;
   onChange: (value: number) => void;
+  density: AppUiDensity;
 }) {
   const normalized = Number.isFinite(value) ? value : min;
+  const rowMinHeight = getUiDensityValueFor(density, 58, 70, 84);
+  const rowPaddingVertical = getUiDensityValueFor(density, 8, 12, 16);
+  const rowPaddingHorizontal = getUiDensityValueFor(density, 10, 12, 16);
+  const titleSize = getUiDensityValueFor(density, 13, 14, 16);
+  const titleLineHeight = getUiDensityValueFor(density, 17, 18, 21);
+  const descriptionSize = getUiDensityValueFor(density, 11, 12, 13);
+  const descriptionLineHeight = getUiDensityValueFor(density, 15, 17, 19);
+  const stepperButtonSize = getUiDensityValueFor(density, 28, 32, 38);
+  const valueWidth = getUiDensityValueFor(density, 54, 62, 72);
   const change = (direction: -1 | 1) => {
     const next = Math.min(max, Math.max(min, normalized + step * direction));
     onChange(Number(next.toFixed(2)));
   };
 
   return (
-    <View style={local.stepperRow}>
+    <View style={[local.stepperRow, { minHeight: rowMinHeight, paddingHorizontal: rowPaddingHorizontal, paddingVertical: rowPaddingVertical }]}>
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Text style={local.optionTitle} maxFontSizeMultiplier={1.1}>{label}</Text>
-        <Text style={local.optionText} maxFontSizeMultiplier={1.1}>{description}</Text>
+        <Text style={[local.optionTitle, { fontSize: titleSize, lineHeight: titleLineHeight }]} maxFontSizeMultiplier={1.1}>{label}</Text>
+        <Text style={[local.optionText, { fontSize: descriptionSize, lineHeight: descriptionLineHeight }]} maxFontSizeMultiplier={1.1}>{description}</Text>
       </View>
       <View style={local.stepperControls}>
-        <AnimatedPressable onPress={() => change(-1)} style={local.stepperButton} pressedScale={0.95}>
+        <AnimatedPressable onPress={() => change(-1)} style={[local.stepperButton, { width: stepperButtonSize, height: stepperButtonSize }]} pressedScale={0.95}>
           <Text style={local.stepperButtonText}>−</Text>
         </AnimatedPressable>
-        <Text style={local.stepperValue} maxFontSizeMultiplier={1.05}>{normalized}{suffix}</Text>
-        <AnimatedPressable onPress={() => change(1)} style={local.stepperButton} pressedScale={0.95}>
+        <Text style={[local.stepperValue, { minWidth: valueWidth }]} maxFontSizeMultiplier={1.05}>{normalized}{suffix}</Text>
+        <AnimatedPressable onPress={() => change(1)} style={[local.stepperButton, { width: stepperButtonSize, height: stepperButtonSize }]} pressedScale={0.95}>
           <Text style={local.stepperButtonText}>+</Text>
         </AnimatedPressable>
       </View>
@@ -199,6 +306,9 @@ const formatDateTime = (value: string | null) => {
 
 export default function SettingsScreen() {
   const { appSettings, exchangeRates, setAppSettings, refreshExchangeRates, isRefreshingRates } = useData();
+  const density = appSettings.uiDensity;
+  const screenGap = getUiDensityValueFor(density, spacing.sm, spacing.md, spacing.lg);
+  const screenPadding = getUiDensityValueFor(density, spacing.md, spacing.lg, spacing.xl);
 
   const selectedCurrencyNeedsRate = appSettings.currency !== 'RUB' && !getCurrencyRate(appSettings.currency, exchangeRates);
 
@@ -215,7 +325,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <AnimatedScreenScroll style={styles.screen} contentContainerStyle={styles.content}>
+    <AnimatedScreenScroll style={styles.screen} contentContainerStyle={[styles.content, { padding: screenPadding, gap: screenGap }]}>
       <View style={styles.hero}>
         <View style={styles.badge}>
           <Text style={styles.badgeText} maxFontSizeMultiplier={1.1}>Поведение приложения</Text>
@@ -231,6 +341,7 @@ export default function SettingsScreen() {
         value={appSettings.themeMode}
         options={themeOptions}
         onChange={(themeMode) => setAppSettings({ themeMode })}
+        density={density}
       />
 
       <OptionGroup
@@ -238,6 +349,7 @@ export default function SettingsScreen() {
         value={appSettings.uiDensity}
         options={densityOptions}
         onChange={(uiDensity) => setAppSettings({ uiDensity })}
+        density={density}
       />
 
       <OptionGroup
@@ -245,6 +357,7 @@ export default function SettingsScreen() {
         value={appSettings.startScreen}
         options={startScreenOptions}
         onChange={(startScreen) => setAppSettings({ startScreen })}
+        density={density}
       />
 
       <OptionGroup
@@ -252,6 +365,7 @@ export default function SettingsScreen() {
         value={appSettings.currency}
         options={currencyOptions}
         onChange={handleCurrencyChange}
+        density={density}
       />
 
       <AppCard style={local.cardGap}>
@@ -311,6 +425,7 @@ export default function SettingsScreen() {
           description="Если курс устарел, приложение попробует обновить его автоматически."
           value={appSettings.refreshRatesOnStart}
           onChange={(refreshRatesOnStart) => setAppSettings({ refreshRatesOnStart })}
+          density={density}
         />
       </AppCard>
 
@@ -319,6 +434,7 @@ export default function SettingsScreen() {
         value={appSettings.roundingMode}
         options={roundingOptions}
         onChange={(roundingMode) => setAppSettings({ roundingMode })}
+        density={density}
       />
 
       <AppCard style={local.cardGap}>
@@ -345,6 +461,7 @@ export default function SettingsScreen() {
           max={10}
           step={1}
           onChange={(calculationHorizonYears) => setAppSettings({ calculationHorizonYears })}
+          density={density}
         />
         <StepperSetting
           label="Ставка дисконтирования"
@@ -355,6 +472,7 @@ export default function SettingsScreen() {
           max={50}
           step={1}
           onChange={(discountRatePercent) => setAppSettings({ discountRatePercent })}
+          density={density}
         />
         <StepperSetting
           label="Срок службы ТО"
@@ -365,6 +483,7 @@ export default function SettingsScreen() {
           max={120}
           step={6}
           onChange={(hardwareLifetimeMonths) => setAppSettings({ hardwareLifetimeMonths })}
+          density={density}
         />
         <StepperSetting
           label="Срок службы серверов/сети"
@@ -375,6 +494,7 @@ export default function SettingsScreen() {
           max={120}
           step={6}
           onChange={(serverLifetimeMonths) => setAppSettings({ serverLifetimeMonths })}
+          density={density}
         />
         <StepperSetting
           label="Срок службы ПО"
@@ -385,6 +505,7 @@ export default function SettingsScreen() {
           max={60}
           step={1}
           onChange={(softwareLifetimeMonths) => setAppSettings({ softwareLifetimeMonths })}
+          density={density}
         />
       </AppCard>
 
@@ -393,6 +514,7 @@ export default function SettingsScreen() {
         value={appSettings.reportMode}
         options={reportModeOptions}
         onChange={(reportMode) => setAppSettings({ reportMode })}
+        density={density}
       />
 
       <AppCard style={local.cardGap}>
@@ -402,24 +524,28 @@ export default function SettingsScreen() {
           description="Добавляет в HTML/Markdown блоки финансовых графиков и структуры затрат."
           value={appSettings.reportIncludeCharts}
           onChange={(reportIncludeCharts) => setAppSettings({ reportIncludeCharts })}
+          density={density}
         />
         <ToggleSetting
           label="Показывать риски"
           description="Добавляет предупреждения и рекомендации по качеству данных."
           value={appSettings.reportIncludeRisks}
           onChange={(reportIncludeRisks) => setAppSettings({ reportIncludeRisks })}
+          density={density}
         />
         <ToggleSetting
           label="Показывать историю"
           description="Добавляет последние действия проекта в итоговую выгрузку."
           value={appSettings.reportIncludeHistory}
           onChange={(reportIncludeHistory) => setAppSettings({ reportIncludeHistory })}
+          density={density}
         />
         <ToggleSetting
           label="Показывать пустые разделы"
           description="Не скрывать таблицы без позиций."
           value={appSettings.reportIncludeEmptySections}
           onChange={(reportIncludeEmptySections) => setAppSettings({ reportIncludeEmptySections })}
+          density={density}
         />
         <StepperSetting
           label="Минимальная готовность"
@@ -430,6 +556,7 @@ export default function SettingsScreen() {
           max={100}
           step={5}
           onChange={(minimumReadinessForReport) => setAppSettings({ minimumReadinessForReport })}
+          density={density}
         />
         <StepperSetting
           label="Минимальное качество"
@@ -440,6 +567,7 @@ export default function SettingsScreen() {
           max={100}
           step={5}
           onChange={(minimumDataQualityForReport) => setAppSettings({ minimumDataQualityForReport })}
+          density={density}
         />
       </AppCard>
 
@@ -450,12 +578,14 @@ export default function SettingsScreen() {
           description="Одиночное удаление в каталогах будет выполняться через окно подтверждения."
           value={appSettings.confirmDelete}
           onChange={(confirmDelete) => setAppSettings({ confirmDelete })}
+          density={density}
         />
         <ToggleSetting
           label="Автобэкап перед опасными действиями"
           description="Создаёт резервную копию перед очисткой, шаблоном и восстановлением."
           value={appSettings.autoBackupBeforeDangerousActions}
           onChange={(autoBackupBeforeDangerousActions) => setAppSettings({ autoBackupBeforeDangerousActions })}
+          density={density}
         />
       </AppCard>
 
@@ -466,12 +596,14 @@ export default function SettingsScreen() {
           description="CSV сначала показывается в предпросмотре, затем подтверждается."
           value={appSettings.csvRequirePreview}
           onChange={(csvRequirePreview) => setAppSettings({ csvRequirePreview })}
+          density={density}
         />
         <ToggleSetting
           label="Автоматически объединять дубли"
           description="После CSV-импорта одинаковые позиции будут объединены."
           value={appSettings.csvAutoMergeDuplicates}
           onChange={(csvAutoMergeDuplicates) => setAppSettings({ csvAutoMergeDuplicates })}
+          density={density}
         />
       </AppCard>
 
@@ -480,6 +612,7 @@ export default function SettingsScreen() {
         value={appSettings.csvDefaultSection}
         options={csvDefaultSectionOptions}
         onChange={(csvDefaultSection) => setAppSettings({ csvDefaultSection })}
+        density={density}
       />
 
       <AppCard style={local.cardGap}>
@@ -489,6 +622,7 @@ export default function SettingsScreen() {
           description="На стартовом экране можно автоматически проверять GitHub при открытии приложения."
           value={appSettings.checkUpdatesOnStart}
           onChange={(checkUpdatesOnStart) => setAppSettings({ checkUpdatesOnStart })}
+          density={density}
         />
       </AppCard>
     </AnimatedScreenScroll>
@@ -645,6 +779,19 @@ const local = StyleSheet.create({
     fontSize: 12,
     lineHeight: 17,
     fontWeight: '700',
+  },
+
+  switchTrack: {
+    justifyContent: 'center',
+    borderWidth: 1,
+    flexShrink: 0,
+  },
+  switchThumb: {
+    shadowColor: '#000',
+    shadowOpacity: 0.16,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 2,
   },
   toggleRow: {
     minHeight: 66,

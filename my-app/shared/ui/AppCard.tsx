@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
 import { colors, radius, shadows, spacing } from '../theme';
-import { getUiDensityPadding } from '../utils/appPreferences';
+import { getUiDensityPaddingFor, useUiDensity } from '../utils/appPreferences';
 import { AnimatedSurface } from './AnimatedSurface';
 
 export function AppCard({
@@ -14,7 +14,27 @@ export function AppCard({
   style?: StyleProp<ViewStyle>;
   delay?: number;
 }) {
-  return <AnimatedSurface delay={delay} style={[styles.card, { padding: getUiDensityPadding(spacing.lg) }, style]}>{children}</AnimatedSurface>;
+  const flattenedStyle = StyleSheet.flatten(style) ?? {};
+  const basePadding = typeof flattenedStyle.padding === 'number' ? flattenedStyle.padding : spacing.lg;
+  const baseRadius = typeof flattenedStyle.borderRadius === 'number' ? flattenedStyle.borderRadius : radius.xl;
+  const density = useUiDensity();
+  const densityRadius = density === 'compact' ? Math.max(radius.md, baseRadius - 4) : density === 'large' ? baseRadius + 4 : baseRadius;
+
+  return (
+    <AnimatedSurface
+      delay={delay}
+      style={[
+        styles.card,
+        style,
+        {
+          padding: getUiDensityPaddingFor(density, basePadding),
+          borderRadius: densityRadius,
+        },
+      ]}
+    >
+      {children}
+    </AnimatedSurface>
+  );
 }
 
 const styles = StyleSheet.create({

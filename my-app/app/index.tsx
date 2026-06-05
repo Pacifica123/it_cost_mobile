@@ -25,6 +25,8 @@ const START_SCREEN_ROUTE: Record<string, Href> = {
   dashboard: '/it-cost/dashboard' as Href,
   quickStart: '/it-cost/quick_start' as Href,
 };
+let didAutoOpenStartScreenForSession = false;
+
 
 async function runSilentUpdateCheck() {
   const extra = (Constants.expoConfig?.extra?.updates ?? {}) as { githubOwner?: string; githubRepo?: string; githubBranch?: string };
@@ -75,12 +77,11 @@ function RootServiceToolsCard() {
 
 export default function WelcomeScreen() {
   const { appSettings, isHydrated } = useData();
-  const didApplyStartScreen = useRef(false);
   const didCheckUpdates = useRef(false);
 
   useEffect(() => {
-    if (!isHydrated || didApplyStartScreen.current) return;
-    didApplyStartScreen.current = true;
+    if (!isHydrated || didAutoOpenStartScreenForSession) return;
+    didAutoOpenStartScreenForSession = true;
     const route = START_SCREEN_ROUTE[appSettings.startScreen];
     if (route) {
       router.replace(route);

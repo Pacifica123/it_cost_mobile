@@ -55,11 +55,17 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(dataReducer, initialState);
-  configureMoneyFormat(state.appSettings, state.exchangeRates);
-  configureAppPreferences(state.appSettings);
   const [isHydrated, setIsHydrated] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [isRefreshingRates, setIsRefreshingRates] = useState(false);
+
+  useEffect(() => {
+    configureMoneyFormat(state.appSettings, state.exchangeRates);
+  }, [state.appSettings, state.exchangeRates]);
+
+  useEffect(() => {
+    configureAppPreferences(state.appSettings);
+  }, [state.appSettings]);
 
   useEffect(() => {
     let active = true;

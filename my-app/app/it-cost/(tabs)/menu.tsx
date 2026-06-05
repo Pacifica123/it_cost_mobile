@@ -14,7 +14,12 @@ export const entry = true;
 export const title = 'Меню ИТ';
 export const tab = true;
 
-const MAIN_SERVICE_ROUTES = [
+const MAIN_QUICK_ACTION_ROUTES = [
+  '/it-cost/dashboard',
+  '/it-cost/projects',
+  '/it-cost/item_catalog',
+  '/it-cost/backups',
+  '/it-cost/financial_charts',
   '/it-cost/settings',
   '/it-cost/diagnostics',
   '/it-cost/app_update',
@@ -131,8 +136,8 @@ export default function MenuInTabs() {
       <ProjectStatusCard />
 
       <AppCard style={styles.menuCard} delay={80}>
-        <Text style={styles.sectionTitle} maxFontSizeMultiplier={1.12}>Разделы</Text>
-        <SectionsMenu variant="all" hideEntries searchable mode="grouped" excludeRoutes={MAIN_SERVICE_ROUTES} />
+        <Text style={styles.sectionTitle} maxFontSizeMultiplier={1.12}>Остальные разделы</Text>
+        <SectionsMenu variant="all" hideEntries searchable mode="grouped" excludeRoutes={MAIN_QUICK_ACTION_ROUTES} />
       </AppCard>
     </AnimatedScreenScroll>
   );

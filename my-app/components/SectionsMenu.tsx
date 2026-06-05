@@ -5,9 +5,10 @@ import { Text, TextInput, View } from 'react-native';
 
 import { entryBlocks, hiddenBlocks } from '../app/generated/tabs';
 import { styles } from '../features/home/styles';
-import { colors } from '../shared/theme';
+import { colors, radius } from '../shared/theme';
 import { getScreenIcon } from '../shared/icons/getScreenIcon';
 import { AnimatedPressable, AnimatedSurface } from '../shared/ui';
+import { getUiDensityValueFor, useUiDensity } from '../shared/utils/appPreferences';
 
 type MenuVariant = 'entries' | 'all';
 type MenuMode = 'all' | 'calculation' | 'grouped';
@@ -105,28 +106,50 @@ function orderInGroup(item: RouteItem) {
 function MenuItem({ item, index }: { item: RouteItem; index?: number }) {
   const router = useRouter();
   const icon = getScreenIcon(item.title);
+  const density = useUiDensity();
+  const itemHeight = getUiDensityValueFor(density, 58, 72, 86);
+  const itemPaddingVertical = getUiDensityValueFor(density, 10, 14, 18);
+  const itemPaddingHorizontal = getUiDensityValueFor(density, 12, 16, 18);
+  const iconSize = getUiDensityValueFor(density, 30, 34, 40);
+  const iconFontSize = getUiDensityValueFor(density, 16, 18, 20);
+  const textSize = getUiDensityValueFor(density, 14, 16, 18);
+  const textLineHeight = getUiDensityValueFor(density, 18, 20, 23);
+  const chevronSize = getUiDensityValueFor(density, 18, 20, 22);
+  const itemRadius = density === 'compact' ? radius.md : density === 'large' ? radius.xl : radius.lg;
 
   return (
     <AnimatedSurface key={item.id} delay={(index ?? 0) * 18}>
       <AnimatedPressable
         onPress={() => router.push(item.route as Href)}
-        style={styles.menuItem}
+        style={[
+          styles.menuItem,
+          {
+            minHeight: itemHeight,
+            paddingVertical: itemPaddingVertical,
+            paddingHorizontal: itemPaddingHorizontal,
+            borderRadius: itemRadius,
+          },
+        ]}
         pressedScale={0.975}
         android_ripple={{ color: 'rgba(0,0,0,0.05)' }}
         accessibilityRole="button"
         accessibilityLabel={item.title}
       >
         <View style={styles.menuItemLeft}>
-          <View style={styles.menuIconWrap}>
-            <Ionicons name={icon} size={18} color={colors.text} />
+          <View style={[styles.menuIconWrap, { width: iconSize, height: iconSize, borderRadius: Math.max(10, itemRadius - 6) }]}>
+            <Ionicons name={icon} size={iconFontSize} color={colors.text} />
           </View>
 
-          <Text style={styles.menuItemText} numberOfLines={2} maxFontSizeMultiplier={1.12}>
+          <Text
+            style={[styles.menuItemText, { fontSize: textSize, lineHeight: textLineHeight }]}
+            numberOfLines={density === 'compact' ? 1 : 2}
+            maxFontSizeMultiplier={1.12}
+          >
             {item.title}
           </Text>
         </View>
 
-        <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+        <Ionicons name="chevron-forward" size={chevronSize} color={colors.textMuted} />
       </AnimatedPressable>
     </AnimatedSurface>
   );
@@ -185,10 +208,14 @@ export function SectionsMenu({
       .filter((group) => group.items.length > 0);
   }, [data, mode]);
 
+  const density = useUiDensity();
+  const listGap = getUiDensityValueFor(density, 6, 10, 14);
+  const searchHeight = getUiDensityValueFor(density, 42, 48, 56);
+
   return (
-    <View style={styles.menuList}>
+    <View style={[styles.menuList, { gap: listGap }]}>
       {searchable ? (
-        <View style={styles.menuSearchBox}>
+        <View style={[styles.menuSearchBox, { minHeight: searchHeight }]}>
           <Ionicons name="search" size={18} color={colors.textMuted} />
           <TextInput
             value={query}
