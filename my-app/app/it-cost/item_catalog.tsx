@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { projectStyles as styles } from '../../features/project/styles';
+import { useProjectStyles } from '../../features/project/styles';
 import {
   catalogItemToCapital,
   catalogItemToOperating,
@@ -12,7 +12,7 @@ import {
 } from '../../features/catalog/logic/itemCatalog';
 import { useData } from '../../store/data/DataContext';
 import { AnimatedPressable, AnimatedScreenScroll, AppCard } from '../../shared/ui';
-import { colors, radius, spacing } from '../../shared/theme';
+import { colors, radius, spacing, type ThemePalette, useThemePalette } from '../../shared/theme';
 import { formatCurrencyRU } from '../../shared/utils/currency';
 
 export const title = 'Каталог типовых позиций';
@@ -35,6 +35,8 @@ const filters: { id: FilterType; title: string }[] = [
 ];
 
 function FilterButton({ filter, active, onPress }: { filter: { id: FilterType; title: string }; active: boolean; onPress: () => void }) {
+  const local = useLocalStyles();
+
   return (
     <AnimatedPressable onPress={onPress} pressedScale={0.96} style={[local.filterButton, active && local.filterButtonActive]}>
       <Text style={[local.filterText, active && local.filterTextActive]} maxFontSizeMultiplier={1.1}>{filter.title}</Text>
@@ -43,6 +45,8 @@ function FilterButton({ filter, active, onPress }: { filter: { id: FilterType; t
 }
 
 function SortButton({ option, active, onPress }: { option: { id: SortMode; label: string }; active: boolean; onPress: () => void }) {
+  const local = useLocalStyles();
+
   return (
     <AnimatedPressable onPress={onPress} pressedScale={0.96} style={[local.filterButton, active && local.filterButtonActive]}>
       <Text style={[local.filterText, active && local.filterTextActive]} maxFontSizeMultiplier={1.1}>{option.label}</Text>
@@ -64,6 +68,8 @@ const sortCatalogItems = (items: TypicalCatalogItem[], sortMode: SortMode) => {
 };
 
 function CatalogCard({ item, onAdd }: { item: TypicalCatalogItem; onAdd: () => void }) {
+  const local = useLocalStyles();
+
   const typeLabel = item.type === 'hardware' ? 'ТО' : item.type === 'software' ? 'ПО' : 'OPEX';
   const quantityLabel = item.type === 'operating' ? 'ежемесячно' : `${item.defaultQuantity ?? 1} шт.`;
 
@@ -93,6 +99,10 @@ function CatalogCard({ item, onAdd }: { item: TypicalCatalogItem; onAdd: () => v
 }
 
 export default function ItemCatalogScreen() {
+  const local = useLocalStyles();
+
+  const styles = useProjectStyles();
+
   const data = useData();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
@@ -159,7 +169,9 @@ export default function ItemCatalogScreen() {
   );
 }
 
-const local = StyleSheet.create({
+type LocalStyleTheme = ThemePalette | typeof colors;
+
+const createLocalStyles = (theme: LocalStyleTheme) => StyleSheet.create({
   cardGap: {
     gap: spacing.md,
   },
@@ -167,10 +179,10 @@ const local = StyleSheet.create({
     minHeight: 48,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
-    backgroundColor: colors.surfaceMuted,
+    borderColor: theme.borderSoft,
+    backgroundColor: theme.surfaceMuted,
     paddingHorizontal: spacing.md,
-    color: colors.text,
+    color: theme.text,
     fontSize: 14,
     lineHeight: 18,
     fontWeight: '800',
@@ -183,29 +195,29 @@ const local = StyleSheet.create({
   filterButton: {
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
-    backgroundColor: colors.surface,
+    borderColor: theme.borderSoft,
+    backgroundColor: theme.surface,
     paddingVertical: 9,
     paddingHorizontal: 13,
   },
   filterButtonActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    backgroundColor: theme.primary,
+    borderColor: theme.primary,
   },
   filterText: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '900',
   },
   filterTextActive: {
-    color: colors.textOnDark,
+    color: theme.textOnDark,
   },
   itemCard: {
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
-    backgroundColor: colors.surface,
+    borderColor: theme.borderSoft,
+    backgroundColor: theme.surface,
     padding: spacing.md,
     gap: spacing.md,
   },
@@ -220,13 +232,13 @@ const local = StyleSheet.create({
     minWidth: 0,
   },
   itemTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 16,
     lineHeight: 21,
     fontWeight: '900',
   },
   itemDescription: {
-    color: colors.textSoft,
+    color: theme.textSoft,
     fontSize: 12,
     lineHeight: 17,
     fontWeight: '700',
@@ -234,8 +246,8 @@ const local = StyleSheet.create({
   },
   typeBadge: {
     alignSelf: 'flex-start',
-    color: colors.primary,
-    backgroundColor: colors.primarySoft,
+    color: theme.primary,
+    backgroundColor: theme.primarySoft,
     borderRadius: radius.pill,
     overflow: 'hidden',
     paddingHorizontal: 10,
@@ -251,8 +263,8 @@ const local = StyleSheet.create({
     gap: 8,
   },
   metaText: {
-    color: colors.text,
-    backgroundColor: colors.surfaceMuted,
+    color: theme.text,
+    backgroundColor: theme.surfaceMuted,
     borderRadius: radius.md,
     overflow: 'hidden',
     paddingHorizontal: 10,
@@ -267,8 +279,8 @@ const local = StyleSheet.create({
     gap: 6,
   },
   tag: {
-    color: colors.textMuted,
-    backgroundColor: colors.surfaceMuted,
+    color: theme.textMuted,
+    backgroundColor: theme.surfaceMuted,
     borderRadius: radius.pill,
     overflow: 'hidden',
     paddingHorizontal: 8,
@@ -280,14 +292,22 @@ const local = StyleSheet.create({
   addButton: {
     alignSelf: 'flex-start',
     borderRadius: radius.pill,
-    backgroundColor: colors.primary,
+    backgroundColor: theme.primary,
     paddingVertical: 10,
     paddingHorizontal: 14,
   },
   addButtonText: {
-    color: colors.textOnDark,
+    color: theme.textOnDark,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '900',
   },
 });
+
+const local = createLocalStyles(colors);
+
+function useLocalStyles() {
+  const palette = useThemePalette();
+
+  return useMemo(() => (palette.isDark ? createLocalStyles(palette) : local), [palette]);
+}

@@ -8,8 +8,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { SectionsMenu } from '../components/SectionsMenu';
 import { AppCard } from '../shared/ui/AppCard';
 import { AnimatedPressable } from '../shared/ui/AnimatedPressable';
-import { styles } from '../features/home/styles';
-import { colors } from '../shared/theme';
+import { useHomeStyles } from '../features/home/styles';
+import { colors, useThemePalette } from '../shared/theme';
 import { getScreenIcon } from '../shared/icons/getScreenIcon';
 import { useData } from '../store/data/DataContext';
 import { checkGithubUpdate } from '../features/update/logic/githubUpdate';
@@ -42,12 +42,16 @@ async function runSilentUpdateCheck() {
 }
 
 function RootServiceToolsCard() {
+  const styles = useHomeStyles();
+
+  const palette = useThemePalette();
+
   return (
     <AppCard style={styles.serviceCard} delay={70}>
       <View style={styles.serviceHeaderRow}>
         <View>
-          <Text style={styles.sectionTitle} maxFontSizeMultiplier={1.12}>Быстрый доступ</Text>
-          <Text style={styles.serviceHint} maxFontSizeMultiplier={1.1}>Настройки, диагностика и проверка обновлений.</Text>
+          <Text style={[styles.sectionTitle, { color: palette.textMuted }]} maxFontSizeMultiplier={1.12}>Быстрый доступ</Text>
+          <Text style={[styles.serviceHint, { color: palette.textMuted }]} maxFontSizeMultiplier={1.1}>Настройки, диагностика и проверка обновлений.</Text>
         </View>
       </View>
 
@@ -55,18 +59,18 @@ function RootServiceToolsCard() {
         {ROOT_SERVICE_LINKS.map((item) => (
           <AnimatedPressable
             key={item.route}
-            style={styles.serviceShortcut}
+            style={[styles.serviceShortcut, { backgroundColor: palette.surfaceMuted, borderColor: palette.borderSoft }]}
             onPress={() => router.push(item.route)}
             pressedScale={0.97}
             accessibilityRole="button"
             accessibilityLabel={item.title}
           >
-            <View style={styles.serviceIconWrap}>
-              <Ionicons name={getScreenIcon(item.title)} size={18} color={colors.text} />
+            <View style={[styles.serviceIconWrap, { backgroundColor: palette.surface, borderColor: palette.borderSoft }]}>
+              <Ionicons name={getScreenIcon(item.title)} size={18} color={palette.text} />
             </View>
             <View style={styles.serviceTextWrap}>
-              <Text style={styles.serviceTitle} numberOfLines={1} maxFontSizeMultiplier={1.08}>{item.title}</Text>
-              <Text style={styles.serviceSubtitle} numberOfLines={2} maxFontSizeMultiplier={1.08}>{item.subtitle}</Text>
+              <Text style={[styles.serviceTitle, { color: palette.text }]} numberOfLines={1} maxFontSizeMultiplier={1.08}>{item.title}</Text>
+              <Text style={[styles.serviceSubtitle, { color: palette.textMuted }]} numberOfLines={2} maxFontSizeMultiplier={1.08}>{item.subtitle}</Text>
             </View>
           </AnimatedPressable>
         ))}
@@ -76,7 +80,10 @@ function RootServiceToolsCard() {
 }
 
 export default function WelcomeScreen() {
+  const styles = useHomeStyles();
+
   const { appSettings, isHydrated } = useData();
+  const palette = useThemePalette();
   const didCheckUpdates = useRef(false);
 
   useEffect(() => {
@@ -95,18 +102,18 @@ export default function WelcomeScreen() {
   }, [appSettings.checkUpdatesOnStart, isHydrated]);
 
   return (
-    <SafeAreaView style={styles.screen} edges={['top']}>
-      <View style={styles.decorBlob1} pointerEvents="none" />
-      <View style={styles.decorBlob2} pointerEvents="none" />
+    <SafeAreaView style={[styles.screen, { backgroundColor: palette.bg }]} edges={['top']}>
+      <View style={[styles.decorBlob1, { opacity: palette.isDark ? 0.45 : 1 }]} pointerEvents="none" />
+      <View style={[styles.decorBlob2, { opacity: palette.isDark ? 0.32 : 1 }]} pointerEvents="none" />
 
       <View style={styles.page}>
         <AppCard style={styles.headerCard}>
-          <Text style={styles.title}>Добро пожаловать 👋</Text>
-          <Text style={styles.subtitle}>Выбери раздел, с которым хочешь работать</Text>
+          <Text style={[styles.title, { color: palette.text }]}>Добро пожаловать 👋</Text>
+          <Text style={[styles.subtitle, { color: palette.textSoft }]}>Начни с “Меню ИТ” — приложение подскажет следующий шаг</Text>
         </AppCard>
 
         <AppCard style={styles.menuCard}>
-          <Text style={styles.sectionTitle}>Разделы</Text>
+          <Text style={[styles.sectionTitle, { color: palette.textMuted }]}>Основной вход</Text>
           <SectionsMenu variant="entries" />
         </AppCard>
 

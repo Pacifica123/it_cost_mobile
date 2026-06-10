@@ -1,7 +1,7 @@
 import { SafeAreaView, Text, View } from 'react-native';
 
 import { type Article, formatMoney, lineTotal } from '../logic/calcInfrastructureTotals';
-import { styles } from '../styles';
+import { useInfrastructureStyles } from '../styles';
 import { AppButton } from './AppButton';
 import { Chip } from './Chip';
 import { AnimatedPressable, AnimatedScreenScroll, AnimatedSurface } from '../../../shared/ui';
@@ -27,6 +27,8 @@ export function InfrastructureArticleDetails({
   onEditItem: (item: Article['items'][number]) => void;
   onDeleteItem: (itemId: string) => void;
 }) {
+  const styles = useInfrastructureStyles();
+
   return (
     <SafeAreaView style={styles.safe}>
       <AnimatedScreenScroll contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">

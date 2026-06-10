@@ -4,8 +4,8 @@ import { useMemo, useState } from 'react';
 import { Text, TextInput, View } from 'react-native';
 
 import { entryBlocks, hiddenBlocks } from '../app/generated/tabs';
-import { styles } from '../features/home/styles';
-import { colors, radius } from '../shared/theme';
+import { useHomeStyles } from '../features/home/styles';
+import { radius, useThemePalette } from '../shared/theme';
 import { getScreenIcon } from '../shared/icons/getScreenIcon';
 import { AnimatedPressable, AnimatedSurface } from '../shared/ui';
 import { getUiDensityValueFor, useUiDensity } from '../shared/utils/appPreferences';
@@ -34,7 +34,6 @@ const NON_CALCULATION_ROUTES = new Set([
   '/it-cost/quick_start',
   '/it-cost/project_io',
   '/it-cost/backups',
-  '/it-cost/history',
   '/it-cost/settings',
   '/it-cost/diagnostics',
   '/it-cost/app_update',
@@ -43,25 +42,43 @@ const NON_CALCULATION_ROUTES = new Set([
 
 const MENU_GROUPS: MenuGroup[] = [
   {
+    id: 'project',
+    title: 'Проект',
+    routes: [
+      '/it-cost/project_hub',
+      '/it-cost/project',
+      '/it-cost/projects',
+      '/it-cost/project_io',
+      '/it-cost/backups',
+      '/it-cost/templates',
+    ],
+  },
+  {
     id: 'calc',
     title: 'Расчёты',
     routes: [
-      '/it-cost/item_catalog',
+      '/it-cost/calculations_hub',
       '/it-cost/it_kit_builder',
       '/it-cost/budget_autopick',
-      '/it-cost/it_infrastructure',
-      '/it-cost/capital_expenditures',
+      '/it-cost/item_catalog',
       '/it-cost/technical_equipment',
       '/it-cost/software',
+      '/it-cost/capital_expenditures',
       '/it-cost/operating_expenses',
       '/it-cost/electricity',
+      '/it-cost/it_infrastructure',
+      '/it-cost/implementation_plan',
     ],
   },
   {
     id: 'analytics',
     title: 'Аналитика',
     routes: [
+      '/it-cost/analytics_hub',
+      '/it-cost/dashboard',
       '/it-cost/financial_charts',
+      '/it-cost/risks',
+      '/it-cost/scenarios',
       '/it-cost/local_cloud_compare',
       '/it-cost/amortization',
       '/it-cost/NPV',
@@ -69,26 +86,26 @@ const MENU_GROUPS: MenuGroup[] = [
       '/it-cost/criteria_importance',
       '/it-cost/genetic_optimization',
       '/it-cost/method_comparison',
-      '/it-cost/scenarios',
-      '/it-cost/risks',
+    ],
+  },
+  {
+    id: 'report',
+    title: 'Отчёт',
+    routes: [
+      '/it-cost/report_hub',
+      '/it-cost/validation',
+      '/it-cost/export',
+      '/it-cost/history',
     ],
   },
   {
     id: 'service',
     title: 'Сервис',
     routes: [
-      '/it-cost/projects',
-      '/it-cost/project',
-      '/it-cost/quick_start',
-      '/it-cost/validation',
-      '/it-cost/templates',
-      '/it-cost/project_io',
-      '/it-cost/backups',
-      '/it-cost/history',
+      '/it-cost/service_hub',
       '/it-cost/settings',
       '/it-cost/diagnostics',
       '/it-cost/app_update',
-      '/it-cost/implementation_plan',
     ],
   },
 ];
@@ -104,7 +121,10 @@ function orderInGroup(item: RouteItem) {
 }
 
 function MenuItem({ item, index }: { item: RouteItem; index?: number }) {
+  const styles = useHomeStyles();
+
   const router = useRouter();
+  const palette = useThemePalette();
   const icon = getScreenIcon(item.title);
   const density = useUiDensity();
   const itemHeight = getUiDensityValueFor(density, 58, 72, 86);
@@ -128,6 +148,8 @@ function MenuItem({ item, index }: { item: RouteItem; index?: number }) {
             paddingVertical: itemPaddingVertical,
             paddingHorizontal: itemPaddingHorizontal,
             borderRadius: itemRadius,
+            backgroundColor: palette.surface,
+            borderColor: palette.borderSoft,
           },
         ]}
         pressedScale={0.975}
@@ -136,12 +158,12 @@ function MenuItem({ item, index }: { item: RouteItem; index?: number }) {
         accessibilityLabel={item.title}
       >
         <View style={styles.menuItemLeft}>
-          <View style={[styles.menuIconWrap, { width: iconSize, height: iconSize, borderRadius: Math.max(10, itemRadius - 6) }]}>
-            <Ionicons name={icon} size={iconFontSize} color={colors.text} />
+          <View style={[styles.menuIconWrap, { width: iconSize, height: iconSize, borderRadius: Math.max(10, itemRadius - 6), backgroundColor: palette.surfaceMuted, borderColor: palette.borderSoft }]}>
+            <Ionicons name={icon} size={iconFontSize} color={palette.text} />
           </View>
 
           <Text
-            style={[styles.menuItemText, { fontSize: textSize, lineHeight: textLineHeight }]}
+            style={[styles.menuItemText, { fontSize: textSize, lineHeight: textLineHeight, color: palette.text }]}
             numberOfLines={density === 'compact' ? 1 : 2}
             maxFontSizeMultiplier={1.12}
           >
@@ -149,7 +171,7 @@ function MenuItem({ item, index }: { item: RouteItem; index?: number }) {
           </Text>
         </View>
 
-        <Ionicons name="chevron-forward" size={chevronSize} color={colors.textMuted} />
+        <Ionicons name="chevron-forward" size={chevronSize} color={palette.textMuted} />
       </AnimatedPressable>
     </AnimatedSurface>
   );
@@ -161,13 +183,17 @@ export function SectionsMenu({
   searchable = false,
   mode = 'all',
   excludeRoutes = [],
+  includeRoutes,
 }: {
   variant?: MenuVariant;
   hideEntries?: boolean;
   searchable?: boolean;
   mode?: MenuMode;
   excludeRoutes?: string[];
+  includeRoutes?: string[];
 }) {
+  const styles = useHomeStyles();
+
   const [query, setQuery] = useState('');
   const safeEntryBlocks: RouteItem[] = entryBlocks ?? [];
   const safeHiddenBlocks: RouteItem[] = hiddenBlocks ?? [];
@@ -177,7 +203,9 @@ export function SectionsMenu({
     const entryIds = new Set(safeEntryBlocks.map((item) => item.id));
     const normalizedQuery = query.trim().toLowerCase();
     const excludedRouteSet = new Set(excludeRoutes);
-    const filteredByExcludedRoutes = baseData.filter((item) => !excludedRouteSet.has(item.route));
+    const includedRouteSet = includeRoutes ? new Set(includeRoutes) : null;
+    const filteredByIncludedRoutes = includedRouteSet ? baseData.filter((item) => includedRouteSet.has(item.route)) : baseData;
+    const filteredByExcludedRoutes = filteredByIncludedRoutes.filter((item) => !excludedRouteSet.has(item.route));
     const filteredByEntry = variant === 'all' && hideEntries
       ? filteredByExcludedRoutes.filter((item) => !entryIds.has(item.id) && !item.route.endsWith('/menu'))
       : filteredByExcludedRoutes;
@@ -194,7 +222,7 @@ export function SectionsMenu({
       const groupB = getGroupForRoute(b.route)?.id ?? 'z';
       return groupA.localeCompare(groupB) || orderInGroup(a) - orderInGroup(b) || a.title.localeCompare(b.title, 'ru');
     });
-  }, [baseData, excludeRoutes, hideEntries, mode, query, safeEntryBlocks, variant]);
+  }, [baseData, excludeRoutes, hideEntries, includeRoutes, mode, query, safeEntryBlocks, variant]);
 
   const groupedData = useMemo(() => {
     if (mode !== 'grouped') return [];
@@ -209,20 +237,21 @@ export function SectionsMenu({
   }, [data, mode]);
 
   const density = useUiDensity();
+  const palette = useThemePalette();
   const listGap = getUiDensityValueFor(density, 6, 10, 14);
   const searchHeight = getUiDensityValueFor(density, 42, 48, 56);
 
   return (
     <View style={[styles.menuList, { gap: listGap }]}>
       {searchable ? (
-        <View style={[styles.menuSearchBox, { minHeight: searchHeight }]}>
-          <Ionicons name="search" size={18} color={colors.textMuted} />
+        <View style={[styles.menuSearchBox, { minHeight: searchHeight, backgroundColor: palette.surfaceMuted, borderColor: palette.borderSoft }]}>
+          <Ionicons name="search" size={18} color={palette.textMuted} />
           <TextInput
             value={query}
             onChangeText={setQuery}
             placeholder="Найти раздел"
-            placeholderTextColor={colors.textMuted}
-            style={styles.menuSearchInput}
+            placeholderTextColor={palette.textMuted}
+            style={[styles.menuSearchInput, { color: palette.text }]}
             autoCorrect={false}
             autoCapitalize="none"
             maxFontSizeMultiplier={1.12}
@@ -231,24 +260,24 @@ export function SectionsMenu({
             <AnimatedPressable
               onPress={() => setQuery('')}
               pressedScale={0.9}
-              style={styles.menuSearchClear}
+              style={[styles.menuSearchClear, { backgroundColor: palette.surface }]}
               accessibilityRole="button"
               accessibilityLabel="Очистить поиск"
             >
-              <Ionicons name="close" size={18} color={colors.textMuted} />
+              <Ionicons name="close" size={18} color={palette.textMuted} />
             </AnimatedPressable>
           ) : null}
         </View>
       ) : null}
 
       {data.length === 0 ? (
-        <Text style={styles.menuEmptyText} maxFontSizeMultiplier={1.12}>Разделы не найдены</Text>
+        <Text style={[styles.menuEmptyText, { color: palette.textMuted }]} maxFontSizeMultiplier={1.12}>Разделы не найдены</Text>
       ) : null}
 
       {mode === 'grouped'
         ? groupedData.map((group) => (
             <View key={group.id} style={styles.menuGroup}>
-              <Text style={styles.menuGroupTitle} maxFontSizeMultiplier={1.1}>{group.title}</Text>
+              <Text style={[styles.menuGroupTitle, { color: palette.textMuted }]} maxFontSizeMultiplier={1.1}>{group.title}</Text>
               <View style={styles.menuGroupList}>
                 {group.items.map((item, index) => <MenuItem key={item.id} item={item} index={index} />)}
               </View>

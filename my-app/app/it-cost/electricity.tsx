@@ -8,11 +8,12 @@ import { ElectricityHeader } from '../../features/electricity/components/Electri
 import { EquipmentCard } from '../../features/electricity/components/EquipmentCard';
 import { useElectricityState } from '../../features/electricity/hooks/useElectricityState';
 import { useData } from '../../store/data/DataContext';
-import { styles } from '../../features/electricity/styles';
+import { useElectricityStyles } from '../../features/electricity/styles';
 
 export const title = 'Электропотребление';
 
 export default function ElectricityScreen() {
+  const styles = useElectricityStyles();
   const { capitalData, setElectricityTotal } = useData();
   const insets = useSafeAreaInsets();
   const electricity = useElectricityState(capitalData);

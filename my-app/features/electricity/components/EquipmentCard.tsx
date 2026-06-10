@@ -1,6 +1,6 @@
 import { Text, View } from 'react-native';
 
-import { styles } from '../styles';
+import { useElectricityStyles } from '../styles';
 import type { ElectricityItem } from '../types';
 import { AnimatedPressable, AnimatedSurface } from '../../../shared/ui';
 
@@ -10,6 +10,7 @@ export function EquipmentCard(props: {
   onRemove: (id: string) => void;
   onRestore: (id: string) => void;
 }) {
+  const styles = useElectricityStyles();
   const { item, onEdit, onRemove, onRestore } = props;
 
   return (

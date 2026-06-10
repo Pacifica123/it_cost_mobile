@@ -1,6 +1,7 @@
 import { Text, TextInput, View } from 'react-native';
 
-import { styles } from '../styles';
+import { useThemePalette } from '../../../shared/theme';
+import { useElectricityStyles } from '../styles';
 import { AnimatedPressable, AnimatedSurface } from '../../../shared/ui';
 
 export function ParamsPanel(props: {
@@ -14,6 +15,8 @@ export function ParamsPanel(props: {
   setPricePerKwh: (value: string) => void;
   resetParams: () => void;
 }) {
+  const styles = useElectricityStyles();
+  const palette = useThemePalette();
   const {
     paramsOpen,
     setParamsOpen,
@@ -64,7 +67,7 @@ export function ParamsPanel(props: {
             </View>
             <Text style={styles.paramDescription}>Сколько часов оборудование в среднем работает за один день.</Text>
             <View style={styles.inputShell}>
-              <TextInput value={hoursPerDay} onChangeText={setHoursPerDay} keyboardType="numeric" style={styles.inputStrong} placeholder="Напр. 8" placeholderTextColor="#9ca3af" />
+              <TextInput value={hoursPerDay} onChangeText={setHoursPerDay} keyboardType="numeric" style={styles.inputStrong} placeholder="Напр. 8" placeholderTextColor={palette.textMuted} />
               <Text style={styles.inputUnitText}>ч/день</Text>
             </View>
             <View style={styles.quickRow}>
@@ -83,7 +86,7 @@ export function ParamsPanel(props: {
             </View>
             <Text style={styles.paramDescription}>Укажи, сколько рабочих дней учитывается в месячном расчёте.</Text>
             <View style={styles.inputShell}>
-              <TextInput value={workDaysPerMonth} onChangeText={setWorkDaysPerMonth} keyboardType="numeric" style={styles.inputStrong} placeholder="Напр. 22" placeholderTextColor="#9ca3af" />
+              <TextInput value={workDaysPerMonth} onChangeText={setWorkDaysPerMonth} keyboardType="numeric" style={styles.inputStrong} placeholder="Напр. 22" placeholderTextColor={palette.textMuted} />
               <Text style={styles.inputUnitText}>дней</Text>
             </View>
             <View style={styles.quickRow}>
@@ -102,7 +105,7 @@ export function ParamsPanel(props: {
             </View>
             <Text style={styles.paramDescription}>Тариф за электроэнергию. Можно вводить через точку или запятую.</Text>
             <View style={styles.inputShell}>
-              <TextInput value={pricePerKwh} onChangeText={setPricePerKwh} keyboardType="decimal-pad" style={styles.inputStrong} placeholder="Напр. 7.2" placeholderTextColor="#9ca3af" />
+              <TextInput value={pricePerKwh} onChangeText={setPricePerKwh} keyboardType="decimal-pad" style={styles.inputStrong} placeholder="Напр. 7.2" placeholderTextColor={palette.textMuted} />
               <Text style={styles.inputUnitText}>₽/кВт⋅ч</Text>
             </View>
             <View style={styles.quickRow}>

@@ -1,9 +1,15 @@
+import { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 
-export const styles = StyleSheet.create({
+import { colors, radius, shadows, spacing, type ThemePalette, useThemePalette } from '../../shared/theme';
+
+
+type NpvStyleTheme = ThemePalette | typeof colors;
+
+const createNpvStyles = (theme: NpvStyleTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f3f6fb',
+    backgroundColor: theme.bg,
   },
   content: {
     padding: 12,
@@ -11,50 +17,50 @@ export const styles = StyleSheet.create({
   },
 
   heroCard: {
-    backgroundColor: '#0f172a',
+    backgroundColor: theme.hero,
     borderRadius: 16,
     paddingVertical: 14,
     paddingHorizontal: 14,
     marginBottom: 12,
   },
   heroTitle: {
-    color: '#ffffff',
+    color: theme.textOnDark,
     fontSize: 21,
     fontWeight: '800',
     marginBottom: 4,
     textAlign: 'center',
   },
   heroSubtitle: {
-    color: '#cbd5e1',
+    color: theme.textOnDarkSoft,
     fontSize: 12,
     textAlign: 'center',
     lineHeight: 17,
   },
 
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.surface,
     borderRadius: 14,
     padding: 12,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.borderSoft,
   },
 
   label: {
     fontSize: 13,
-    color: '#334155',
+    color: theme.textSoft,
     fontWeight: '600',
     marginBottom: 5,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#cbd5e1',
-    backgroundColor: '#f8fafc',
+    borderColor: theme.border,
+    backgroundColor: theme.surfaceMuted,
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 10,
     fontSize: 14,
-    color: '#0f172a',
+    color: theme.text,
     marginBottom: 8,
   },
   inputMultiline: {
@@ -63,12 +69,12 @@ export const styles = StyleSheet.create({
   },
   hint: {
     fontSize: 11,
-    color: '#64748b',
+    color: theme.textMuted,
     marginTop: -2,
     marginBottom: 8,
   },
   error: {
-    color: '#dc2626',
+    color: theme.danger,
     fontSize: 13,
     marginBottom: 8,
     fontWeight: '500',
@@ -81,24 +87,24 @@ export const styles = StyleSheet.create({
   },
   buttonPrimary: {
     flex: 1,
-    backgroundColor: '#16a34a',
+    backgroundColor: theme.success,
     borderRadius: 10,
     paddingVertical: 12,
   },
   buttonPrimaryText: {
-    color: '#ffffff',
+    color: theme.textOnDark,
     textAlign: 'center',
     fontWeight: '700',
     fontSize: 14,
   },
   buttonSecondary: {
     flex: 1,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: theme.surfaceMuted,
     borderRadius: 10,
     paddingVertical: 12,
   },
   buttonSecondaryText: {
-    color: '#0f172a',
+    color: theme.text,
     textAlign: 'center',
     fontWeight: '700',
     fontSize: 14,
@@ -111,23 +117,23 @@ export const styles = StyleSheet.create({
   },
   summaryCard: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.surface,
     borderRadius: 14,
     padding: 12,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.borderSoft,
   },
   goodCard: {
-    backgroundColor: '#f0fdf4',
-    borderColor: '#86efac',
+    backgroundColor: theme.successSoft,
+    borderColor: theme.success,
   },
   badCard: {
-    backgroundColor: '#fef2f2',
-    borderColor: '#fecaca',
+    backgroundColor: theme.dangerSoft,
+    borderColor: theme.danger,
   },
   summaryLabel: {
     fontSize: 12,
-    color: '#64748b',
+    color: theme.textMuted,
     fontWeight: '600',
     marginBottom: 4,
   },
@@ -138,13 +144,13 @@ export const styles = StyleSheet.create({
   summaryValueSmall: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#0f172a',
+    color: theme.text,
   },
 
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#0f172a',
+    color: theme.text,
     marginBottom: 8,
     textAlign: 'center',
   },
@@ -154,7 +160,7 @@ export const styles = StyleSheet.create({
 
   table: {
     borderWidth: 1,
-    borderColor: '#dbe2ea',
+    borderColor: theme.borderSoft,
     borderRadius: 10,
     overflow: 'hidden',
     marginTop: 4,
@@ -164,16 +170,16 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     minHeight: 38,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: theme.borderSoft,
   },
   headerRow: {
-    backgroundColor: '#16a34a',
+    backgroundColor: theme.success,
   },
   evenRow: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.surface,
   },
   oddRow: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.surfaceMuted,
   },
   cell: {
     flex: 1,
@@ -181,17 +187,25 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 4,
     paddingVertical: 8,
     fontSize: 11,
-    color: '#0f172a',
+    color: theme.text,
   },
   headerCell: {
-    color: '#ffffff',
+    color: theme.textOnDark,
     fontWeight: '700',
   },
 
   positive: {
-    color: '#15803d',
+    color: theme.success,
   },
   negative: {
-    color: '#dc2626',
+    color: theme.danger,
   },
 });
+
+export const styles = createNpvStyles(colors);
+
+export function useNpvStyles() {
+  const palette = useThemePalette();
+
+  return useMemo(() => createNpvStyles(palette), [palette]);
+}

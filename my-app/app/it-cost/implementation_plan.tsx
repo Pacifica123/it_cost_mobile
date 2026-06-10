@@ -3,9 +3,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { buildImplementationPlan } from '../../features/planning/logic/implementationPlan';
-import { projectStyles as styles } from '../../features/project/styles';
+import { useProjectStyles } from '../../features/project/styles';
 import { AnimatedPressable, AnimatedScreenScroll, AppCard } from '../../shared/ui';
-import { colors, radius, spacing } from '../../shared/theme';
+import { colors, radius, spacing, useThemePalette, type ThemePalette } from '../../shared/theme';
 import { useData } from '../../store/data/DataContext';
 
 export const title = 'План внедрения';
@@ -13,6 +13,10 @@ export const title = 'План внедрения';
 const STORAGE_KEY = 'itcost_implementation_checklist_v1';
 
 export default function ImplementationPlanScreen() {
+  const local = useLocalStyles();
+
+  const styles = useProjectStyles();
+  const palette = useThemePalette();
   const data = useData();
   const steps = useMemo(() => buildImplementationPlan(data), [data]);
   const [doneIds, setDoneIds] = useState<string[]>([]);
@@ -53,8 +57,8 @@ export default function ImplementationPlanScreen() {
 
       <AppCard style={local.cardGap}>
         <Text style={styles.cardTitle}>Прогресс: {percent}%</Text>
-        <View style={local.progressTrack}>
-          <View style={[local.progressFill, { width: `${percent}%` }]} />
+        <View style={[local.progressTrack, { backgroundColor: palette.surfaceMuted }]}>
+          <View style={[local.progressFill, { width: `${percent}%`, backgroundColor: palette.primary }]} />
         </View>
         <Text style={styles.cardText}>Отмечено {doneIds.length} из {steps.length} этапов.</Text>
       </AppCard>
@@ -64,14 +68,25 @@ export default function ImplementationPlanScreen() {
         {steps.map((step, index) => {
           const done = doneIds.includes(step.id);
           return (
-            <AnimatedPressable key={step.id} onPress={() => toggleStep(step.id)} pressedScale={0.98} style={[local.step, done && local.stepDone]}>
-              <View style={[local.check, done && local.checkDone]}>
-                <Text style={[local.checkText, done && local.checkTextDone]}>{done ? '✓' : index + 1}</Text>
+            <AnimatedPressable
+              key={step.id}
+              onPress={() => toggleStep(step.id)}
+              pressedScale={0.98}
+              style={[
+                local.step,
+                {
+                  backgroundColor: done ? palette.successSoft : palette.surfaceMuted,
+                  borderColor: done ? (palette.isDark ? 'rgba(34,197,94,0.42)' : 'rgba(22,163,74,0.35)') : palette.borderSoft,
+                },
+              ]}
+            >
+              <View style={[local.check, { backgroundColor: done ? palette.success : palette.surface, borderColor: done ? palette.success : palette.border }]}>
+                <Text style={[local.checkText, { color: done ? palette.textOnDark : palette.text }]}>{done ? '✓' : index + 1}</Text>
               </View>
               <View style={local.stepText}>
-                <Text style={local.stepTitle}>{step.title}</Text>
-                <Text style={local.stepSection}>{step.section}</Text>
-                <Text style={local.stepDescription}>{step.description}</Text>
+                <Text style={[local.stepTitle, { color: palette.text }]}>{step.title}</Text>
+                <Text style={[local.stepSection, { color: palette.primary }]}>{step.section}</Text>
+                <Text style={[local.stepDescription, { color: palette.textSoft }]}>{step.description}</Text>
               </View>
             </AnimatedPressable>
           );
@@ -81,18 +96,25 @@ export default function ImplementationPlanScreen() {
   );
 }
 
-const local = StyleSheet.create({
+type LocalStyleTheme = ThemePalette | typeof colors;
+
+const createLocalStyles = (theme: LocalStyleTheme) => StyleSheet.create({
   cardGap: { gap: spacing.md },
-  progressTrack: { height: 10, borderRadius: radius.pill, backgroundColor: colors.surfaceMuted, overflow: 'hidden' },
-  progressFill: { height: '100%', borderRadius: radius.pill, backgroundColor: colors.primary },
-  step: { flexDirection: 'row', gap: spacing.md, borderRadius: radius.md, borderWidth: 1, borderColor: colors.borderSoft, backgroundColor: colors.surfaceMuted, padding: 12 },
-  stepDone: { borderColor: 'rgba(22,163,74,0.35)', backgroundColor: colors.successSoft },
-  check: { width: 34, height: 34, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
-  checkDone: { backgroundColor: colors.success, borderColor: colors.success },
-  checkText: { color: colors.text, fontWeight: '900' },
-  checkTextDone: { color: '#fff' },
+  progressTrack: { height: 10, borderRadius: radius.pill, backgroundColor: theme.surfaceMuted, overflow: 'hidden' },
+  progressFill: { height: '100%', borderRadius: radius.pill, backgroundColor: theme.primary },
+  step: { flexDirection: 'row', gap: spacing.md, borderRadius: radius.md, borderWidth: 1, borderColor: theme.borderSoft, backgroundColor: theme.surfaceMuted, padding: 12 },
+  check: { width: 34, height: 34, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.border },
+  checkText: { color: theme.text, fontWeight: '900' },
   stepText: { flex: 1, minWidth: 0 },
-  stepTitle: { color: colors.text, fontSize: 15, lineHeight: 20, fontWeight: '900' },
-  stepSection: { color: colors.primary, fontSize: 11, lineHeight: 15, fontWeight: '900', textTransform: 'uppercase', marginTop: 2 },
-  stepDescription: { color: colors.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '700', marginTop: 4 },
+  stepTitle: { color: theme.text, fontSize: 15, lineHeight: 20, fontWeight: '900' },
+  stepSection: { color: theme.primary, fontSize: 11, lineHeight: 15, fontWeight: '900', textTransform: 'uppercase', marginTop: 2 },
+  stepDescription: { color: theme.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '700', marginTop: 4 },
 });
+
+const local = createLocalStyles(colors);
+
+function useLocalStyles() {
+  const palette = useThemePalette();
+
+  return useMemo(() => (palette.isDark ? createLocalStyles(palette) : local), [palette]);
+}

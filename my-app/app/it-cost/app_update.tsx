@@ -5,7 +5,7 @@ import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { checkGithubUpdate, describeUpdateStatus, type GithubUpdateInfo } from '../../features/update/logic/githubUpdate';
 import { AnimatedPressable, AnimatedScreenScroll, AppCard } from '../../shared/ui';
-import { colors, radius, spacing } from '../../shared/theme';
+import { colors, radius, spacing, type ThemePalette, useThemePalette } from '../../shared/theme';
 
 export const title = 'Обновление приложения';
 
@@ -35,6 +35,8 @@ function openUrl(url?: string) {
 }
 
 function StatusPill({ label, tone }: { label: string; tone: 'ok' | 'warn' | 'error' | 'neutral' }) {
+  const local = useLocalStyles();
+
   return (
     <View style={[local.statusPill, local[`status_${tone}`]]}>
       <Text style={local.statusPillText} maxFontSizeMultiplier={1.1}>{label}</Text>
@@ -43,6 +45,8 @@ function StatusPill({ label, tone }: { label: string; tone: 'ok' | 'warn' | 'err
 }
 
 export default function AppUpdateScreen() {
+  const local = useLocalStyles();
+
   const defaults = useMemo(getUpdateExtra, []);
   const currentVersion = Constants.expoConfig?.version || '1.0.0';
   const [owner, setOwner] = useState(defaults.githubOwner);
@@ -157,10 +161,12 @@ export default function AppUpdateScreen() {
   );
 }
 
-const local = StyleSheet.create({
+type LocalStyleTheme = ThemePalette | typeof colors;
+
+const createLocalStyles = (theme: LocalStyleTheme) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.bg,
+    backgroundColor: theme.bg,
   },
   content: {
     padding: spacing.lg,
@@ -168,18 +174,18 @@ const local = StyleSheet.create({
     gap: spacing.md,
   },
   hero: {
-    backgroundColor: colors.hero,
+    backgroundColor: theme.hero,
     borderRadius: radius.xl,
     padding: spacing.xl,
   },
   heroTitle: {
-    color: colors.textOnDark,
+    color: theme.textOnDark,
     fontSize: 26,
     lineHeight: 32,
     fontWeight: '900',
   },
   heroText: {
-    color: colors.textOnDarkSoft,
+    color: theme.textOnDarkSoft,
     fontSize: 14,
     lineHeight: 21,
     fontWeight: '600',
@@ -199,7 +205,7 @@ const local = StyleSheet.create({
     minWidth: 0,
   },
   eyebrow: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '900',
@@ -207,7 +213,7 @@ const local = StyleSheet.create({
     letterSpacing: 0.5,
   },
   versionText: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 30,
     lineHeight: 36,
     fontWeight: '900',
@@ -220,23 +226,23 @@ const local = StyleSheet.create({
     borderWidth: 1,
   },
   status_ok: {
-    backgroundColor: colors.successSoft,
-    borderColor: 'rgba(22,163,74,0.22)',
+    backgroundColor: theme.successSoft,
+    borderColor: theme.success,
   },
   status_warn: {
-    backgroundColor: colors.warningSoft,
-    borderColor: 'rgba(217,119,6,0.22)',
+    backgroundColor: theme.warningSoft,
+    borderColor: theme.warning,
   },
   status_error: {
-    backgroundColor: colors.dangerSoft,
-    borderColor: 'rgba(220,38,38,0.22)',
+    backgroundColor: theme.dangerSoft,
+    borderColor: theme.danger,
   },
   status_neutral: {
-    backgroundColor: colors.surfaceMuted,
-    borderColor: colors.borderSoft,
+    backgroundColor: theme.surfaceMuted,
+    borderColor: theme.borderSoft,
   },
   statusPillText: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '900',
@@ -248,7 +254,7 @@ const local = StyleSheet.create({
     gap: 6,
   },
   fieldLabel: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '900',
@@ -257,10 +263,10 @@ const local = StyleSheet.create({
     minHeight: 46,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
-    backgroundColor: colors.surfaceMuted,
+    borderColor: theme.borderSoft,
+    backgroundColor: theme.surfaceMuted,
     paddingHorizontal: 12,
-    color: colors.text,
+    color: theme.text,
     fontSize: 15,
     fontWeight: '800',
   },
@@ -274,7 +280,7 @@ const local = StyleSheet.create({
     flexBasis: 150,
     minHeight: 48,
     borderRadius: radius.md,
-    backgroundColor: colors.primary,
+    backgroundColor: theme.primary,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 14,
@@ -285,9 +291,9 @@ const local = StyleSheet.create({
     flexBasis: 150,
     minHeight: 48,
     borderRadius: radius.md,
-    backgroundColor: colors.surfaceMuted,
+    backgroundColor: theme.surfaceMuted,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
+    borderColor: theme.borderSoft,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 14,
@@ -297,41 +303,49 @@ const local = StyleSheet.create({
     opacity: 0.48,
   },
   primaryButtonText: {
-    color: colors.textOnDark,
+    color: theme.textOnDark,
     fontSize: 14,
     lineHeight: 18,
     fontWeight: '900',
     textAlign: 'center',
   },
   secondaryButtonText: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 14,
     lineHeight: 18,
     fontWeight: '900',
     textAlign: 'center',
   },
   cardTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 18,
     lineHeight: 24,
     fontWeight: '900',
   },
   resultTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 18,
     lineHeight: 24,
     fontWeight: '900',
   },
   resultText: {
-    color: colors.textSoft,
+    color: theme.textSoft,
     fontSize: 14,
     lineHeight: 21,
     fontWeight: '700',
   },
   resultHint: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 13,
     lineHeight: 19,
     fontWeight: '700',
   },
 });
+
+const local = createLocalStyles(colors);
+
+function useLocalStyles() {
+  const palette = useThemePalette();
+
+  return useMemo(() => (palette.isDark ? createLocalStyles(palette) : local), [palette]);
+}

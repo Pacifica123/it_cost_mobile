@@ -2,13 +2,17 @@ import React from 'react';
 import { Text, View } from 'react-native';
 
 import { useImportanceState } from '../../features/criteriaImportance/hooks/useImportanceState';
-import { importanceStyles as styles } from '../../features/criteriaImportance/styles';
+import { useImportanceStyles } from '../../features/criteriaImportance/styles';
 import { formatNumber } from '../../shared/utils/number';
 import { AnimatedPressable, AnimatedScreenScroll, AnimatedSurface } from '../../shared/ui';
+import { useThemePalette } from '../../shared/theme';
 
 export const title = 'Обоснование выбора ИТ-решения';
 
 export default function CriteriaImportanceScreen() {
+  const styles = useImportanceStyles();
+  const palette = useThemePalette();
+
   const state = useImportanceState();
 
   return (
@@ -37,7 +41,7 @@ export default function CriteriaImportanceScreen() {
         <AnimatedPressable onPress={state.run} style={styles.button}>
           <Text style={styles.buttonText}>Пересчитать важность критериев</Text>
         </AnimatedPressable>
-        {state.error ? <Text style={[styles.sectionText, { color: '#991b1b', marginTop: 10 }]}>{state.error}</Text> : null}
+        {state.error ? <Text style={[styles.sectionText, { color: palette.danger, marginTop: 10 }]}>{state.error}</Text> : null}
       </View>
 
       {state.report ? (

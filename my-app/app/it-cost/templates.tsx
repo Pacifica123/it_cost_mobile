@@ -1,17 +1,22 @@
+import { useMemo } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { router, type Href } from 'expo-router';
 
 import { projectTemplates, type ProjectTemplate } from '../../features/project/logic/templates';
-import { projectStyles as styles } from '../../features/project/styles';
+import { useProjectStyles } from '../../features/project/styles';
 import { buildReport } from '../../features/report/logic/buildReport';
 import { useData } from '../../store/data/DataContext';
 import { AnimatedPressable, AnimatedScreenScroll, AppCard } from '../../shared/ui';
-import { colors, radius, spacing } from '../../shared/theme';
+import { colors, radius, spacing, type ThemePalette, useThemePalette } from '../../shared/theme';
 import { formatCurrencyRU } from '../../shared/utils/currency';
 
 export const title = 'Шаблоны проектов';
 
 function TemplateCard({ template, onApply }: { template: ProjectTemplate; onApply: () => void }) {
+  const local = useLocalStyles();
+
+  const styles = useProjectStyles();
+
   const report = buildReport(template.state);
 
   return (
@@ -40,6 +45,10 @@ function TemplateCard({ template, onApply }: { template: ProjectTemplate; onAppl
 }
 
 export default function TemplatesScreen() {
+  const local = useLocalStyles();
+
+  const styles = useProjectStyles();
+
   const data = useData();
 
   const applyTemplate = (template: ProjectTemplate) => {
@@ -78,7 +87,9 @@ export default function TemplatesScreen() {
   );
 }
 
-const local = StyleSheet.create({
+type LocalStyleTheme = ThemePalette | typeof colors;
+
+const createLocalStyles = (theme: LocalStyleTheme) => StyleSheet.create({
   templateCard: {
     gap: spacing.md,
   },
@@ -92,21 +103,29 @@ const local = StyleSheet.create({
     flexBasis: 120,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
-    backgroundColor: colors.surfaceMuted,
+    borderColor: theme.borderSoft,
+    backgroundColor: theme.surfaceMuted,
     padding: spacing.md,
   },
   statValue: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 15,
     lineHeight: 20,
     fontWeight: '900',
   },
   statLabel: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '700',
     marginTop: 2,
   },
 });
+
+const local = createLocalStyles(colors);
+
+function useLocalStyles() {
+  const palette = useThemePalette();
+
+  return useMemo(() => (palette.isDark ? createLocalStyles(palette) : local), [palette]);
+}

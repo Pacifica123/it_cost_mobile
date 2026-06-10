@@ -3,11 +3,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 import { router, type Href } from 'expo-router';
 
-import { projectStyles as styles } from '../../features/project/styles';
+import { useProjectStyles } from '../../features/project/styles';
 import { validateProjectData, type ValidationIssue } from '../../features/validation/logic/validateProjectData';
 import { useData } from '../../store/data/DataContext';
 import { AnimatedPressable, AnimatedScreenScroll, AppCard } from '../../shared/ui';
-import { colors, radius, spacing } from '../../shared/theme';
+import { colors, radius, spacing, type ThemePalette, useThemePalette } from '../../shared/theme';
 
 export const title = 'Проверка данных';
 
@@ -18,6 +18,8 @@ const severityMeta = {
 };
 
 function IssueCard({ issue }: { issue: ValidationIssue }) {
+  const local = useLocalStyles();
+
   const meta = severityMeta[issue.severity];
   return (
     <View style={local.issueCard}>
@@ -37,6 +39,10 @@ function IssueCard({ issue }: { issue: ValidationIssue }) {
 }
 
 export default function ValidationScreen() {
+  const local = useLocalStyles();
+
+  const styles = useProjectStyles();
+
   const data = useData();
   const report = useMemo(() => validateProjectData(data), [data]);
 
@@ -80,12 +86,14 @@ export default function ValidationScreen() {
   );
 }
 
-const local = StyleSheet.create({
+type LocalStyleTheme = ThemePalette | typeof colors;
+
+const createLocalStyles = (theme: LocalStyleTheme) => StyleSheet.create({
   summaryCard: {
     gap: spacing.sm,
   },
   score: {
-    color: colors.primary,
+    color: theme.primary,
     fontSize: 42,
     lineHeight: 48,
     fontWeight: '900',
@@ -97,8 +105,8 @@ const local = StyleSheet.create({
     marginTop: 4,
   },
   statText: {
-    color: colors.textSoft,
-    backgroundColor: colors.surfaceMuted,
+    color: theme.textSoft,
+    backgroundColor: theme.surfaceMuted,
     borderRadius: radius.pill,
     paddingVertical: 7,
     paddingHorizontal: 10,
@@ -114,8 +122,8 @@ const local = StyleSheet.create({
     gap: 10,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
-    backgroundColor: colors.surfaceMuted,
+    borderColor: theme.borderSoft,
+    backgroundColor: theme.surfaceMuted,
     padding: spacing.md,
   },
   issueIcon: {
@@ -132,7 +140,7 @@ const local = StyleSheet.create({
     alignItems: 'baseline',
   },
   issueArea: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 11,
     lineHeight: 15,
     fontWeight: '900',
@@ -145,17 +153,25 @@ const local = StyleSheet.create({
     textTransform: 'uppercase',
   },
   issueTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 14,
     lineHeight: 19,
     fontWeight: '900',
     marginTop: 2,
   },
   issueDescription: {
-    color: colors.textSoft,
+    color: theme.textSoft,
     fontSize: 12,
     lineHeight: 17,
     fontWeight: '600',
     marginTop: 2,
   },
 });
+
+const local = createLocalStyles(colors);
+
+function useLocalStyles() {
+  const palette = useThemePalette();
+
+  return useMemo(() => (palette.isDark ? createLocalStyles(palette) : local), [palette]);
+}

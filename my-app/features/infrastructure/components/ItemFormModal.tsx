@@ -1,9 +1,10 @@
 import { KeyboardAvoidingView, Modal, Platform, Text, TextInput, View } from 'react-native';
 
-import { styles } from '../styles';
+import { useInfrastructureStyles } from '../styles';
 import { AnimatedSurface } from '../../../shared/ui';
 import type { ItemFormState } from '../types';
 import { AppButton } from './AppButton';
+import { useThemePalette } from '../../../shared/theme';
 
 export function ItemFormModal({
   visible,
@@ -22,6 +23,9 @@ export function ItemFormModal({
   onSave: () => void;
   onClose: () => void;
 }) {
+  const styles = useInfrastructureStyles();
+  const palette = useThemePalette();
+
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
@@ -35,7 +39,7 @@ export function ItemFormModal({
             <Text style={styles.label}>Наименование</Text>
             <TextInput
               placeholder="Например: Сервер / Роутер"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={palette.textMuted}
               value={form.itemName}
               onChangeText={(value) => onChange({ itemName: value })}
               style={styles.input}
@@ -46,7 +50,7 @@ export function ItemFormModal({
                 <Text style={styles.label}>Количество</Text>
                 <TextInput
                   placeholder="Например: 2"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={palette.textMuted}
                   value={form.quantity}
                   onChangeText={(value) => onChange({ quantity: value })}
                   keyboardType="numeric"
@@ -58,7 +62,7 @@ export function ItemFormModal({
             <Text style={styles.label}>{hasQuantity ? 'Цена за единицу' : 'Стоимость'}</Text>
             <TextInput
               placeholder="Например: 500"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={palette.textMuted}
               value={form.price}
               onChangeText={(value) => onChange({ price: value })}
               keyboardType="numeric"

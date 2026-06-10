@@ -4,7 +4,7 @@ import { Text, View } from 'react-native';
 import { Field, PrimaryButton, StatCard } from '../../features/optimization/components';
 import { useOptimizationState } from '../../features/optimization/hooks/useOptimizationState';
 import { explainOptimizationReport } from '../../features/optimization/logic/explainOptimization';
-import { optimizationStyles as styles } from '../../features/optimization/styles';
+import { useOptimizationStyles } from '../../features/optimization/styles';
 import type { OptimizationScope, OptimizationSolution } from '../../features/optimization/types';
 import { formatRub } from '../../shared/utils/currency';
 import { formatNumber } from '../../shared/utils/number';
@@ -21,6 +21,8 @@ const SCOPE_OPTIONS: ScopeOption[] = [
 ];
 
 function ExplanationBlock({ lines }: { lines: string[] }) {
+  const styles = useOptimizationStyles();
+
   if (!lines.length) return null;
 
   return (
@@ -34,6 +36,8 @@ function ExplanationBlock({ lines }: { lines: string[] }) {
 }
 
 function SolutionCard({ solution, mode }: { solution: OptimizationSolution; mode: 'ga' | 'ahp' }) {
+  const styles = useOptimizationStyles();
+
   const score = mode === 'ahp' ? solution.ahpScore ?? solution.score : solution.score;
   return (
     <View style={styles.solutionCard}>
@@ -63,6 +67,8 @@ function SolutionCard({ solution, mode }: { solution: OptimizationSolution; mode
 }
 
 export default function GeneticOptimizationScreen() {
+  const styles = useOptimizationStyles();
+
   const data = useData();
   const state = useOptimizationState(data.capitalData, data.categories, data.projectMeta);
 

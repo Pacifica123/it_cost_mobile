@@ -2,15 +2,19 @@ import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { buildAmortizationRows, getAmortizationSummary } from '../../features/planning/logic/amortization';
-import { projectStyles as styles } from '../../features/project/styles';
+import { useProjectStyles } from '../../features/project/styles';
 import { AnimatedScreenScroll, AppCard } from '../../shared/ui';
-import { colors, radius, spacing } from '../../shared/theme';
+import { colors, radius, spacing, type ThemePalette, useThemePalette } from '../../shared/theme';
 import { formatCurrencyRU } from '../../shared/utils/currency';
 import { useData } from '../../store/data/DataContext';
 
 export const title = 'Амортизация и срок службы';
 
 export default function AmortizationScreen() {
+  const local = useLocalStyles();
+
+  const styles = useProjectStyles();
+
   const data = useData();
   const rows = useMemo(() => buildAmortizationRows(data.capitalData, data.categories, data.appSettings), [data.appSettings, data.capitalData, data.categories]);
   const summary = useMemo(() => getAmortizationSummary(rows), [rows]);
@@ -60,6 +64,8 @@ export default function AmortizationScreen() {
 }
 
 function Metric({ label, value }: { label: string; value: string }) {
+  const local = useLocalStyles();
+
   return (
     <View style={local.metric}>
       <Text style={local.metricValue}>{value}</Text>
@@ -68,17 +74,27 @@ function Metric({ label, value }: { label: string; value: string }) {
   );
 }
 
-const local = StyleSheet.create({
+type LocalStyleTheme = ThemePalette | typeof colors;
+
+const createLocalStyles = (theme: LocalStyleTheme) => StyleSheet.create({
   cardGap: { gap: spacing.md },
   metrics: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  metric: { flexGrow: 1, flexBasis: 130, borderRadius: radius.md, backgroundColor: colors.surfaceMuted, padding: 12 },
-  metricValue: { color: colors.text, fontSize: 16, lineHeight: 21, fontWeight: '900' },
-  metricLabel: { color: colors.textMuted, fontSize: 12, lineHeight: 16, fontWeight: '700', marginTop: 2 },
-  row: { flexDirection: 'row', gap: spacing.md, alignItems: 'center', justifyContent: 'space-between', borderRadius: radius.md, borderWidth: 1, borderColor: colors.borderSoft, backgroundColor: colors.surfaceMuted, padding: 12 },
+  metric: { flexGrow: 1, flexBasis: 130, borderRadius: radius.md, backgroundColor: theme.surfaceMuted, padding: 12 },
+  metricValue: { color: theme.text, fontSize: 16, lineHeight: 21, fontWeight: '900' },
+  metricLabel: { color: theme.textMuted, fontSize: 12, lineHeight: 16, fontWeight: '700', marginTop: 2 },
+  row: { flexDirection: 'row', gap: spacing.md, alignItems: 'center', justifyContent: 'space-between', borderRadius: radius.md, borderWidth: 1, borderColor: theme.borderSoft, backgroundColor: theme.surfaceMuted, padding: 12 },
   rowText: { flex: 1, minWidth: 0 },
-  rowTitle: { color: colors.text, fontSize: 14, lineHeight: 19, fontWeight: '900' },
-  rowSub: { color: colors.textMuted, fontSize: 12, lineHeight: 17, fontWeight: '700', marginTop: 2 },
+  rowTitle: { color: theme.text, fontSize: 14, lineHeight: 19, fontWeight: '900' },
+  rowSub: { color: theme.textMuted, fontSize: 12, lineHeight: 17, fontWeight: '700', marginTop: 2 },
   amountBox: { alignItems: 'flex-end' },
-  amount: { color: colors.text, fontSize: 13, lineHeight: 18, fontWeight: '900' },
-  amountSub: { color: colors.textMuted, fontSize: 11, lineHeight: 14, fontWeight: '700' },
+  amount: { color: theme.text, fontSize: 13, lineHeight: 18, fontWeight: '900' },
+  amountSub: { color: theme.textMuted, fontSize: 11, lineHeight: 14, fontWeight: '700' },
 });
+
+const local = createLocalStyles(colors);
+
+function useLocalStyles() {
+  const palette = useThemePalette();
+
+  return useMemo(() => (palette.isDark ? createLocalStyles(palette) : local), [palette]);
+}

@@ -3,7 +3,7 @@ import { router, type Href } from 'expo-router';
 
 import { ReadinessCard } from '../../features/project/components/ReadinessCard';
 import { buildProjectReadiness } from '../../features/project/logic/readiness';
-import { projectStyles as styles } from '../../features/project/styles';
+import { useProjectStyles } from '../../features/project/styles';
 import { useData } from '../../store/data/DataContext';
 import { AnimatedPressable, AnimatedScreenScroll, AppCard } from '../../shared/ui';
 
@@ -62,6 +62,8 @@ const steps: QuickStep[] = [
 ];
 
 function StepCard({ step, index }: { step: QuickStep; index: number }) {
+  const styles = useProjectStyles();
+
   return (
     <AppCard delay={index * 35} style={styles.stepCard}>
       <View style={styles.stepHeader}>
@@ -83,6 +85,8 @@ function StepCard({ step, index }: { step: QuickStep; index: number }) {
 }
 
 export default function QuickStartScreen() {
+  const styles = useProjectStyles();
+
   const data = useData();
   const readiness = buildProjectReadiness(data);
 
@@ -96,7 +100,7 @@ export default function QuickStartScreen() {
           text: 'Запустить',
           onPress: () => {
             data.resetDemoData();
-            router.replace('/it-cost/export' as Href);
+            setTimeout(() => router.replace('/it-cost/export' as Href), 80);
           },
         },
       ]

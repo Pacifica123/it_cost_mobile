@@ -2,17 +2,21 @@ import { useMemo, useState } from 'react';
 import { Alert, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router, type Href } from 'expo-router';
 
-import { projectStyles as styles } from '../../features/project/styles';
+import { useProjectStyles } from '../../features/project/styles';
 import { validateProjectData } from '../../features/validation/logic/validateProjectData';
 import { parseProjectCsv } from '../../features/project/logic/importCsv';
 import { useData } from '../../store/data/DataContext';
 import type { CapitalEquipment, OperatingEquipment } from '../../store/data/types';
 import { AnimatedPressable, AnimatedScreenScroll, AppCard } from '../../shared/ui';
-import { colors, radius, spacing } from '../../shared/theme';
+import { colors, radius, spacing, type ThemePalette, useThemePalette } from '../../shared/theme';
 
 export const title = 'Импорт и экспорт проекта';
 
 function ActionButton({ label, onPress, secondary = false }: { label: string; onPress: () => void; secondary?: boolean }) {
+  const local = useLocalStyles();
+
+  const styles = useProjectStyles();
+
   return (
     <AnimatedPressable
       onPress={onPress}
@@ -49,6 +53,10 @@ const mergeOperatingDuplicates = (items: OperatingEquipment[]) => {
 };
 
 export default function ProjectIoScreen() {
+  const local = useLocalStyles();
+
+  const styles = useProjectStyles();
+
   const data = useData();
   const [importText, setImportText] = useState('');
   const [message, setMessage] = useState('');
@@ -216,7 +224,9 @@ export default function ProjectIoScreen() {
   );
 }
 
-const local = StyleSheet.create({
+type LocalStyleTheme = ThemePalette | typeof colors;
+
+const createLocalStyles = (theme: LocalStyleTheme) => StyleSheet.create({
   cardGap: {
     gap: spacing.md,
   },
@@ -225,9 +235,9 @@ const local = StyleSheet.create({
     maxHeight: 260,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surfaceMuted,
-    color: colors.text,
+    borderColor: theme.border,
+    backgroundColor: theme.surfaceMuted,
+    color: theme.text,
     padding: spacing.md,
     fontSize: 12,
     lineHeight: 17,
@@ -235,32 +245,40 @@ const local = StyleSheet.create({
   },
   importBox: {
     minHeight: 190,
-    backgroundColor: colors.surface,
+    backgroundColor: theme.surface,
   },
   previewBox: {
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
-    backgroundColor: colors.surfaceMuted,
+    borderColor: theme.borderSoft,
+    backgroundColor: theme.surfaceMuted,
     padding: spacing.md,
     gap: 6,
   },
   previewTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 13,
     lineHeight: 18,
     fontWeight: '900',
   },
   previewRow: {
-    color: colors.textSoft,
+    color: theme.textSoft,
     fontSize: 12,
     lineHeight: 17,
     fontWeight: '700',
   },
   message: {
-    color: colors.textSoft,
+    color: theme.textSoft,
     fontSize: 13,
     lineHeight: 19,
     fontWeight: '700',
   },
 });
+
+const local = createLocalStyles(colors);
+
+function useLocalStyles() {
+  const palette = useThemePalette();
+
+  return useMemo(() => (palette.isDark ? createLocalStyles(palette) : local), [palette]);
+}

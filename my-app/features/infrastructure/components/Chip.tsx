@@ -1,6 +1,6 @@
 import { Text, View } from 'react-native';
 
-import { styles } from '../styles';
+import { useInfrastructureStyles } from '../styles';
 
 export function Chip({
   text,
@@ -9,6 +9,8 @@ export function Chip({
   text: string;
   tone?: 'neutral' | 'blue' | 'green';
 }) {
+  const styles = useInfrastructureStyles();
+
   return (
     <View
       style={[

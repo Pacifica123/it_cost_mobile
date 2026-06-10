@@ -1,9 +1,14 @@
+import { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 
-export const styles = StyleSheet.create({
+import { colors, type ThemePalette, useThemePalette } from '../../shared/theme';
+
+type ElectricityTheme = ThemePalette | typeof colors;
+
+const createElectricityStyles = (theme: ElectricityTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: theme.bg,
   },
   listScreenContent: {
     padding: 12,
@@ -14,20 +19,20 @@ export const styles = StyleSheet.create({
     marginBottom: 2,
     fontSize: 14,
     fontWeight: '700',
-    color: '#111827',
+    color: theme.text,
   },
   emptyText: {
     paddingVertical: 18,
     fontSize: 14,
-    color: '#6b7280',
+    color: theme.textMuted,
   },
   card: {
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: theme.borderSoft,
     borderRadius: 16,
     padding: 12,
     marginBottom: 10,
-    backgroundColor: '#fff',
+    backgroundColor: theme.surface,
   },
   cardPressed: {
     opacity: 0.75,
@@ -44,6 +49,7 @@ export const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: '600',
+    color: theme.text,
   },
   row2: {
     flexDirection: 'row',
@@ -56,21 +62,21 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
-    borderColor: '#eef2f7',
+    borderColor: theme.borderSoft,
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 12,
-    backgroundColor: '#f9fafb',
+    backgroundColor: theme.surfaceMuted,
     minWidth: 140,
   },
   inlineLabel: {
     fontSize: 12,
-    color: '#6b7280',
+    color: theme.textMuted,
   },
   inlineValue: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#111827',
+    color: theme.text,
     marginLeft: 10,
   },
   cardBottom: {
@@ -78,10 +84,10 @@ export const styles = StyleSheet.create({
   },
   hint: {
     fontSize: 12,
-    color: '#6b7280',
+    color: theme.textMuted,
   },
   restore: {
-    color: '#2563eb',
+    color: theme.primary,
     fontWeight: '800',
   },
   form: {
@@ -92,11 +98,11 @@ export const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#dbe4f0',
+    borderColor: theme.borderSoft,
     borderRadius: 18,
     paddingHorizontal: 14,
     paddingVertical: 13,
-    backgroundColor: '#f8fbff',
+    backgroundColor: theme.surface,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -112,7 +118,7 @@ export const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: 12,
     lineHeight: 18,
-    color: '#4b5563',
+    color: theme.textSoft,
   },
   collapseToggle: {
     flexDirection: 'row',
@@ -122,12 +128,12 @@ export const styles = StyleSheet.create({
   collapseToggleText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#2563eb',
+    color: theme.primary,
   },
   collapseChevron: {
     fontSize: 14,
     fontWeight: '800',
-    color: '#2563eb',
+    color: theme.primary,
   },
   formHeader: {
     flexDirection: 'row',
@@ -144,27 +150,27 @@ export const styles = StyleSheet.create({
     marginTop: 2,
     fontSize: 12,
     lineHeight: 18,
-    color: '#6b7280',
+    color: theme.textMuted,
   },
   resetButton: {
     borderWidth: 1,
-    borderColor: '#dbe4f0',
+    borderColor: theme.borderSoft,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: '#fff',
+    backgroundColor: theme.surface,
   },
   resetButtonText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#2563eb',
+    color: theme.primary,
   },
   paramCard: {
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: theme.borderSoft,
     borderRadius: 18,
     padding: 14,
-    backgroundColor: '#fff',
+    backgroundColor: theme.surface,
     marginBottom: 10,
   },
   paramCardHeader: {
@@ -177,33 +183,33 @@ export const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     fontWeight: '800',
-    color: '#111827',
+    color: theme.text,
   },
   unitBadge: {
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 999,
-    backgroundColor: '#eff6ff',
+    backgroundColor: theme.primarySoft,
   },
   unitBadgeText: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#2563eb',
+    color: theme.primary,
   },
   paramDescription: {
     marginTop: 8,
     fontSize: 12,
     lineHeight: 18,
-    color: '#6b7280',
+    color: theme.textMuted,
   },
   inputShell: {
     marginTop: 12,
     borderWidth: 1,
-    borderColor: '#dbe4f0',
+    borderColor: theme.borderSoft,
     borderRadius: 14,
     paddingHorizontal: 12,
     paddingVertical: 4,
-    backgroundColor: '#f9fbff',
+    backgroundColor: theme.surfaceMuted,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
@@ -213,12 +219,12 @@ export const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
+    color: theme.text,
   },
   inputUnitText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#6b7280',
+    color: theme.textMuted,
   },
   quickRow: {
     flexDirection: 'row',
@@ -231,38 +237,39 @@ export const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
-    backgroundColor: '#fff',
+    borderColor: theme.borderSoft,
+    backgroundColor: theme.surface,
   },
   quickChipActive: {
-    borderColor: '#bfdbfe',
-    backgroundColor: '#eff6ff',
+    borderColor: theme.primary,
+    backgroundColor: theme.primarySoft,
   },
   quickChipText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#374151',
+    color: theme.textSoft,
   },
   quickChipTextActive: {
-    color: '#2563eb',
+    color: theme.primary,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: theme.borderSoft,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 12,
     fontSize: 14,
-    backgroundColor: '#fff',
+    backgroundColor: theme.surfaceMuted,
+    color: theme.text,
   },
   resultCollapseHeader: {
     marginTop: 14,
     borderWidth: 1,
-    borderColor: '#dbe4f0',
+    borderColor: theme.borderSoft,
     borderRadius: 18,
     paddingHorizontal: 14,
     paddingVertical: 13,
-    backgroundColor: '#f8fbff',
+    backgroundColor: theme.surface,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -277,26 +284,26 @@ export const styles = StyleSheet.create({
   resultBox: {
     marginTop: 10,
     borderWidth: 1,
-    borderColor: '#dbe4f0',
+    borderColor: theme.borderSoft,
     borderRadius: 20,
     padding: 14,
-    backgroundColor: '#f8fbff',
+    backgroundColor: theme.surface,
   },
   resultTitle: {
     fontWeight: '800',
     fontSize: 16,
-    color: '#111827',
+    color: theme.text,
   },
   resultBadge: {
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 999,
-    backgroundColor: '#e8f0ff',
+    backgroundColor: theme.primarySoft,
   },
   resultBadgeText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#2563eb',
+    color: theme.primary,
   },
   resultGrid: {
     flexDirection: 'row',
@@ -308,30 +315,30 @@ export const styles = StyleSheet.create({
     minWidth: 140,
     borderRadius: 16,
     padding: 14,
-    backgroundColor: '#fff',
+    backgroundColor: theme.surfaceMuted,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: theme.borderSoft,
   },
   resultMetricCardPrimary: {
-    borderColor: '#bfdbfe',
-    backgroundColor: '#eff6ff',
+    borderColor: theme.primary,
+    backgroundColor: theme.primarySoft,
   },
   resultMetricLabel: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#6b7280',
+    color: theme.textMuted,
     marginBottom: 8,
   },
   resultMetricValue: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#111827',
+    color: theme.text,
     lineHeight: 28,
   },
   resultMetricUnit: {
     marginTop: 4,
     fontSize: 13,
-    color: '#4b5563',
+    color: theme.textSoft,
   },
   resultStatsRow: {
     flexDirection: 'row',
@@ -343,48 +350,48 @@ export const styles = StyleSheet.create({
     borderRadius: 14,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: '#fff',
+    backgroundColor: theme.surfaceMuted,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: theme.borderSoft,
   },
   resultStatLabel: {
     fontSize: 11,
-    color: '#6b7280',
+    color: theme.textMuted,
     marginBottom: 2,
   },
   resultStatValue: {
     fontSize: 14,
     fontWeight: '800',
-    color: '#111827',
+    color: theme.text,
   },
   resultSubcard: {
     marginTop: 12,
     borderRadius: 16,
     padding: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.surfaceMuted,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: theme.borderSoft,
   },
   resultSubcardTitle: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#6b7280',
+    color: theme.textMuted,
     marginBottom: 4,
   },
   resultSubcardText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#111827',
+    color: theme.text,
   },
   resultHint: {
     marginTop: 10,
     fontSize: 12,
     lineHeight: 18,
-    color: '#6b7280',
+    color: theme.textMuted,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    backgroundColor: 'rgba(0,0,0,0.55)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -399,7 +406,7 @@ export const styles = StyleSheet.create({
     alignSelf: 'center',
     width: '100%',
     maxWidth: 420,
-    backgroundColor: '#fff',
+    backgroundColor: theme.surface,
     borderRadius: 20,
     padding: 16,
     shadowColor: '#000',
@@ -415,7 +422,7 @@ export const styles = StyleSheet.create({
     fontWeight: '800',
     marginBottom: 12,
     fontSize: 17,
-    color: '#111827',
+    color: theme.text,
   },
   modalActions: {
     marginTop: 16,
@@ -427,20 +434,28 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 12,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: theme.surfaceMuted,
   },
   modalBtnSecondaryText: {
-    color: '#111827',
+    color: theme.text,
     fontWeight: '700',
   },
   modalBtnPrimary: {
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 12,
-    backgroundColor: '#2563eb',
+    backgroundColor: theme.primary,
   },
   modalBtnPrimaryText: {
-    color: '#fff',
+    color: theme.textOnDark,
     fontWeight: '700',
   },
 });
+
+export const styles = createElectricityStyles(colors);
+
+export function useElectricityStyles() {
+  const palette = useThemePalette();
+
+  return useMemo(() => createElectricityStyles(palette), [palette]);
+}

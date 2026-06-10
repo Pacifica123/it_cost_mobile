@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, spacing } from '../theme';
+import { colors, spacing, useThemePalette } from '../theme';
 
 export function MetricRow({
   label,
@@ -11,10 +11,11 @@ export function MetricRow({
   value: string;
   emphasized?: boolean;
 }) {
+  const palette = useThemePalette();
   return (
-    <View style={styles.row}>
-      <Text style={styles.label} numberOfLines={2}>{label}</Text>
-      <Text style={[styles.value, emphasized && styles.valueEmphasized]}>{value}</Text>
+    <View style={[styles.row, { borderTopColor: palette.borderSoft }]}> 
+      <Text style={[styles.label, { color: palette.textSoft }]} numberOfLines={2}>{label}</Text>
+      <Text style={[styles.value, { color: emphasized ? palette.primary : palette.text }, emphasized && styles.valueEmphasized]}>{value}</Text>
     </View>
   );
 }

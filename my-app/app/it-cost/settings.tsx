@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   interpolateColor,
@@ -8,7 +8,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { projectStyles as styles } from '../../features/project/styles';
+import { useProjectStyles } from '../../features/project/styles';
 import { useData } from '../../store/data/DataContext';
 import type {
   AppCurrency,
@@ -20,7 +20,7 @@ import type {
   CsvDefaultSection,
 } from '../../store/data/types';
 import { AnimatedPressable, AnimatedScreenScroll, AppCard } from '../../shared/ui';
-import { colors, radius, spacing } from '../../shared/theme';
+import { colors, radius, spacing, useThemePalette, type ThemePalette } from '../../shared/theme';
 import { getUiDensityValueFor } from '../../shared/utils/appPreferences';
 import { formatCurrencyPreview, formatExchangeRate, getCurrencyRate } from '../../shared/utils/currency';
 
@@ -90,6 +90,11 @@ function OptionGroup<T extends string>({
   onChange: (value: T) => void;
   density: AppUiDensity;
 }) {
+  const local = useLocalStyles();
+
+  const styles = useProjectStyles();
+
+  const palette = useThemePalette();
   const rowMinHeight = getUiDensityValueFor(density, 48, 58, 70);
   const rowPaddingVertical = getUiDensityValueFor(density, 8, 12, 16);
   const rowPaddingHorizontal = getUiDensityValueFor(density, 10, 12, 16);
@@ -100,7 +105,7 @@ function OptionGroup<T extends string>({
 
   return (
     <AppCard style={local.cardGap}>
-      <Text style={styles.cardTitle} maxFontSizeMultiplier={1.12}>{title}</Text>
+      <Text style={[styles.cardTitle, { color: palette.text }]} maxFontSizeMultiplier={1.12}>{title}</Text>
       <View style={local.optionList}>
         {options.map((option) => {
           const active = option.value === value;
@@ -116,27 +121,27 @@ function OptionGroup<T extends string>({
                   paddingHorizontal: rowPaddingHorizontal,
                   paddingVertical: rowPaddingVertical,
                 },
-                active && local.optionButtonActive,
+                { backgroundColor: active ? palette.primarySoft : (palette.isDark ? '#1E293B' : palette.surfaceMuted), borderColor: active ? (palette.isDark ? 'rgba(96,165,250,0.38)' : 'rgba(59,130,246,0.35)') : palette.borderSoft },
               ]}
             >
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={[
                     local.optionTitle,
                     { fontSize: titleSize, lineHeight: titleLineHeight },
-                    active && local.optionTitleActive,
+                    { color: active ? palette.primary : palette.text },
                   ]} maxFontSizeMultiplier={1.1}>
                   {option.label}
                 </Text>
                 {option.description ? (
                   <Text
-                    style={[local.optionText, { fontSize: descriptionSize, lineHeight: descriptionLineHeight }]}
+                    style={[local.optionText, { fontSize: descriptionSize, lineHeight: descriptionLineHeight, color: palette.textMuted }]}
                     maxFontSizeMultiplier={1.1}
                   >
                     {option.description}
                   </Text>
                 ) : null}
               </View>
-              {active ? <Ionicons name="checkmark-circle" size={20} color={colors.primary} /> : null}
+              {active ? <Ionicons name="checkmark-circle" size={20} color={palette.primary} /> : null}
             </AnimatedPressable>
           );
         })}
@@ -146,6 +151,9 @@ function OptionGroup<T extends string>({
 }
 
 function AnimatedToggle({ value, density }: { value: boolean; density: AppUiDensity }) {
+  const local = useLocalStyles();
+
+  const palette = useThemePalette();
   const progress = useSharedValue(value ? 1 : 0);
   const trackWidth = getUiDensityValueFor(density, 46, 54, 62);
   const trackHeight = getUiDensityValueFor(density, 26, 32, 36);
@@ -161,12 +169,12 @@ function AnimatedToggle({ value, density }: { value: boolean; density: AppUiDens
     backgroundColor: interpolateColor(
       progress.value,
       [0, 1],
-      [colors.surfaceMuted, colors.primarySoft]
+      [palette.surfaceMuted, palette.primarySoft]
     ),
     borderColor: interpolateColor(
       progress.value,
       [0, 1],
-      [colors.borderSoft, 'rgba(59,130,246,0.35)']
+      [palette.borderSoft, palette.isDark ? 'rgba(96,165,250,0.38)' : 'rgba(59,130,246,0.35)']
     ),
   }));
 
@@ -174,7 +182,7 @@ function AnimatedToggle({ value, density }: { value: boolean; density: AppUiDens
     backgroundColor: interpolateColor(
       progress.value,
       [0, 1],
-      [colors.textMuted, colors.primary]
+      [palette.textMuted, palette.primary]
     ),
     transform: [{ translateX: progress.value * translateMax }],
   }));
@@ -205,6 +213,9 @@ function ToggleSetting({
   onChange: (value: boolean) => void;
   density: AppUiDensity;
 }) {
+  const local = useLocalStyles();
+
+  const palette = useThemePalette();
   const rowMinHeight = getUiDensityValueFor(density, 54, 66, 78);
   const rowPaddingVertical = getUiDensityValueFor(density, 8, 12, 16);
   const rowPaddingHorizontal = getUiDensityValueFor(density, 10, 12, 16);
@@ -224,12 +235,12 @@ function ToggleSetting({
           paddingHorizontal: rowPaddingHorizontal,
           paddingVertical: rowPaddingVertical,
         },
-        value && local.optionButtonActive,
+        { backgroundColor: value ? palette.primarySoft : (palette.isDark ? '#1E293B' : palette.surfaceMuted), borderColor: value ? (palette.isDark ? 'rgba(96,165,250,0.38)' : 'rgba(59,130,246,0.35)') : palette.borderSoft },
       ]}
     >
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Text style={[local.optionTitle, { fontSize: titleSize, lineHeight: titleLineHeight }]} maxFontSizeMultiplier={1.1}>{label}</Text>
-        <Text style={[local.optionText, { fontSize: descriptionSize, lineHeight: descriptionLineHeight }]} maxFontSizeMultiplier={1.1}>{description}</Text>
+        <Text style={[local.optionTitle, { fontSize: titleSize, lineHeight: titleLineHeight, color: palette.text }]} maxFontSizeMultiplier={1.1}>{label}</Text>
+        <Text style={[local.optionText, { fontSize: descriptionSize, lineHeight: descriptionLineHeight, color: palette.textMuted }]} maxFontSizeMultiplier={1.1}>{description}</Text>
       </View>
       <AnimatedToggle value={value} density={density} />
     </AnimatedPressable>
@@ -257,6 +268,9 @@ function StepperSetting({
   onChange: (value: number) => void;
   density: AppUiDensity;
 }) {
+  const local = useLocalStyles();
+
+  const palette = useThemePalette();
   const normalized = Number.isFinite(value) ? value : min;
   const rowMinHeight = getUiDensityValueFor(density, 58, 70, 84);
   const rowPaddingVertical = getUiDensityValueFor(density, 8, 12, 16);
@@ -273,18 +287,18 @@ function StepperSetting({
   };
 
   return (
-    <View style={[local.stepperRow, { minHeight: rowMinHeight, paddingHorizontal: rowPaddingHorizontal, paddingVertical: rowPaddingVertical }]}>
+    <View style={[local.stepperRow, { minHeight: rowMinHeight, paddingHorizontal: rowPaddingHorizontal, paddingVertical: rowPaddingVertical, backgroundColor: palette.surfaceMuted, borderColor: palette.borderSoft }]}>
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Text style={[local.optionTitle, { fontSize: titleSize, lineHeight: titleLineHeight }]} maxFontSizeMultiplier={1.1}>{label}</Text>
-        <Text style={[local.optionText, { fontSize: descriptionSize, lineHeight: descriptionLineHeight }]} maxFontSizeMultiplier={1.1}>{description}</Text>
+        <Text style={[local.optionTitle, { fontSize: titleSize, lineHeight: titleLineHeight, color: palette.text }]} maxFontSizeMultiplier={1.1}>{label}</Text>
+        <Text style={[local.optionText, { fontSize: descriptionSize, lineHeight: descriptionLineHeight, color: palette.textMuted }]} maxFontSizeMultiplier={1.1}>{description}</Text>
       </View>
       <View style={local.stepperControls}>
-        <AnimatedPressable onPress={() => change(-1)} style={[local.stepperButton, { width: stepperButtonSize, height: stepperButtonSize }]} pressedScale={0.95}>
-          <Text style={local.stepperButtonText}>−</Text>
+        <AnimatedPressable onPress={() => change(-1)} style={[local.stepperButton, { width: stepperButtonSize, height: stepperButtonSize, backgroundColor: palette.primarySoft, borderColor: palette.isDark ? 'rgba(96,165,250,0.32)' : 'rgba(59,130,246,0.2)' }]} pressedScale={0.95}>
+          <Text style={[local.stepperButtonText, { color: palette.primary }]}>−</Text>
         </AnimatedPressable>
-        <Text style={[local.stepperValue, { minWidth: valueWidth }]} maxFontSizeMultiplier={1.05}>{normalized}{suffix}</Text>
-        <AnimatedPressable onPress={() => change(1)} style={[local.stepperButton, { width: stepperButtonSize, height: stepperButtonSize }]} pressedScale={0.95}>
-          <Text style={local.stepperButtonText}>+</Text>
+        <Text style={[local.stepperValue, { minWidth: valueWidth, color: palette.text }]} maxFontSizeMultiplier={1.05}>{normalized}{suffix}</Text>
+        <AnimatedPressable onPress={() => change(1)} style={[local.stepperButton, { width: stepperButtonSize, height: stepperButtonSize, backgroundColor: palette.primarySoft, borderColor: palette.isDark ? 'rgba(96,165,250,0.32)' : 'rgba(59,130,246,0.2)' }]} pressedScale={0.95}>
+          <Text style={[local.stepperButtonText, { color: palette.primary }]}>+</Text>
         </AnimatedPressable>
       </View>
     </View>
@@ -305,7 +319,12 @@ const formatDateTime = (value: string | null) => {
 };
 
 export default function SettingsScreen() {
+  const local = useLocalStyles();
+
+  const styles = useProjectStyles();
+
   const { appSettings, exchangeRates, setAppSettings, refreshExchangeRates, isRefreshingRates } = useData();
+  const palette = useThemePalette();
   const density = appSettings.uiDensity;
   const screenGap = getUiDensityValueFor(density, spacing.sm, spacing.md, spacing.lg);
   const screenPadding = getUiDensityValueFor(density, spacing.md, spacing.lg, spacing.xl);
@@ -325,8 +344,8 @@ export default function SettingsScreen() {
   };
 
   return (
-    <AnimatedScreenScroll style={styles.screen} contentContainerStyle={[styles.content, { padding: screenPadding, gap: screenGap }]}>
-      <View style={styles.hero}>
+    <AnimatedScreenScroll style={[styles.screen, { backgroundColor: palette.bg }]} contentContainerStyle={[styles.content, { padding: screenPadding, gap: screenGap }]}>
+      <View style={[styles.hero, { backgroundColor: palette.hero }]}>
         <View style={styles.badge}>
           <Text style={styles.badgeText} maxFontSizeMultiplier={1.1}>Поведение приложения</Text>
         </View>
@@ -371,8 +390,8 @@ export default function SettingsScreen() {
       <AppCard style={local.cardGap}>
         <View style={local.cardHeaderRow}>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={styles.cardTitle} maxFontSizeMultiplier={1.12}>Курсы валют</Text>
-            <Text style={local.optionText} maxFontSizeMultiplier={1.1}>
+            <Text style={[styles.cardTitle, { color: palette.text }]} maxFontSizeMultiplier={1.12}>Курсы валют</Text>
+            <Text style={[local.optionText, { color: palette.textMuted }]} maxFontSizeMultiplier={1.1}>
               Источник: {exchangeRates.source || 'ЦБ РФ'} · обновлено: {formatDateTime(exchangeRates.updatedAt)}
             </Text>
           </View>
@@ -380,43 +399,43 @@ export default function SettingsScreen() {
             onPress={handleRefreshRates}
             disabled={isRefreshingRates}
             pressedScale={0.97}
-            style={[local.smallAction, isRefreshingRates && local.disabledAction]}
+            style={[local.smallAction, { backgroundColor: palette.primarySoft, borderColor: palette.borderSoft }, isRefreshingRates && local.disabledAction]}
           >
             {isRefreshingRates ? (
-              <ActivityIndicator size="small" color={colors.primary} />
+              <ActivityIndicator size="small" color={palette.primary} />
             ) : (
-              <Ionicons name="refresh" size={18} color={colors.primary} />
+              <Ionicons name="refresh" size={18} color={palette.primary} />
             )}
-            <Text style={local.smallActionText} maxFontSizeMultiplier={1.05}>
+            <Text style={[local.smallActionText, { color: palette.primary }]} maxFontSizeMultiplier={1.05}>
               {isRefreshingRates ? 'Обновляем' : 'Обновить'}
             </Text>
           </AnimatedPressable>
         </View>
 
         <View style={local.rateGrid}>
-          <View style={local.rateBox}>
-            <Text style={local.rateTitle} maxFontSizeMultiplier={1.08}>USD</Text>
-            <Text style={local.rateValue} maxFontSizeMultiplier={1.08}>{formatExchangeRate('USD', exchangeRates)}</Text>
+          <View style={[local.rateBox, { backgroundColor: palette.surfaceMuted, borderColor: palette.borderSoft }]}>
+            <Text style={[local.rateTitle, { color: palette.textMuted }]} maxFontSizeMultiplier={1.08}>USD</Text>
+            <Text style={[local.rateValue, { color: palette.text }]} maxFontSizeMultiplier={1.08}>{formatExchangeRate('USD', exchangeRates)}</Text>
           </View>
-          <View style={local.rateBox}>
-            <Text style={local.rateTitle} maxFontSizeMultiplier={1.08}>EUR</Text>
-            <Text style={local.rateValue} maxFontSizeMultiplier={1.08}>{formatExchangeRate('EUR', exchangeRates)}</Text>
+          <View style={[local.rateBox, { backgroundColor: palette.surfaceMuted, borderColor: palette.borderSoft }]}>
+            <Text style={[local.rateTitle, { color: palette.textMuted }]} maxFontSizeMultiplier={1.08}>EUR</Text>
+            <Text style={[local.rateValue, { color: palette.text }]} maxFontSizeMultiplier={1.08}>{formatExchangeRate('EUR', exchangeRates)}</Text>
           </View>
         </View>
 
         {selectedCurrencyNeedsRate ? (
-          <View style={local.warningBox}>
-            <Ionicons name="warning-outline" size={18} color="#b45309" />
-            <Text style={local.warningText} maxFontSizeMultiplier={1.1}>
+          <View style={[local.warningBox, { backgroundColor: palette.warningSoft, borderColor: palette.isDark ? 'rgba(245,158,11,0.34)' : '#fde68a' }]}>
+            <Ionicons name="warning-outline" size={18} color={palette.warning} />
+            <Text style={[local.warningText, { color: palette.warning }]} maxFontSizeMultiplier={1.1}>
               Для выбранной валюты курс ещё не загружен. Нажмите “Обновить”, иначе суммы будут показаны без пересчёта.
             </Text>
           </View>
         ) : null}
 
         {exchangeRates.error ? (
-          <View style={local.warningBox}>
-            <Ionicons name="cloud-offline-outline" size={18} color="#b45309" />
-            <Text style={local.warningText} maxFontSizeMultiplier={1.1}>{exchangeRates.error}</Text>
+          <View style={[local.warningBox, { backgroundColor: palette.warningSoft, borderColor: palette.isDark ? 'rgba(245,158,11,0.34)' : '#fde68a' }]}>
+            <Ionicons name="cloud-offline-outline" size={18} color={palette.warning} />
+            <Text style={[local.warningText, { color: palette.warning }]} maxFontSizeMultiplier={1.1}>{exchangeRates.error}</Text>
           </View>
         ) : null}
 
@@ -438,20 +457,20 @@ export default function SettingsScreen() {
       />
 
       <AppCard style={local.cardGap}>
-        <Text style={styles.cardTitle} maxFontSizeMultiplier={1.12}>Предпросмотр сумм</Text>
-        <Text style={local.previewValue} maxFontSizeMultiplier={1.14}>
+        <Text style={[styles.cardTitle, { color: palette.text }]} maxFontSizeMultiplier={1.12}>Предпросмотр сумм</Text>
+        <Text style={[local.previewValue, { color: palette.text }]} maxFontSizeMultiplier={1.14}>
           {formatCurrencyPreview(
             { currency: appSettings.currency, roundingMode: appSettings.roundingMode },
             exchangeRates
           )}
         </Text>
-        <Text style={local.optionText} maxFontSizeMultiplier={1.1}>
+        <Text style={[local.optionText, { color: palette.textMuted }]} maxFontSizeMultiplier={1.1}>
           Пример показывает, как 125 000 ₽ будут отображаться в меню, отчётах, графиках и расчётных разделах.
         </Text>
       </AppCard>
 
       <AppCard style={local.cardGap}>
-        <Text style={styles.cardTitle} maxFontSizeMultiplier={1.12}>Параметры расчётов</Text>
+        <Text style={[styles.cardTitle, { color: palette.text }]} maxFontSizeMultiplier={1.12}>Параметры расчётов</Text>
         <StepperSetting
           label="Горизонт расчёта"
           description="Используется в TCO/графиках и сравнении горизонта владения."
@@ -518,7 +537,7 @@ export default function SettingsScreen() {
       />
 
       <AppCard style={local.cardGap}>
-        <Text style={styles.cardTitle} maxFontSizeMultiplier={1.12}>Состав отчёта</Text>
+        <Text style={[styles.cardTitle, { color: palette.text }]} maxFontSizeMultiplier={1.12}>Состав отчёта</Text>
         <ToggleSetting
           label="Показывать графики"
           description="Добавляет в HTML/Markdown блоки финансовых графиков и структуры затрат."
@@ -572,7 +591,7 @@ export default function SettingsScreen() {
       </AppCard>
 
       <AppCard style={local.cardGap}>
-        <Text style={styles.cardTitle} maxFontSizeMultiplier={1.12}>Безопасность действий</Text>
+        <Text style={[styles.cardTitle, { color: palette.text }]} maxFontSizeMultiplier={1.12}>Безопасность действий</Text>
         <ToggleSetting
           label="Подтверждать удаление"
           description="Одиночное удаление в каталогах будет выполняться через окно подтверждения."
@@ -590,7 +609,7 @@ export default function SettingsScreen() {
       </AppCard>
 
       <AppCard style={local.cardGap}>
-        <Text style={styles.cardTitle} maxFontSizeMultiplier={1.12}>Импорт CSV</Text>
+        <Text style={[styles.cardTitle, { color: palette.text }]} maxFontSizeMultiplier={1.12}>Импорт CSV</Text>
         <ToggleSetting
           label="Требовать предпросмотр"
           description="CSV сначала показывается в предпросмотре, затем подтверждается."
@@ -616,7 +635,7 @@ export default function SettingsScreen() {
       />
 
       <AppCard style={local.cardGap}>
-        <Text style={styles.cardTitle} maxFontSizeMultiplier={1.12}>Обновления приложения</Text>
+        <Text style={[styles.cardTitle, { color: palette.text }]} maxFontSizeMultiplier={1.12}>Обновления приложения</Text>
         <ToggleSetting
           label="Проверять обновления при запуске"
           description="На стартовом экране можно автоматически проверять GitHub при открытии приложения."
@@ -629,7 +648,9 @@ export default function SettingsScreen() {
   );
 }
 
-const local = StyleSheet.create({
+type LocalStyleTheme = ThemePalette | typeof colors;
+
+const createLocalStyles = (theme: LocalStyleTheme) => StyleSheet.create({
   cardGap: {
     gap: spacing.md,
   },
@@ -645,8 +666,8 @@ const local = StyleSheet.create({
     minHeight: 58,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
-    backgroundColor: colors.surfaceMuted,
+    borderColor: theme.borderSoft,
+    backgroundColor: theme.surfaceMuted,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     flexDirection: 'row',
@@ -655,25 +676,25 @@ const local = StyleSheet.create({
   },
   optionButtonActive: {
     borderColor: 'rgba(59,130,246,0.35)',
-    backgroundColor: colors.primarySoft,
+    backgroundColor: theme.primarySoft,
   },
   optionTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 14,
     lineHeight: 18,
     fontWeight: '900',
   },
   optionTitleActive: {
-    color: colors.primary,
+    color: theme.primary,
   },
   previewValue: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 26,
     lineHeight: 32,
     fontWeight: '900',
   },
   optionText: {
-    color: colors.textSoft,
+    color: theme.textSoft,
     fontSize: 12,
     lineHeight: 17,
     fontWeight: '600',
@@ -683,8 +704,8 @@ const local = StyleSheet.create({
     minHeight: 70,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
-    backgroundColor: colors.surfaceMuted,
+    borderColor: theme.borderSoft,
+    backgroundColor: theme.surfaceMuted,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     flexDirection: 'row',
@@ -702,12 +723,12 @@ const local = StyleSheet.create({
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.primarySoft,
+    backgroundColor: theme.primarySoft,
     borderWidth: 1,
     borderColor: 'rgba(59,130,246,0.2)',
   },
   stepperButtonText: {
-    color: colors.primary,
+    color: theme.primary,
     fontSize: 20,
     lineHeight: 22,
     fontWeight: '900',
@@ -715,7 +736,7 @@ const local = StyleSheet.create({
   stepperValue: {
     minWidth: 62,
     textAlign: 'center',
-    color: colors.text,
+    color: theme.text,
     fontSize: 13,
     lineHeight: 17,
     fontWeight: '900',
@@ -723,14 +744,14 @@ const local = StyleSheet.create({
   smallAction: {
     minHeight: 42,
     borderRadius: radius.pill,
-    backgroundColor: colors.primarySoft,
+    backgroundColor: theme.primarySoft,
     paddingHorizontal: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
   },
   smallActionText: {
-    color: colors.primary,
+    color: theme.primary,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '900',
@@ -744,12 +765,12 @@ const local = StyleSheet.create({
   rateBox: {
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
-    backgroundColor: colors.surfaceMuted,
+    borderColor: theme.borderSoft,
+    backgroundColor: theme.surfaceMuted,
     padding: spacing.md,
   },
   rateTitle: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 11,
     lineHeight: 14,
     fontWeight: '900',
@@ -757,7 +778,7 @@ const local = StyleSheet.create({
     letterSpacing: 0.4,
   },
   rateValue: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 15,
     lineHeight: 21,
     fontWeight: '900',
@@ -765,9 +786,9 @@ const local = StyleSheet.create({
   },
   warningBox: {
     borderRadius: radius.md,
-    backgroundColor: '#fffbeb',
+    backgroundColor: theme.warningSoft,
     borderWidth: 1,
-    borderColor: '#fde68a',
+    borderColor: theme.warning,
     padding: spacing.md,
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -775,7 +796,7 @@ const local = StyleSheet.create({
   },
   warningText: {
     flex: 1,
-    color: '#92400e',
+    color: theme.warning,
     fontSize: 12,
     lineHeight: 17,
     fontWeight: '700',
@@ -797,8 +818,8 @@ const local = StyleSheet.create({
     minHeight: 66,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
-    backgroundColor: colors.surfaceMuted,
+    borderColor: theme.borderSoft,
+    backgroundColor: theme.surfaceMuted,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     flexDirection: 'row',
@@ -806,3 +827,11 @@ const local = StyleSheet.create({
     gap: spacing.sm,
   },
 });
+
+const local = createLocalStyles(colors);
+
+function useLocalStyles() {
+  const palette = useThemePalette();
+
+  return useMemo(() => (palette.isDark ? createLocalStyles(palette) : local), [palette]);
+}

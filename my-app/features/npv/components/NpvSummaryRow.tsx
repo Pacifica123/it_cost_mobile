@@ -1,7 +1,7 @@
 import { Text, View } from 'react-native';
 
 import { formatNpvNumber } from '../logic/npv';
-import { styles } from '../styles';
+import { useNpvStyles } from '../styles';
 import { AnimatedSurface } from '../../../shared/ui';
 
 export function NpvSummaryRow({
@@ -11,6 +11,8 @@ export function NpvSummaryRow({
   finalNpv: number;
   paybackPeriod: number | null;
 }) {
+  const styles = useNpvStyles();
+
   return (
     <AnimatedSurface style={styles.summaryRow}>
       <View style={[styles.summaryCard, finalNpv >= 0 ? styles.goodCard : styles.badCard]}>

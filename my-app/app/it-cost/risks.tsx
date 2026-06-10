@@ -3,7 +3,7 @@ import { Text, View } from 'react-native';
 import { router, type Href } from 'expo-router';
 
 import { buildRisksSummary, type RiskLevel } from '../../features/risks/logic/buildRisks';
-import { projectStyles as styles } from '../../features/project/styles';
+import { useProjectStyles } from '../../features/project/styles';
 import { useData } from '../../store/data/DataContext';
 import { AnimatedPressable, AnimatedScreenScroll, AppCard } from '../../shared/ui';
 import { colors } from '../../shared/theme';
@@ -18,6 +18,8 @@ const levelMeta: Record<RiskLevel, { label: string; color: string; icon: keyof t
 };
 
 function RiskCard({ item }: { item: ReturnType<typeof buildRisksSummary>['risks'][number] }) {
+  const styles = useProjectStyles();
+
   const meta = levelMeta[item.level];
   return (
     <AppCard style={{ gap: 10 }}>
@@ -42,6 +44,8 @@ function RiskCard({ item }: { item: ReturnType<typeof buildRisksSummary>['risks'
 }
 
 export default function RisksScreen() {
+  const styles = useProjectStyles();
+
   const data = useData();
   const summary = buildRisksSummary(data);
 

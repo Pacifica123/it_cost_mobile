@@ -1,10 +1,11 @@
+import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { buildDiagnostics } from '../../features/diagnostics/logic/buildDiagnostics';
-import { projectStyles as styles } from '../../features/project/styles';
+import { useProjectStyles } from '../../features/project/styles';
 import { useData } from '../../store/data/DataContext';
 import { AnimatedScreenScroll, AppCard } from '../../shared/ui';
-import { colors, radius, spacing } from '../../shared/theme';
+import { colors, radius, spacing, type ThemePalette, useThemePalette } from '../../shared/theme';
 
 export const title = 'Диагностика приложения';
 
@@ -16,6 +17,10 @@ const toneColor = {
 };
 
 export default function DiagnosticsScreen() {
+  const local = useLocalStyles();
+
+  const styles = useProjectStyles();
+
   const data = useData();
   const report = buildDiagnostics(data);
 
@@ -62,7 +67,9 @@ export default function DiagnosticsScreen() {
   );
 }
 
-const local = StyleSheet.create({
+type LocalStyleTheme = ThemePalette | typeof colors;
+
+const createLocalStyles = (theme: LocalStyleTheme) => StyleSheet.create({
   cardGap: {
     gap: spacing.md,
   },
@@ -75,17 +82,17 @@ const local = StyleSheet.create({
     minWidth: 110,
     flexGrow: 1,
     borderRadius: radius.md,
-    backgroundColor: colors.surfaceMuted,
+    backgroundColor: theme.surfaceMuted,
     padding: spacing.md,
   },
   value: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 18,
     lineHeight: 22,
     fontWeight: '900',
   },
   label: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '800',
@@ -106,16 +113,24 @@ const local = StyleSheet.create({
     minWidth: 0,
   },
   itemTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 15,
     lineHeight: 20,
     fontWeight: '900',
   },
   itemValue: {
-    color: colors.textSoft,
+    color: theme.textSoft,
     fontSize: 13,
     lineHeight: 18,
     fontWeight: '700',
     marginTop: 2,
   },
 });
+
+const local = createLocalStyles(colors);
+
+function useLocalStyles() {
+  const palette = useThemePalette();
+
+  return useMemo(() => (palette.isDark ? createLocalStyles(palette) : local), [palette]);
+}

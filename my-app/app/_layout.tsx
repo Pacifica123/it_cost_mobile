@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { DataProvider } from '../store/data/DataContext';
-import { colors, useThemePalette } from '../shared/theme';
+import { useThemePalette } from '../shared/theme';
 
 function RootStack() {
   const palette = useThemePalette();
@@ -27,7 +27,7 @@ function RootStack() {
 
 export default function RootLayout() {
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#020617' }}>
       <DataProvider>
         <RootStack />
       </DataProvider>

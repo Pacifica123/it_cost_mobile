@@ -4,10 +4,10 @@ import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { buildDashboardSummary, type DashboardInsight, type DashboardMetric, type DashboardTone, type DashboardTopItem } from '../../features/dashboard/logic/buildDashboard';
-import { projectStyles as styles } from '../../features/project/styles';
+import { useProjectStyles } from '../../features/project/styles';
 import { useData } from '../../store/data/DataContext';
 import { AnimatedPressable, AnimatedScreenScroll, AppCard } from '../../shared/ui';
-import { colors, radius, spacing } from '../../shared/theme';
+import { colors, radius, spacing, type ThemePalette, useThemePalette } from '../../shared/theme';
 import { formatCurrencyRU } from '../../shared/utils/currency';
 
 export const title = 'Сводка проекта';
@@ -29,6 +29,8 @@ function formatMetricValue(metric: DashboardMetric) {
 }
 
 function MetricCard({ metric }: { metric: DashboardMetric }) {
+  const local = useLocalStyles();
+
   const meta = toneMeta[metric.tone];
 
   return (
@@ -44,6 +46,8 @@ function MetricCard({ metric }: { metric: DashboardMetric }) {
 }
 
 function InsightCard({ insight }: { insight: DashboardInsight }) {
+  const local = useLocalStyles();
+
   const meta = toneMeta[insight.tone];
 
   return (
@@ -69,6 +73,8 @@ function InsightCard({ insight }: { insight: DashboardInsight }) {
 }
 
 function TopItemRow({ item, index }: { item: DashboardTopItem; index: number }) {
+  const local = useLocalStyles();
+
   return (
     <View style={local.topItemRow}>
       <View style={local.topItemNumber}>
@@ -84,6 +90,10 @@ function TopItemRow({ item, index }: { item: DashboardTopItem; index: number }) 
 }
 
 export default function DashboardScreen() {
+  const local = useLocalStyles();
+
+  const styles = useProjectStyles();
+
   const data = useData();
   const dashboard = useMemo(() => buildDashboardSummary(data), [data]);
   const budgetProgress = Math.min(100, Math.max(0, dashboard.budgetUsedPercent));
@@ -195,7 +205,9 @@ export default function DashboardScreen() {
   );
 }
 
-const local = StyleSheet.create({
+type LocalStyleTheme = ThemePalette | typeof colors;
+
+const createLocalStyles = (theme: LocalStyleTheme) => StyleSheet.create({
   statusCard: {
     gap: spacing.md,
   },
@@ -209,17 +221,17 @@ const local = StyleSheet.create({
     borderRadius: radius.lg,
     paddingVertical: 10,
     paddingHorizontal: 12,
-    backgroundColor: colors.primarySoft,
+    backgroundColor: theme.primarySoft,
     alignItems: 'center',
   },
   statusScoreValue: {
-    color: colors.primary,
+    color: theme.primary,
     fontSize: 24,
     lineHeight: 29,
     fontWeight: '900',
   },
   statusScoreLabel: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 11,
     lineHeight: 15,
     fontWeight: '900',
@@ -228,9 +240,9 @@ const local = StyleSheet.create({
   budgetBox: {
     gap: 8,
     borderRadius: radius.lg,
-    backgroundColor: colors.surfaceMuted,
+    backgroundColor: theme.surfaceMuted,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
+    borderColor: theme.borderSoft,
     padding: spacing.md,
   },
   budgetHeader: {
@@ -240,13 +252,13 @@ const local = StyleSheet.create({
     alignItems: 'baseline',
   },
   budgetTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 14,
     lineHeight: 18,
     fontWeight: '900',
   },
   budgetValue: {
-    color: colors.primary,
+    color: theme.primary,
     fontSize: 14,
     lineHeight: 18,
     fontWeight: '900',
@@ -254,16 +266,16 @@ const local = StyleSheet.create({
   progressTrack: {
     height: 10,
     borderRadius: radius.pill,
-    backgroundColor: colors.borderSoft,
+    backgroundColor: theme.borderSoft,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
     borderRadius: radius.pill,
-    backgroundColor: colors.primary,
+    backgroundColor: theme.primary,
   },
   budgetHint: {
-    color: colors.textSoft,
+    color: theme.textSoft,
     fontSize: 12,
     lineHeight: 17,
     fontWeight: '700',
@@ -280,9 +292,9 @@ const local = StyleSheet.create({
     flexGrow: 1,
     flexBasis: 138,
     borderRadius: radius.lg,
-    backgroundColor: colors.surfaceMuted,
+    backgroundColor: theme.surfaceMuted,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
+    borderColor: theme.borderSoft,
     padding: spacing.md,
     gap: 5,
   },
@@ -295,19 +307,19 @@ const local = StyleSheet.create({
     marginBottom: 2,
   },
   metricValue: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 18,
     lineHeight: 22,
     fontWeight: '900',
   },
   metricTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 13,
     lineHeight: 17,
     fontWeight: '900',
   },
   metricHint: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 11,
     lineHeight: 15,
     fontWeight: '700',
@@ -319,9 +331,9 @@ const local = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     borderRadius: radius.lg,
-    backgroundColor: colors.surfaceMuted,
+    backgroundColor: theme.surfaceMuted,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
+    borderColor: theme.borderSoft,
     padding: spacing.md,
   },
   insightIcon: {
@@ -333,13 +345,13 @@ const local = StyleSheet.create({
     marginTop: 1,
   },
   insightTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 14,
     lineHeight: 18,
     fontWeight: '900',
   },
   insightText: {
-    color: colors.textSoft,
+    color: theme.textSoft,
     fontSize: 12,
     lineHeight: 17,
     fontWeight: '700',
@@ -349,14 +361,14 @@ const local = StyleSheet.create({
     alignSelf: 'flex-start',
     marginTop: 9,
     borderRadius: radius.pill,
-    backgroundColor: colors.surface,
+    backgroundColor: theme.surface,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
+    borderColor: theme.borderSoft,
     paddingVertical: 7,
     paddingHorizontal: 10,
   },
   inlineButtonText: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '900',
@@ -369,14 +381,14 @@ const local = StyleSheet.create({
   },
   smallButton: {
     borderRadius: radius.pill,
-    backgroundColor: colors.surfaceMuted,
+    backgroundColor: theme.surfaceMuted,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
+    borderColor: theme.borderSoft,
     paddingVertical: 8,
     paddingHorizontal: 11,
   },
   smallButtonText: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '900',
@@ -386,40 +398,40 @@ const local = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     borderRadius: radius.md,
-    backgroundColor: colors.surfaceMuted,
+    backgroundColor: theme.surfaceMuted,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
+    borderColor: theme.borderSoft,
     padding: spacing.md,
   },
   topItemNumber: {
     width: 30,
     height: 30,
     borderRadius: radius.pill,
-    backgroundColor: colors.primarySoft,
+    backgroundColor: theme.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
   topItemNumberText: {
-    color: colors.primary,
+    color: theme.primary,
     fontSize: 13,
     lineHeight: 17,
     fontWeight: '900',
   },
   topItemTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 14,
     lineHeight: 18,
     fontWeight: '900',
   },
   topItemMeta: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '700',
     marginTop: 2,
   },
   topItemCost: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 13,
     lineHeight: 17,
     fontWeight: '900',
@@ -431,22 +443,30 @@ const local = StyleSheet.create({
     gap: 10,
     alignItems: 'flex-start',
     borderRadius: radius.md,
-    backgroundColor: colors.surfaceMuted,
+    backgroundColor: theme.surfaceMuted,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
+    borderColor: theme.borderSoft,
     padding: spacing.md,
   },
   eventTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 13,
     lineHeight: 17,
     fontWeight: '900',
   },
   eventText: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '700',
     marginTop: 2,
   },
 });
+
+const local = createLocalStyles(colors);
+
+function useLocalStyles() {
+  const palette = useThemePalette();
+
+  return useMemo(() => (palette.isDark ? createLocalStyles(palette) : local), [palette]);
+}

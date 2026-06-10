@@ -2,7 +2,7 @@ import { View } from 'react-native';
 
 import { ParamsPanel } from './ParamsPanel';
 import { ResultsPanel } from './ResultsPanel';
-import { styles } from '../styles';
+import { useElectricityStyles } from '../styles';
 
 export function ElectricityFooter({
   paramsOpen,
@@ -39,6 +39,8 @@ export function ElectricityFooter({
     dayRub: number;
   };
 }) {
+  const styles = useElectricityStyles();
+
   return (
     <View style={styles.form}>
       <ParamsPanel

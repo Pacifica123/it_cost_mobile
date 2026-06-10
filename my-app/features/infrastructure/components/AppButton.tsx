@@ -1,6 +1,6 @@
 import { Text } from 'react-native';
 
-import { styles } from '../styles';
+import { useInfrastructureStyles } from '../styles';
 import { AnimatedPressable } from '../../../shared/ui';
 
 export function AppButton({
@@ -14,6 +14,8 @@ export function AppButton({
   variant?: 'primary' | 'ghost' | 'danger';
   disabled?: boolean;
 }) {
+  const styles = useInfrastructureStyles();
+
   return (
     <AnimatedPressable
       onPress={onPress}

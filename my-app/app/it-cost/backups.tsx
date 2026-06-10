@@ -1,9 +1,10 @@
+import { useMemo } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 
-import { projectStyles as styles } from '../../features/project/styles';
+import { useProjectStyles } from '../../features/project/styles';
 import { useData } from '../../store/data/DataContext';
 import { AnimatedPressable, AnimatedScreenScroll, AppCard } from '../../shared/ui';
-import { colors, radius, spacing } from '../../shared/theme';
+import { colors, radius, spacing, type ThemePalette, useThemePalette } from '../../shared/theme';
 
 export const title = 'Резервные копии';
 
@@ -20,6 +21,8 @@ const formatDate = (value: string) => {
 };
 
 function ActionButton({ label, onPress, danger = false }: { label: string; onPress: () => void; danger?: boolean }) {
+  const local = useLocalStyles();
+
   return (
     <AnimatedPressable
       style={[local.button, danger && local.dangerButton]}
@@ -33,6 +36,10 @@ function ActionButton({ label, onPress, danger = false }: { label: string; onPre
 }
 
 export default function BackupsScreen() {
+  const local = useLocalStyles();
+
+  const styles = useProjectStyles();
+
   const data = useData();
 
   const createBackup = () => {
@@ -103,7 +110,9 @@ export default function BackupsScreen() {
   );
 }
 
-const local = StyleSheet.create({
+type LocalStyleTheme = ThemePalette | typeof colors;
+
+const createLocalStyles = (theme: LocalStyleTheme) => StyleSheet.create({
   cardGap: {
     gap: spacing.md,
   },
@@ -118,19 +127,19 @@ const local = StyleSheet.create({
   },
   backupTitle: {
     flex: 1,
-    color: colors.text,
+    color: theme.text,
     fontSize: 16,
     lineHeight: 21,
     fontWeight: '900',
   },
   dateText: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '800',
   },
   description: {
-    color: colors.textSoft,
+    color: theme.textSoft,
     fontSize: 13,
     lineHeight: 19,
     fontWeight: '700',
@@ -142,8 +151,8 @@ const local = StyleSheet.create({
   },
   metaPill: {
     borderRadius: radius.pill,
-    backgroundColor: colors.surfaceMuted,
-    color: colors.textSoft,
+    backgroundColor: theme.surfaceMuted,
+    color: theme.textSoft,
     paddingHorizontal: 10,
     paddingVertical: 6,
     fontSize: 12,
@@ -157,23 +166,31 @@ const local = StyleSheet.create({
   },
   button: {
     borderRadius: radius.pill,
-    backgroundColor: colors.primary,
+    backgroundColor: theme.primary,
     paddingVertical: 11,
     paddingHorizontal: 14,
     alignItems: 'center',
   },
   dangerButton: {
-    backgroundColor: colors.dangerSoft,
+    backgroundColor: theme.dangerSoft,
     borderWidth: 1,
     borderColor: 'rgba(220,38,38,0.18)',
   },
   buttonText: {
-    color: '#fff',
+    color: theme.textOnDark,
     fontSize: 13,
     lineHeight: 17,
     fontWeight: '900',
   },
   dangerButtonText: {
-    color: colors.danger,
+    color: theme.danger,
   },
 });
+
+const local = createLocalStyles(colors);
+
+function useLocalStyles() {
+  const palette = useThemePalette();
+
+  return useMemo(() => (palette.isDark ? createLocalStyles(palette) : local), [palette]);
+}

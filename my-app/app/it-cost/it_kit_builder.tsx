@@ -2,9 +2,9 @@ import { useMemo, useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { buildKitPlan, planToCapitalData, planToOperatingData, type KitProfile } from '../../features/planning/logic/kitPlanner';
-import { projectStyles as styles } from '../../features/project/styles';
+import { useProjectStyles } from '../../features/project/styles';
 import { AnimatedPressable, AnimatedScreenScroll, AppCard } from '../../shared/ui';
-import { colors, radius, spacing } from '../../shared/theme';
+import { colors, radius, spacing, type ThemePalette, useThemePalette } from '../../shared/theme';
 import { formatCurrencyRU } from '../../shared/utils/currency';
 import { formatNumber, toNumberSafe } from '../../shared/utils/number';
 import { useData } from '../../store/data/DataContext';
@@ -18,6 +18,8 @@ const profiles: Array<{ id: KitProfile; label: string }> = [
 ];
 
 function Toggle({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+  const local = useLocalStyles();
+
   return (
     <AnimatedPressable onPress={onPress} pressedScale={0.96} style={[local.chip, active && local.chipActive]}>
       <Text style={[local.chipText, active && local.chipTextActive]} maxFontSizeMultiplier={1.1}>{label}</Text>
@@ -26,6 +28,10 @@ function Toggle({ label, active, onPress }: { label: string; active: boolean; on
 }
 
 export default function ItKitBuilderScreen() {
+  const local = useLocalStyles();
+
+  const styles = useProjectStyles();
+
   const data = useData();
   const [seatsRaw, setSeatsRaw] = useState(String(data.projectMeta.targetClientSeats || 5));
   const [budgetRaw, setBudgetRaw] = useState(String(data.projectMeta.budget || 500000));
@@ -126,6 +132,8 @@ export default function ItKitBuilderScreen() {
 }
 
 function Metric({ label, value, tone = 'normal' }: { label: string; value: string; tone?: 'normal' | 'good' | 'bad' }) {
+  const local = useLocalStyles();
+
   return (
     <View style={local.metric}>
       <Text style={[local.metricValue, tone === 'good' && local.good, tone === 'bad' && local.bad]}>{value}</Text>
@@ -134,25 +142,35 @@ function Metric({ label, value, tone = 'normal' }: { label: string; value: strin
   );
 }
 
-const local = StyleSheet.create({
+type LocalStyleTheme = ThemePalette | typeof colors;
+
+const createLocalStyles = (theme: LocalStyleTheme) => StyleSheet.create({
   cardGap: { gap: spacing.md },
   row2: { flexDirection: 'row', gap: spacing.md },
   col: { flex: 1 },
-  label: { color: colors.textMuted, fontSize: 12, lineHeight: 16, fontWeight: '900', textTransform: 'uppercase', marginBottom: 6 },
-  input: { minHeight: 50, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surfaceMuted, paddingHorizontal: 14, color: colors.text, fontSize: 16, fontWeight: '800' },
+  label: { color: theme.textMuted, fontSize: 12, lineHeight: 16, fontWeight: '900', textTransform: 'uppercase', marginBottom: 6 },
+  input: { minHeight: 50, borderRadius: radius.md, borderWidth: 1, borderColor: theme.border, backgroundColor: theme.surfaceMuted, paddingHorizontal: 14, color: theme.text, fontSize: 16, fontWeight: '800' },
   chipsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surfaceMuted, paddingVertical: 10, paddingHorizontal: 12 },
-  chipActive: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
-  chipText: { color: colors.textSoft, fontWeight: '900' },
-  chipTextActive: { color: colors.primary },
+  chip: { borderRadius: radius.pill, borderWidth: 1, borderColor: theme.border, backgroundColor: theme.surfaceMuted, paddingVertical: 10, paddingHorizontal: 12 },
+  chipActive: { borderColor: theme.primary, backgroundColor: theme.primarySoft },
+  chipText: { color: theme.textSoft, fontWeight: '900' },
+  chipTextActive: { color: theme.primary },
   metrics: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  metric: { flexGrow: 1, flexBasis: 130, borderRadius: radius.md, backgroundColor: colors.surfaceMuted, padding: 12 },
-  metricValue: { color: colors.text, fontSize: 16, lineHeight: 21, fontWeight: '900' },
-  metricLabel: { color: colors.textMuted, fontSize: 12, lineHeight: 16, fontWeight: '700', marginTop: 2 },
-  good: { color: colors.success },
-  bad: { color: colors.danger },
-  subTitle: { color: colors.text, fontSize: 15, lineHeight: 20, fontWeight: '900' },
-  listText: { color: colors.textSoft, fontSize: 13, lineHeight: 19, fontWeight: '700' },
-  warningBox: { borderRadius: radius.md, backgroundColor: colors.warningSoft, padding: 12, gap: 4 },
-  warningText: { color: colors.warning, fontSize: 12, lineHeight: 17, fontWeight: '800' },
+  metric: { flexGrow: 1, flexBasis: 130, borderRadius: radius.md, backgroundColor: theme.surfaceMuted, padding: 12 },
+  metricValue: { color: theme.text, fontSize: 16, lineHeight: 21, fontWeight: '900' },
+  metricLabel: { color: theme.textMuted, fontSize: 12, lineHeight: 16, fontWeight: '700', marginTop: 2 },
+  good: { color: theme.success },
+  bad: { color: theme.danger },
+  subTitle: { color: theme.text, fontSize: 15, lineHeight: 20, fontWeight: '900' },
+  listText: { color: theme.textSoft, fontSize: 13, lineHeight: 19, fontWeight: '700' },
+  warningBox: { borderRadius: radius.md, backgroundColor: theme.warningSoft, padding: 12, gap: 4 },
+  warningText: { color: theme.warning, fontSize: 12, lineHeight: 17, fontWeight: '800' },
 });
+
+const local = createLocalStyles(colors);
+
+function useLocalStyles() {
+  const palette = useThemePalette();
+
+  return useMemo(() => (palette.isDark ? createLocalStyles(palette) : local), [palette]);
+}

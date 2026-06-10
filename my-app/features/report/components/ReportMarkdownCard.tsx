@@ -1,10 +1,14 @@
 import { Alert, Share, Text, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 
+import { useThemePalette } from '../../../shared/theme';
 import { AppCard, AnimatedPressable } from '../../../shared/ui';
-import { styles } from '../styles';
+import { useReportStyles } from '../styles';
 
 export function ReportMarkdownCard({ markdown, html }: { markdown: string; html?: string }) {
+  const styles = useReportStyles();
+
+  const palette = useThemePalette();
   const shareMarkdown = async () => {
     try {
       await Share.share({ title: 'Текст отчёта', message: markdown });
@@ -33,41 +37,37 @@ export function ReportMarkdownCard({ markdown, html }: { markdown: string; html?
 
   return (
     <AppCard style={styles.card}>
-      <Text style={styles.cardTitle} maxFontSizeMultiplier={1.12}>Экспорт отчёта</Text>
-      <Text style={styles.insightLead} maxFontSizeMultiplier={1.12}>
+      <Text style={[styles.cardTitle, { color: palette.text }]} maxFontSizeMultiplier={1.12}>Экспорт отчёта</Text>
+      <Text style={[styles.insightLead, { color: palette.textSoft }]} maxFontSizeMultiplier={1.12}>
         Markdown удобно отправлять как текст, а HTML-версия подготовлена для печати или сохранения в PDF через системное меню браузера.
       </Text>
 
       <View style={styles.exportActions}>
-        <AnimatedPressable style={styles.exportButton} pressedScale={0.97} onPress={shareMarkdown}>
-          <Text style={styles.exportButtonText} maxFontSizeMultiplier={1.1}>Поделиться Markdown</Text>
+        <AnimatedPressable style={[styles.exportButton, { backgroundColor: palette.primary }]} pressedScale={0.97} onPress={shareMarkdown}>
+          <Text style={[styles.exportButtonText, { color: palette.textOnDark }]} maxFontSizeMultiplier={1.1}>Поделиться Markdown</Text>
         </AnimatedPressable>
         {html ? (
           <>
-            <AnimatedPressable style={styles.exportButton} pressedScale={0.97} onPress={openHtmlPreview}>
-              <Text style={styles.exportButtonText} maxFontSizeMultiplier={1.1}>Открыть HTML/PDF</Text>
+            <AnimatedPressable style={[styles.exportButton, { backgroundColor: palette.primary }]} pressedScale={0.97} onPress={openHtmlPreview}>
+              <Text style={[styles.exportButtonText, { color: palette.textOnDark }]} maxFontSizeMultiplier={1.1}>Открыть HTML/PDF</Text>
             </AnimatedPressable>
-            <AnimatedPressable style={styles.exportButton} pressedScale={0.97} onPress={shareHtml}>
-              <Text style={styles.exportButtonText} maxFontSizeMultiplier={1.1}>Поделиться HTML</Text>
+            <AnimatedPressable style={[styles.exportButton, { backgroundColor: palette.primary }]} pressedScale={0.97} onPress={shareHtml}>
+              <Text style={[styles.exportButtonText, { color: palette.textOnDark }]} maxFontSizeMultiplier={1.1}>Поделиться HTML</Text>
             </AnimatedPressable>
           </>
         ) : null}
       </View>
 
-      <Text style={styles.sectionLabel} maxFontSizeMultiplier={1.12}>Markdown</Text>
-      <View style={styles.markdownBox}>
-        <Text selectable style={styles.markdownText} maxFontSizeMultiplier={1.08}>
-          {markdown}
-        </Text>
+      <Text style={[styles.sectionLabel, { color: palette.textSoft }]} maxFontSizeMultiplier={1.12}>Markdown</Text>
+      <View style={[styles.markdownBox, { backgroundColor: palette.surfaceMuted, borderColor: palette.borderSoft }]}> 
+        <Text selectable style={[styles.markdownText, { color: palette.text }]} maxFontSizeMultiplier={1.08}>{markdown}</Text>
       </View>
 
       {html ? (
         <>
-          <Text style={styles.sectionLabel} maxFontSizeMultiplier={1.12}>HTML</Text>
-          <View style={styles.markdownBox}>
-            <Text selectable style={styles.markdownText} maxFontSizeMultiplier={1.04}>
-              {html}
-            </Text>
+          <Text style={[styles.sectionLabel, { color: palette.textSoft }]} maxFontSizeMultiplier={1.12}>HTML</Text>
+          <View style={[styles.markdownBox, { backgroundColor: palette.surfaceMuted, borderColor: palette.borderSoft }]}> 
+            <Text selectable style={[styles.markdownText, { color: palette.text }]} maxFontSizeMultiplier={1.04}>{html}</Text>
           </View>
         </>
       ) : null}

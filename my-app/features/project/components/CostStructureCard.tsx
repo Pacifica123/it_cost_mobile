@@ -1,9 +1,9 @@
 import { Text, View } from 'react-native';
 
-import { colors } from '../../../shared/theme';
+import { colors, useThemePalette } from '../../../shared/theme';
 import { AppCard } from '../../../shared/ui';
 import { formatCurrencyRU } from '../../../shared/utils/currency';
-import { projectStyles as styles } from '../styles';
+import { useProjectStyles } from '../styles';
 
 type CostSlice = {
   id: string;
@@ -23,6 +23,9 @@ export function CostStructureCard({
   opexAnnual: number;
   electricityAnnual: number;
 }) {
+  const styles = useProjectStyles();
+
+  const palette = useThemePalette();
   const slices: CostSlice[] = [
     { id: 'hardware', label: 'ТО', value: hardwareTotal, color: colors.primary },
     { id: 'software', label: 'ПО', value: softwareTotal, color: colors.success },
@@ -34,8 +37,8 @@ export function CostStructureCard({
 
   return (
     <AppCard delay={120} style={styles.chartCard}>
-      <Text style={styles.cardTitle} maxFontSizeMultiplier={1.12}>Структура затрат</Text>
-      <Text style={styles.cardText} maxFontSizeMultiplier={1.12}>
+      <Text style={[styles.cardTitle, { color: palette.text }]} maxFontSizeMultiplier={1.12}>Структура затрат</Text>
+      <Text style={[styles.cardText, { color: palette.textSoft }]} maxFontSizeMultiplier={1.12}>
         Быстрый график показывает, какая часть расчёта сильнее всего влияет на итог.
       </Text>
 
@@ -46,12 +49,12 @@ export function CostStructureCard({
           return (
             <View key={slice.id} style={styles.barRow}>
               <View style={styles.barLabelRow}>
-                <Text style={styles.barLabel} maxFontSizeMultiplier={1.1}>{slice.label}</Text>
-                <Text style={styles.barValue} maxFontSizeMultiplier={1.1}>
+                <Text style={[styles.barLabel, { color: palette.textSoft }]} maxFontSizeMultiplier={1.1}>{slice.label}</Text>
+                <Text style={[styles.barValue, { color: palette.text }]} maxFontSizeMultiplier={1.1}>
                   {formatCurrencyRU(slice.value)} · {percentOfTotal}%
                 </Text>
               </View>
-              <View style={styles.barTrack}>
+              <View style={[styles.barTrack, { backgroundColor: palette.surfaceMuted }]}> 
                 <View style={[styles.barFill, { width: `${percentOfMax}%`, backgroundColor: slice.color }]} />
               </View>
             </View>

@@ -2,9 +2,9 @@ import { useMemo, useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { buildProfilePlans, getProfileLabel, pickBestAffordablePlan, planToCapitalData, planToOperatingData } from '../../features/planning/logic/kitPlanner';
-import { projectStyles as styles } from '../../features/project/styles';
+import { useProjectStyles } from '../../features/project/styles';
 import { AnimatedPressable, AnimatedScreenScroll, AppCard } from '../../shared/ui';
-import { colors, radius, spacing } from '../../shared/theme';
+import { colors, radius, spacing, type ThemePalette, useThemePalette } from '../../shared/theme';
 import { formatCurrencyRU } from '../../shared/utils/currency';
 import { formatNumber, toNumberSafe } from '../../shared/utils/number';
 import { useData } from '../../store/data/DataContext';
@@ -12,6 +12,10 @@ import { useData } from '../../store/data/DataContext';
 export const title = 'Автоподбор под бюджет';
 
 export default function BudgetAutopickScreen() {
+  const local = useLocalStyles();
+
+  const styles = useProjectStyles();
+
   const data = useData();
   const [seatsRaw, setSeatsRaw] = useState(String(data.projectMeta.targetClientSeats || 5));
   const [budgetRaw, setBudgetRaw] = useState(String(data.projectMeta.budget || 500000));
@@ -97,6 +101,8 @@ export default function BudgetAutopickScreen() {
 }
 
 function Metric({ label, value, tone = 'normal' }: { label: string; value: string; tone?: 'normal' | 'good' | 'bad' }) {
+  const local = useLocalStyles();
+
   return (
     <View style={local.metric}>
       <Text style={[local.metricValue, tone === 'good' && local.good, tone === 'bad' && local.bad]}>{value}</Text>
@@ -105,24 +111,34 @@ function Metric({ label, value, tone = 'normal' }: { label: string; value: strin
   );
 }
 
-const local = StyleSheet.create({
+type LocalStyleTheme = ThemePalette | typeof colors;
+
+const createLocalStyles = (theme: LocalStyleTheme) => StyleSheet.create({
   cardGap: { gap: spacing.md },
   row2: { flexDirection: 'row', gap: spacing.md },
   col: { flex: 1 },
-  label: { color: colors.textMuted, fontSize: 12, lineHeight: 16, fontWeight: '900', textTransform: 'uppercase', marginBottom: 6 },
-  input: { minHeight: 50, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surfaceMuted, paddingHorizontal: 14, color: colors.text, fontSize: 16, fontWeight: '800' },
-  bestTitle: { color: colors.text, fontSize: 20, lineHeight: 25, fontWeight: '900' },
+  label: { color: theme.textMuted, fontSize: 12, lineHeight: 16, fontWeight: '900', textTransform: 'uppercase', marginBottom: 6 },
+  input: { minHeight: 50, borderRadius: radius.md, borderWidth: 1, borderColor: theme.border, backgroundColor: theme.surfaceMuted, paddingHorizontal: 14, color: theme.text, fontSize: 16, fontWeight: '800' },
+  bestTitle: { color: theme.text, fontSize: 20, lineHeight: 25, fontWeight: '900' },
   metrics: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  metric: { flexGrow: 1, flexBasis: 130, borderRadius: radius.md, backgroundColor: colors.surfaceMuted, padding: 12 },
-  metricValue: { color: colors.text, fontSize: 16, lineHeight: 21, fontWeight: '900' },
-  metricLabel: { color: colors.textMuted, fontSize: 12, lineHeight: 16, fontWeight: '700', marginTop: 2 },
-  good: { color: colors.success },
-  bad: { color: colors.danger },
-  planRow: { flexDirection: 'row', gap: spacing.md, borderRadius: radius.md, borderWidth: 1, borderColor: colors.borderSoft, padding: 12, backgroundColor: colors.surfaceMuted },
+  metric: { flexGrow: 1, flexBasis: 130, borderRadius: radius.md, backgroundColor: theme.surfaceMuted, padding: 12 },
+  metricValue: { color: theme.text, fontSize: 16, lineHeight: 21, fontWeight: '900' },
+  metricLabel: { color: theme.textMuted, fontSize: 12, lineHeight: 16, fontWeight: '700', marginTop: 2 },
+  good: { color: theme.success },
+  bad: { color: theme.danger },
+  planRow: { flexDirection: 'row', gap: spacing.md, borderRadius: radius.md, borderWidth: 1, borderColor: theme.borderSoft, padding: 12, backgroundColor: theme.surfaceMuted },
   planTextBox: { flex: 1, minWidth: 0 },
-  planTitle: { color: colors.text, fontSize: 15, lineHeight: 20, fontWeight: '900' },
-  planSub: { color: colors.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '700', marginTop: 2 },
+  planTitle: { color: theme.text, fontSize: 15, lineHeight: 20, fontWeight: '900' },
+  planSub: { color: theme.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '700', marginTop: 2 },
   planAmounts: { alignItems: 'flex-end', justifyContent: 'center', gap: 4 },
-  planAmount: { color: colors.text, fontSize: 13, lineHeight: 18, fontWeight: '900' },
+  planAmount: { color: theme.text, fontSize: 13, lineHeight: 18, fontWeight: '900' },
   planStatus: { fontSize: 11, lineHeight: 14, fontWeight: '900', textTransform: 'uppercase' },
 });
+
+const local = createLocalStyles(colors);
+
+function useLocalStyles() {
+  const palette = useThemePalette();
+
+  return useMemo(() => (palette.isDark ? createLocalStyles(palette) : local), [palette]);
+}

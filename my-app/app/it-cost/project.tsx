@@ -1,15 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router, type Href } from 'expo-router';
 
 import { CostStructureCard } from '../../features/project/components/CostStructureCard';
 import { ReadinessCard } from '../../features/project/components/ReadinessCard';
 import { buildProjectReadiness } from '../../features/project/logic/readiness';
-import { projectStyles as styles } from '../../features/project/styles';
+import { useProjectStyles } from '../../features/project/styles';
 import { buildReport } from '../../features/report/logic/buildReport';
 import { useData } from '../../store/data/DataContext';
 import { AnimatedPressable, AnimatedScreenScroll, AppCard } from '../../shared/ui';
-import { colors, radius, spacing } from '../../shared/theme';
+import { colors, radius, spacing, type ThemePalette, useThemePalette } from '../../shared/theme';
 import { formatCurrencyRU } from '../../shared/utils/currency';
 
 export const title = 'Проект расчёта';
@@ -23,6 +23,10 @@ function ActionButton({
   onPress: () => void;
   variant?: 'primary' | 'secondary' | 'danger';
 }) {
+  const local = useLocalStyles();
+
+  const styles = useProjectStyles();
+
   const secondary = variant === 'secondary';
   const danger = variant === 'danger';
 
@@ -62,6 +66,8 @@ function Field({
   keyboardType?: 'default' | 'numeric';
   multiline?: boolean;
 }) {
+  const local = useLocalStyles();
+
   return (
     <View style={local.field}>
       <Text style={local.fieldLabel} maxFontSizeMultiplier={1.1}>{label}</Text>
@@ -85,6 +91,10 @@ const toNumber = (value: string) => {
 };
 
 export default function ProjectScreen() {
+  const local = useLocalStyles();
+
+  const styles = useProjectStyles();
+
   const data = useData();
   const report = buildReport(data);
   const readiness = buildProjectReadiness(data);
@@ -251,7 +261,9 @@ export default function ProjectScreen() {
   );
 }
 
-const local = StyleSheet.create({
+type LocalStyleTheme = ThemePalette | typeof colors;
+
+const createLocalStyles = (theme: LocalStyleTheme) => StyleSheet.create({
   cardGap: {
     gap: spacing.md,
   },
@@ -263,14 +275,14 @@ const local = StyleSheet.create({
   },
   smallButton: {
     borderRadius: radius.pill,
-    backgroundColor: colors.surfaceMuted,
+    backgroundColor: theme.surfaceMuted,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
+    borderColor: theme.borderSoft,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   smallButtonText: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '900',
@@ -282,7 +294,7 @@ const local = StyleSheet.create({
     gap: 6,
   },
   fieldLabel: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '900',
@@ -292,9 +304,9 @@ const local = StyleSheet.create({
     minHeight: 48,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
-    backgroundColor: colors.surfaceMuted,
-    color: colors.text,
+    borderColor: theme.borderSoft,
+    backgroundColor: theme.surfaceMuted,
+    color: theme.text,
     paddingHorizontal: spacing.md,
     fontSize: 14,
     lineHeight: 19,
@@ -310,3 +322,11 @@ const local = StyleSheet.create({
     gap: spacing.sm,
   },
 });
+
+const local = createLocalStyles(colors);
+
+function useLocalStyles() {
+  const palette = useThemePalette();
+
+  return useMemo(() => (palette.isDark ? createLocalStyles(palette) : local), [palette]);
+}

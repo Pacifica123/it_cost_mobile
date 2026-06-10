@@ -1,10 +1,11 @@
+import { useMemo } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 
-import { projectStyles as styles } from '../../features/project/styles';
+import { useProjectStyles } from '../../features/project/styles';
 import { useData } from '../../store/data/DataContext';
 import type { ProjectEventType } from '../../store/data/types';
 import { AnimatedPressable, AnimatedScreenScroll, AppCard } from '../../shared/ui';
-import { colors, radius, spacing } from '../../shared/theme';
+import { colors, radius, spacing, type ThemePalette, useThemePalette } from '../../shared/theme';
 
 export const title = 'История изменений';
 
@@ -33,6 +34,10 @@ const formatDate = (value: string) => {
 };
 
 export default function HistoryScreen() {
+  const local = useLocalStyles();
+
+  const styles = useProjectStyles();
+
   const data = useData();
 
   const clearHistory = () => {
@@ -90,7 +95,9 @@ export default function HistoryScreen() {
   );
 }
 
-const local = StyleSheet.create({
+type LocalStyleTheme = ThemePalette | typeof colors;
+
+const createLocalStyles = (theme: LocalStyleTheme) => StyleSheet.create({
   actionsCard: {
     gap: spacing.md,
   },
@@ -114,8 +121,8 @@ const local = StyleSheet.create({
   eventType: {
     alignSelf: 'flex-start',
     borderRadius: radius.pill,
-    backgroundColor: colors.primarySoft,
-    color: colors.primary,
+    backgroundColor: theme.primarySoft,
+    color: theme.primary,
     paddingHorizontal: 10,
     paddingVertical: 5,
     fontSize: 11,
@@ -124,21 +131,29 @@ const local = StyleSheet.create({
     textTransform: 'uppercase',
   },
   eventDate: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '800',
   },
   eventTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 16,
     lineHeight: 21,
     fontWeight: '900',
   },
   eventDescription: {
-    color: colors.textSoft,
+    color: theme.textSoft,
     fontSize: 13,
     lineHeight: 19,
     fontWeight: '600',
   },
 });
+
+const local = createLocalStyles(colors);
+
+function useLocalStyles() {
+  const palette = useThemePalette();
+
+  return useMemo(() => (palette.isDark ? createLocalStyles(palette) : local), [palette]);
+}

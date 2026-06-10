@@ -1,8 +1,9 @@
 import { Text, TextInput, View } from 'react-native';
 
-import { styles } from '../styles';
+import { useNpvStyles } from '../styles';
 import type { NpvFormState } from '../types';
 import { AnimatedPressable, AnimatedSurface } from '../../../shared/ui';
+import { useThemePalette } from '../../../shared/theme';
 
 export function NpvFormCard({
   form,
@@ -17,6 +18,9 @@ export function NpvFormCard({
   onCalculate: () => void;
   onReset: () => void;
 }) {
+  const styles = useNpvStyles();
+  const palette = useThemePalette();
+
   return (
     <AnimatedSurface style={styles.card}>
       <Text style={styles.label}>Начальные инвестиции</Text>
@@ -26,7 +30,7 @@ export function NpvFormCard({
         onChangeText={(investment) => onChange({ investment })}
         keyboardType="numeric"
         placeholder="Например: 1000"
-        placeholderTextColor="#94a3b8"
+        placeholderTextColor={palette.textMuted}
       />
 
       <Text style={styles.label}>Денежные потоки</Text>
@@ -36,7 +40,7 @@ export function NpvFormCard({
         onChangeText={(cashflows) => onChange({ cashflows })}
         multiline
         placeholder="Например: 100, 200, 300"
-        placeholderTextColor="#94a3b8"
+        placeholderTextColor={palette.textMuted}
       />
       <Text style={styles.hint}>Ввод через запятую, каждый элемент — отдельный период</Text>
 
@@ -47,7 +51,7 @@ export function NpvFormCard({
         onChangeText={(rate) => onChange({ rate })}
         keyboardType="numeric"
         placeholder="10 или 0.1"
-        placeholderTextColor="#94a3b8"
+        placeholderTextColor={palette.textMuted}
       />
       <Text style={styles.hint}>Можно вводить 10 или 0.1</Text>
 

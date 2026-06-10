@@ -3,8 +3,9 @@ import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-na
 
 import { ActionButton, Field, InlineField, SectionTitle, StatCard } from '../../features/ahp/components';
 import { useAhpEditorState } from '../../features/ahp/hooks/useAhpEditorState';
-import { styles } from '../../features/ahp/styles';
+import { useAhpStyles } from '../../features/ahp/styles';
 import { AnimatedPressable, AnimatedScreenScroll } from '../../shared/ui';
+import { useThemePalette } from '../../shared/theme';
 
 const ROLE_OPTIONS = [
   { key: 'client', label: 'Клиент' },
@@ -16,6 +17,9 @@ const ROLE_OPTIONS = [
 export const title = 'AHP-анализ';
 
 export default function AHPScreen() {
+  const styles = useAhpStyles();
+  const palette = useThemePalette();
+
   const {
     configs,
     selectedIdx,
@@ -65,12 +69,12 @@ export default function AHPScreen() {
           </Text>
 
           <View style={styles.statsRow}>
-            <StatCard label="Конфигураций" value={configs.length} accent="#2563eb" />
-            <StatCard label="Устройств" value={totalDevices} accent="#0f766e" />
+            <StatCard label="Конфигураций" value={configs.length} accent={palette.primary} />
+            <StatCard label="Устройств" value={totalDevices} accent={palette.success} />
             <StatCard
               label="Выбрано"
               value={selectedConfig ? selectedConfig.id : '—'}
-              accent="#7c3aed"
+              accent={palette.warning}
             />
           </View>
         </View>

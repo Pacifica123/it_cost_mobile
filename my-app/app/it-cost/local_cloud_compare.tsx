@@ -2,9 +2,9 @@ import { useMemo, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { buildLocalCloudComparison } from '../../features/planning/logic/kitPlanner';
-import { projectStyles as styles } from '../../features/project/styles';
+import { useProjectStyles } from '../../features/project/styles';
 import { AnimatedScreenScroll, AppCard } from '../../shared/ui';
-import { colors, radius, spacing } from '../../shared/theme';
+import { colors, radius, spacing, type ThemePalette, useThemePalette } from '../../shared/theme';
 import { formatCurrencyRU } from '../../shared/utils/currency';
 import { formatNumber, toNumberSafe } from '../../shared/utils/number';
 import { useData } from '../../store/data/DataContext';
@@ -12,6 +12,10 @@ import { useData } from '../../store/data/DataContext';
 export const title = 'Локально vs облако';
 
 export default function LocalCloudCompareScreen() {
+  const local = useLocalStyles();
+
+  const styles = useProjectStyles();
+
   const data = useData();
   const [seatsRaw, setSeatsRaw] = useState(String(data.projectMeta.targetClientSeats || 5));
   const [budgetRaw, setBudgetRaw] = useState(String(data.projectMeta.budget || 500000));
@@ -61,6 +65,8 @@ export default function LocalCloudCompareScreen() {
 }
 
 function CompareCard({ title, capex, opex, total3, active }: { title: string; capex: number; opex: number; total3: number; active: boolean }) {
+  const local = useLocalStyles();
+
   return (
     <AppCard style={[local.compareCard, active && local.compareCardActive]}>
       <Text style={local.compareTitle}>{title}</Text>
@@ -72,17 +78,27 @@ function CompareCard({ title, capex, opex, total3, active }: { title: string; ca
   );
 }
 
-const local = StyleSheet.create({
+type LocalStyleTheme = ThemePalette | typeof colors;
+
+const createLocalStyles = (theme: LocalStyleTheme) => StyleSheet.create({
   cardGap: { gap: spacing.md },
   row2: { flexDirection: 'row', gap: spacing.md },
   col: { flex: 1 },
-  label: { color: colors.textMuted, fontSize: 12, lineHeight: 16, fontWeight: '900', textTransform: 'uppercase', marginBottom: 6 },
-  input: { minHeight: 50, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surfaceMuted, paddingHorizontal: 14, color: colors.text, fontSize: 16, fontWeight: '800' },
+  label: { color: theme.textMuted, fontSize: 12, lineHeight: 16, fontWeight: '900', textTransform: 'uppercase', marginBottom: 6 },
+  input: { minHeight: 50, borderRadius: radius.md, borderWidth: 1, borderColor: theme.border, backgroundColor: theme.surfaceMuted, paddingHorizontal: 14, color: theme.text, fontSize: 16, fontWeight: '800' },
   compareGrid: { gap: spacing.md },
   compareCard: { gap: 8 },
-  compareCardActive: { borderColor: colors.primary, backgroundColor: '#F8FBFF' },
-  compareTitle: { color: colors.text, fontSize: 17, lineHeight: 22, fontWeight: '900' },
-  compareLine: { color: colors.textSoft, fontSize: 13, lineHeight: 18, fontWeight: '800' },
-  compareTotal: { color: colors.text, fontSize: 15, lineHeight: 20, fontWeight: '900', marginTop: 4 },
-  recommendBadge: { alignSelf: 'flex-start', borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 6, color: colors.primary, backgroundColor: colors.primarySoft, overflow: 'hidden', fontWeight: '900', fontSize: 12 },
+  compareCardActive: { borderColor: theme.primary, backgroundColor: theme.surfaceMuted },
+  compareTitle: { color: theme.text, fontSize: 17, lineHeight: 22, fontWeight: '900' },
+  compareLine: { color: theme.textSoft, fontSize: 13, lineHeight: 18, fontWeight: '800' },
+  compareTotal: { color: theme.text, fontSize: 15, lineHeight: 20, fontWeight: '900', marginTop: 4 },
+  recommendBadge: { alignSelf: 'flex-start', borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 6, color: theme.primary, backgroundColor: theme.primarySoft, overflow: 'hidden', fontWeight: '900', fontSize: 12 },
 });
+
+const local = createLocalStyles(colors);
+
+function useLocalStyles() {
+  const palette = useThemePalette();
+
+  return useMemo(() => (palette.isDark ? createLocalStyles(palette) : local), [palette]);
+}

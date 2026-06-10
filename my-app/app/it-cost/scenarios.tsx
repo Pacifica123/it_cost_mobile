@@ -2,24 +2,25 @@ import { Text, View } from 'react-native';
 import { router, type Href } from 'expo-router';
 
 import { buildScenarioComparison } from '../../features/scenarios/logic/buildScenarios';
-import { projectStyles as styles } from '../../features/project/styles';
+import { useProjectStyles } from '../../features/project/styles';
 import { useData } from '../../store/data/DataContext';
 import { AnimatedPressable, AnimatedScreenScroll, AppCard } from '../../shared/ui';
-import { colors } from '../../shared/theme';
+import { useThemePalette } from '../../shared/theme';
 import { formatCurrencyRU } from '../../shared/utils/currency';
 
 export const title = 'Сценарии расчёта';
 
-const toneColor = {
-  ok: colors.success,
-  warning: colors.warning,
-  danger: colors.danger,
-  info: colors.primary,
-};
-
 export default function ScenariosScreen() {
+  const styles = useProjectStyles();
+  const palette = useThemePalette();
   const data = useData();
   const comparison = buildScenarioComparison(data);
+  const toneColor = {
+    ok: palette.success,
+    warning: palette.warning,
+    danger: palette.danger,
+    info: palette.primary,
+  };
 
   return (
     <AnimatedScreenScroll style={styles.screen} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>

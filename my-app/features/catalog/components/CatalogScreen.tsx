@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
 import { Text, TextInput, View } from 'react-native';
 
-import { exploreStyles as styles } from '../styles';
+import { useCatalogStyles } from '../styles';
 import { useData, selectCategoriesByScope } from '../../../store/data/DataContext';
 import { getCategoryItems, getCategoryTotal, isCapitalCategoryRelevantForKind } from '../helpers';
 import { useCatalogCrud } from '../hooks/useCatalogCrud';
@@ -14,7 +14,7 @@ import { CategoryFormModal } from './CategoryFormModal';
 import { CategoryTable } from './CategoryTable';
 import { ItemFormModal } from './ItemFormModal';
 import { AnimatedPressable, AnimatedScreenScroll, AnimatedSurface } from '../../../shared/ui';
-import { colors } from '../../../shared/theme';
+import { useThemePalette } from '../../../shared/theme';
 
 type SortMode = 'default' | 'priceDesc' | 'priceAsc' | 'name';
 
@@ -48,6 +48,9 @@ const filterAndSortItems = (
 };
 
 export function CatalogScreen({ mode, title, capitalKind }: { mode: CatalogMode; title: string; capitalKind?: ItemKind }) {
+  const styles = useCatalogStyles();
+
+  const palette = useThemePalette();
   const { categories: allCategories, capitalData, operatingData } = useData();
   const [query, setQuery] = useState('');
   const [sortMode, setSortMode] = useState<SortMode>('default');
@@ -88,45 +91,45 @@ export function CatalogScreen({ mode, title, capitalKind }: { mode: CatalogMode;
 
   return (
     <AnimatedScreenScroll
-      style={styles.container}
+      style={[styles.container, { backgroundColor: palette.bg }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
     >
-      <View style={styles.topBar}>
-        <Text style={styles.screenTitle}>{title}</Text>
+      <View style={[styles.topBar, { backgroundColor: palette.surface, borderColor: palette.borderSoft }]}>
+        <Text style={[styles.screenTitle, { color: palette.text }]}>{title}</Text>
 
         <View style={styles.topActions}>
-          <AnimatedPressable style={styles.chipBtn} onPress={catalog.openCreate}>
-            <Ionicons name="add" size={18} color="#111827" />
-            <Text style={styles.chipText}>Запись</Text>
+          <AnimatedPressable style={[styles.chipBtn, { backgroundColor: palette.surfaceMuted, borderColor: palette.borderSoft }]} onPress={catalog.openCreate}>
+            <Ionicons name="add" size={18} color={palette.text} />
+            <Text style={[styles.chipText, { color: palette.text }]}>Запись</Text>
           </AnimatedPressable>
 
           <AnimatedPressable
-            style={styles.chipBtn}
+            style={[styles.chipBtn, { backgroundColor: palette.surfaceMuted, borderColor: palette.borderSoft }]}
             onPress={() => categoryActions.setModalVisible(true)}
           >
-            <Ionicons name="folder-open-outline" size={18} color="#111827" />
-            <Text style={styles.chipText}>Категория</Text>
+            <Ionicons name="folder-open-outline" size={18} color={palette.text} />
+            <Text style={[styles.chipText, { color: palette.text }]}>Категория</Text>
           </AnimatedPressable>
         </View>
       </View>
 
-      <AnimatedSurface style={styles.catalogTools}>
-        <View style={styles.menuSearchBox}>
-          <Ionicons name="search" size={18} color={colors.textMuted} />
+      <AnimatedSurface style={[styles.catalogTools, { backgroundColor: palette.surface, borderColor: palette.borderSoft }]}>
+        <View style={[styles.menuSearchBox, { backgroundColor: palette.surfaceMuted, borderColor: palette.borderSoft }]}>
+          <Ionicons name="search" size={18} color={palette.textMuted} />
           <TextInput
             value={query}
             onChangeText={setQuery}
             placeholder="Найти позицию"
-            placeholderTextColor={colors.textMuted}
-            style={styles.menuSearchInput}
+            placeholderTextColor={palette.textMuted}
+            style={[styles.menuSearchInput, { color: palette.text }]}
             autoCorrect={false}
             maxFontSizeMultiplier={1.12}
           />
           {query ? (
-            <AnimatedPressable onPress={() => setQuery('')} style={styles.menuSearchClear} pressedScale={0.9}>
-              <Ionicons name="close" size={18} color={colors.textMuted} />
+            <AnimatedPressable onPress={() => setQuery('')} style={[styles.menuSearchClear, { backgroundColor: palette.surface }]} pressedScale={0.9}>
+              <Ionicons name="close" size={18} color={palette.textMuted} />
             </AnimatedPressable>
           ) : null}
         </View>
@@ -134,42 +137,42 @@ export function CatalogScreen({ mode, title, capitalKind }: { mode: CatalogMode;
           {sortOptions.map((option) => (
             <AnimatedPressable
               key={option.id}
-              style={[styles.sortChip, option.id === sortMode && styles.sortChipActive]}
+              style={[styles.sortChip, { backgroundColor: palette.surfaceMuted, borderColor: palette.borderSoft }, option.id === sortMode && { backgroundColor: palette.primarySoft, borderColor: palette.primary }]}
               onPress={() => setSortMode(option.id)}
               pressedScale={0.96}
             >
-              <Text style={[styles.sortChipText, option.id === sortMode && styles.sortChipTextActive]} maxFontSizeMultiplier={1.1}>{option.label}</Text>
+              <Text style={[styles.sortChipText, { color: option.id === sortMode ? palette.primary : palette.text }]} maxFontSizeMultiplier={1.1}>{option.label}</Text>
             </AnimatedPressable>
           ))}
-          <AnimatedPressable style={[styles.sortChip, styles.sortChipActive]} onPress={catalog.mergeDuplicates} pressedScale={0.96}>
-            <Text style={[styles.sortChipText, styles.sortChipTextActive]} maxFontSizeMultiplier={1.1}>Объединить дубли</Text>
+          <AnimatedPressable style={[styles.sortChip, { backgroundColor: palette.primarySoft, borderColor: palette.primary }]} onPress={catalog.mergeDuplicates} pressedScale={0.96}>
+            <Text style={[styles.sortChipText, { color: palette.primary }]} maxFontSizeMultiplier={1.1}>Объединить дубли</Text>
           </AnimatedPressable>
         </View>
       </AnimatedSurface>
 
       {catalog.lastDeleted ? (
-        <AnimatedSurface style={styles.undoBox}>
-          <Text style={styles.undoText} maxFontSizeMultiplier={1.1}>Удалена запись «{catalog.lastDeleted.item.name}».</Text>
-          <AnimatedPressable style={styles.chipBtn} onPress={catalog.restoreLastDeleted} pressedScale={0.96}>
-            <Ionicons name="arrow-undo-outline" size={18} color="#111827" />
-            <Text style={styles.chipText}>Отменить удаление</Text>
+        <AnimatedSurface style={[styles.undoBox, { backgroundColor: palette.warningSoft, borderColor: palette.isDark ? 'rgba(245,158,11,0.34)' : 'rgba(245,158,11,0.22)' }]}>
+          <Text style={[styles.undoText, { color: palette.warning }]} maxFontSizeMultiplier={1.1}>Удалена запись «{catalog.lastDeleted.item.name}».</Text>
+          <AnimatedPressable style={[styles.chipBtn, { backgroundColor: palette.surfaceMuted, borderColor: palette.borderSoft }]} onPress={catalog.restoreLastDeleted} pressedScale={0.96}>
+            <Ionicons name="arrow-undo-outline" size={18} color={palette.text} />
+            <Text style={[styles.chipText, { color: palette.text }]}>Отменить удаление</Text>
           </AnimatedPressable>
         </AnimatedSurface>
       ) : null}
 
       {categories.length === 0 ? (
-        <AnimatedSurface style={styles.emptyState}>
-          <Ionicons name="file-tray-outline" size={24} color="rgba(17,24,39,0.5)" />
-          <Text style={styles.emptyTitle}>Нет категорий для отображения</Text>
-          <Text style={styles.emptyText}>Добавь категорию или запись, чтобы раздел появился в расчётах.</Text>
+        <AnimatedSurface style={[styles.emptyState, { backgroundColor: palette.surface, borderColor: palette.borderSoft }]}>
+          <Ionicons name="file-tray-outline" size={24} color={palette.textMuted} />
+          <Text style={[styles.emptyTitle, { color: palette.text }]}>Нет категорий для отображения</Text>
+          <Text style={[styles.emptyText, { color: palette.textMuted }]}>Добавь категорию или запись, чтобы раздел появился в расчётах.</Text>
         </AnimatedSurface>
       ) : null}
 
       {visibleCategoryData.length === 0 && categories.length > 0 ? (
-        <AnimatedSurface style={styles.emptyState}>
-          <Ionicons name="search-outline" size={24} color="rgba(17,24,39,0.5)" />
-          <Text style={styles.emptyTitle}>Позиции не найдены</Text>
-          <Text style={styles.emptyText}>Очистите поиск или измените запрос.</Text>
+        <AnimatedSurface style={[styles.emptyState, { backgroundColor: palette.surface, borderColor: palette.borderSoft }]}>
+          <Ionicons name="search-outline" size={24} color={palette.textMuted} />
+          <Text style={[styles.emptyTitle, { color: palette.text }]}>Позиции не найдены</Text>
+          <Text style={[styles.emptyText, { color: palette.textMuted }]}>Очистите поиск или измените запрос.</Text>
         </AnimatedSurface>
       ) : null}
 

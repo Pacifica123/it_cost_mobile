@@ -1,9 +1,15 @@
+import { useMemo } from 'react';
 import { Platform, StyleSheet } from 'react-native';
 
-export const exploreStyles = StyleSheet.create({
+import { colors, radius, shadows, spacing, type ThemePalette, useThemePalette } from '../../shared/theme';
+
+
+type CatalogStyleTheme = ThemePalette | typeof colors;
+
+const createCatalogStyles = (theme: CatalogStyleTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F6F7FB',
+    backgroundColor: theme.bg,
   },
 
   content: {
@@ -17,11 +23,11 @@ export const exploreStyles = StyleSheet.create({
   },
 
   topBar: {
-    backgroundColor: 'rgba(255,255,255,0.94)',
+    backgroundColor: theme.surface,
     borderRadius: 22,
     padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(17,24,39,0.06)',
+    borderColor: theme.borderSoft,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -37,7 +43,7 @@ export const exploreStyles = StyleSheet.create({
   screenTitle: {
     fontSize: 18,
     fontWeight: '900',
-    color: '#111827',
+    color: theme.text,
     lineHeight: 22,
     includeFontPadding: false,
   },
@@ -56,15 +62,15 @@ export const exploreStyles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 999,
-    backgroundColor: 'rgba(17,24,39,0.06)',
+    backgroundColor: theme.surfaceMuted,
     borderWidth: 1,
-    borderColor: 'rgba(17,24,39,0.06)',
+    borderColor: theme.borderSoft,
   },
 
   chipText: {
     fontSize: 14,
     fontWeight: '800',
-    color: '#111827',
+    color: theme.text,
   },
 
 
@@ -72,23 +78,23 @@ export const exploreStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: 'rgba(255,255,255,0.94)',
+    backgroundColor: theme.surface,
     borderRadius: 22,
     paddingVertical: 22,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: 'rgba(17,24,39,0.06)',
+    borderColor: theme.borderSoft,
   },
 
   emptyTitle: {
-    color: '#111827',
+    color: theme.text,
     fontSize: 15,
     fontWeight: '900',
     textAlign: 'center',
   },
 
   emptyText: {
-    color: 'rgba(17,24,39,0.6)',
+    color: theme.textMuted,
     fontSize: 13,
     lineHeight: 18,
     textAlign: 'center',
@@ -97,9 +103,9 @@ export const exploreStyles = StyleSheet.create({
   menuSearchBox: {
     minHeight: 48,
     borderRadius: 16,
-    backgroundColor: 'rgba(17,24,39,0.05)',
+    backgroundColor: theme.surfaceMuted,
     borderWidth: 1,
-    borderColor: 'rgba(17,24,39,0.08)',
+    borderColor: theme.borderSoft,
     paddingHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',
@@ -109,7 +115,7 @@ export const exploreStyles = StyleSheet.create({
   menuSearchInput: {
     flex: 1,
     minHeight: 44,
-    color: '#111827',
+    color: theme.text,
     fontSize: 14,
     lineHeight: 18,
     fontWeight: '700',
@@ -122,14 +128,14 @@ export const exploreStyles = StyleSheet.create({
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: theme.surface,
   },
 
   catalogTools: {
     borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.94)',
+    backgroundColor: theme.surface,
     borderWidth: 1,
-    borderColor: 'rgba(17,24,39,0.06)',
+    borderColor: theme.borderSoft,
     padding: 12,
     gap: 10,
   },
@@ -143,50 +149,50 @@ export const exploreStyles = StyleSheet.create({
   sortChip: {
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: 'rgba(17,24,39,0.08)',
-    backgroundColor: 'rgba(17,24,39,0.04)',
+    borderColor: theme.borderSoft,
+    backgroundColor: theme.surfaceMuted,
     paddingVertical: 8,
     paddingHorizontal: 10,
   },
 
   sortChipActive: {
-    borderColor: 'rgba(59,130,246,0.35)',
-    backgroundColor: 'rgba(59,130,246,0.12)',
+    borderColor: theme.primary,
+    backgroundColor: theme.primarySoft,
   },
 
   sortChipText: {
-    color: '#111827',
+    color: theme.text,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '900',
   },
 
   sortChipTextActive: {
-    color: '#1D4ED8',
+    color: theme.primary,
   },
 
   undoBox: {
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(245,158,11,0.22)',
-    backgroundColor: 'rgba(245,158,11,0.12)',
+    borderColor: theme.warning,
+    backgroundColor: theme.warningSoft,
     padding: 12,
     gap: 8,
   },
 
   undoText: {
-    color: '#92400E',
+    color: theme.warning,
     fontSize: 12,
     lineHeight: 17,
     fontWeight: '800',
   },
 
   categoryCard: {
-    backgroundColor: 'rgba(255,255,255,0.94)',
+    backgroundColor: theme.surface,
     borderRadius: 22,
     padding: 12,
     borderWidth: 1,
-    borderColor: 'rgba(17,24,39,0.06)',
+    borderColor: theme.borderSoft,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -213,7 +219,7 @@ export const exploreStyles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontWeight: '900',
-    color: '#111827',
+    color: theme.text,
     lineHeight: 20,
     includeFontPadding: false,
     flexShrink: 1,
@@ -231,7 +237,7 @@ export const exploreStyles = StyleSheet.create({
     height: 26,
     paddingHorizontal: 10,
     borderRadius: 999,
-    backgroundColor: 'rgba(99,102,241,0.15)',
+    backgroundColor: theme.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -239,7 +245,7 @@ export const exploreStyles = StyleSheet.create({
   badgeText: {
     fontSize: 13,
     fontWeight: '900',
-    color: '#111827',
+    color: theme.text,
     lineHeight: 16,
     includeFontPadding: false,
   },
@@ -248,15 +254,15 @@ export const exploreStyles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(17,24,39,0.08)',
-    backgroundColor: '#fff',
+    borderColor: theme.borderSoft,
+    backgroundColor: theme.surface,
   },
 
   tableHeader: {
     flexDirection: 'row',
     paddingVertical: 10,
     paddingHorizontal: 12,
-    backgroundColor: 'rgba(17,24,39,0.05)',
+    backgroundColor: theme.surfaceMuted,
   },
 
   row: {
@@ -264,29 +270,29 @@ export const exploreStyles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 12,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(17,24,39,0.06)',
-    backgroundColor: '#FFFFFF',
+    borderTopColor: theme.borderSoft,
+    backgroundColor: theme.surface,
   },
 
   rowAlt: {
-    backgroundColor: 'rgba(17,24,39,0.02)',
+    backgroundColor: theme.surfaceMuted,
   },
 
   rowSelected: {
-    backgroundColor: 'rgba(34,197,94,0.12)',
+    backgroundColor: theme.successSoft,
   },
 
   cell: {
     flex: 1,
     fontSize: 14,
-    color: '#111827',
+    color: theme.text,
     lineHeight: 18,
     includeFontPadding: false,
   },
 
   cellHeader: {
     fontWeight: '900',
-    color: 'rgba(17,24,39,0.7)',
+    color: theme.textSoft,
     fontSize: 13,
     lineHeight: 16,
     includeFontPadding: false,
@@ -319,19 +325,19 @@ export const exploreStyles = StyleSheet.create({
   },
 
   actionEdit: {
-    backgroundColor: 'rgba(245,158,11,0.14)',
-    borderColor: 'rgba(245,158,11,0.22)',
+    backgroundColor: theme.warningSoft,
+    borderColor: theme.warning,
   },
 
   actionDelete: {
-    backgroundColor: 'rgba(239,68,68,0.10)',
-    borderColor: 'rgba(239,68,68,0.18)',
+    backgroundColor: theme.dangerSoft,
+    borderColor: theme.danger,
   },
 
   actionText: {
     fontSize: 14,
     fontWeight: '900',
-    color: '#111827',
+    color: theme.text,
   },
 
   modalOverlay: {
@@ -346,13 +352,13 @@ export const exploreStyles = StyleSheet.create({
   },
 
   modalCard: {
-    backgroundColor: 'rgba(255,255,255,0.98)',
+    backgroundColor: theme.surface,
     borderRadius: Platform.OS === 'web' ? 22 : 24,
     borderTopLeftRadius: Platform.OS === 'web' ? 22 : 24,
     borderTopRightRadius: Platform.OS === 'web' ? 22 : 24,
     padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(17,24,39,0.08)',
+    borderColor: theme.borderSoft,
     width: '100%',
     maxWidth: 720,
     maxHeight: '88%',
@@ -382,7 +388,7 @@ export const exploreStyles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontWeight: '900',
-    color: '#111827',
+    color: theme.text,
     lineHeight: 20,
     includeFontPadding: false,
   },
@@ -391,7 +397,7 @@ export const exploreStyles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 12,
-    backgroundColor: 'rgba(17,24,39,0.06)',
+    backgroundColor: theme.surfaceMuted,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -401,28 +407,28 @@ export const exploreStyles = StyleSheet.create({
     marginBottom: 6,
     fontSize: 13,
     fontWeight: '800',
-    color: 'rgba(17,24,39,0.7)',
+    color: theme.textSoft,
   },
 
   input: {
     borderWidth: 1,
-    borderColor: 'rgba(17,24,39,0.10)',
-    backgroundColor: 'rgba(17,24,39,0.04)',
+    borderColor: theme.border,
+    backgroundColor: theme.surfaceMuted,
     paddingVertical: 12,
     paddingHorizontal: 12,
     borderRadius: 14,
     fontSize: 14,
-    color: '#111827',
+    color: theme.text,
   },
 
   inputError: {
-    borderColor: 'rgba(220,38,38,0.55)',
-    backgroundColor: 'rgba(239,68,68,0.08)',
+    borderColor: theme.danger,
+    backgroundColor: theme.dangerSoft,
   },
 
   errorText: {
     marginTop: 5,
-    color: '#B91C1C',
+    color: theme.danger,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '800',
@@ -431,15 +437,15 @@ export const exploreStyles = StyleSheet.create({
   hint: {
     marginTop: 8,
     fontSize: 12,
-    color: 'rgba(17,24,39,0.6)',
+    color: theme.textMuted,
     lineHeight: 16,
     includeFontPadding: false,
   },
 
   pickerWrap: {
     borderWidth: Platform.OS === 'web' ? 0 : 1,
-    borderColor: 'rgba(17,24,39,0.10)',
-    backgroundColor: 'rgba(17,24,39,0.04)',
+    borderColor: theme.border,
+    backgroundColor: theme.surfaceMuted,
     borderRadius: 14,
     overflow: 'hidden',
     paddingVertical: Platform.OS === 'android' ? 2 : 0,
@@ -450,9 +456,9 @@ export const exploreStyles = StyleSheet.create({
     ...(Platform.OS === 'web'
       ? ({
           borderWidth: 1,
-          borderColor: 'rgba(17,24,39,0.10)',
+          borderColor: theme.border,
           borderRadius: 14,
-          backgroundColor: 'rgba(17,24,39,0.04)',
+          backgroundColor: theme.surfaceMuted,
           paddingHorizontal: 12,
           outlineStyle: 'none',
         } as any)
@@ -476,12 +482,12 @@ export const exploreStyles = StyleSheet.create({
     borderWidth: 1,
   },
   swipeEdit: {
-    backgroundColor: 'rgba(245,158,11,0.16)',
-    borderColor: 'rgba(245,158,11,0.24)',
+    backgroundColor: theme.warningSoft,
+    borderColor: theme.warning,
   },
   swipeDelete: {
-    backgroundColor: 'rgba(239,68,68,0.12)',
-    borderColor: 'rgba(239,68,68,0.20)',
+    backgroundColor: theme.dangerSoft,
+    borderColor: theme.danger,
   },
 
   modalButtons: {
@@ -492,31 +498,39 @@ export const exploreStyles = StyleSheet.create({
 
   primaryBtn: {
     flex: 1,
-    backgroundColor: '#111827',
+    backgroundColor: theme.hero,
     paddingVertical: 12,
     borderRadius: 14,
     alignItems: 'center',
   },
 
   primaryBtnText: {
-    color: '#fff',
+    color: theme.textOnDark,
     fontSize: 14,
     fontWeight: '900',
   },
 
   secondaryBtn: {
     flex: 1,
-    backgroundColor: 'rgba(17,24,39,0.06)',
+    backgroundColor: theme.surfaceMuted,
     paddingVertical: 12,
     borderRadius: 14,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(17,24,39,0.08)',
+    borderColor: theme.borderSoft,
   },
 
   secondaryBtnText: {
-    color: '#111827',
+    color: theme.text,
     fontSize: 14,
     fontWeight: '900',
   },
 });
+
+export const exploreStyles = createCatalogStyles(colors);
+
+export function useCatalogStyles() {
+  const palette = useThemePalette();
+
+  return useMemo(() => createCatalogStyles(palette), [palette]);
+}

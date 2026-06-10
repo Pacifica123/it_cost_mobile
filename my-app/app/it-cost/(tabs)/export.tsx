@@ -13,10 +13,11 @@ import { SummaryCard } from '../../../features/report/components/SummaryCard';
 import { buildReport } from '../../../features/report/logic/buildReport';
 import { buildReportMarkdown } from '../../../features/report/logic/buildReportMarkdown';
 import { buildReportHtml } from '../../../features/report/logic/buildReportHtml';
-import { styles } from '../../../features/report/styles';
+import { useReportStyles } from '../../../features/report/styles';
 import { useData } from '../../../store/data/DataContext';
 import type { CapitalEquipment, OperatingEquipment } from '../../../store/data/types';
 import { AnimatedPressable, AnimatedScreenScroll, AnimatedSurface } from '../../../shared/ui';
+import { useThemePalette } from '../../../shared/theme';
 
 export const tab = true;
 export const title = 'Отчёт';
@@ -27,9 +28,12 @@ const getOperatingQuantity = () => 1;
 const getOperatingCost = (item: OperatingEquipment) => item.price;
 
 export default function SummaryScreen() {
+  const styles = useReportStyles();
+
   const [showDetails, setShowDetails] = useState(false);
   const [showMarkdown, setShowMarkdown] = useState(false);
   const data = useData();
+  const palette = useThemePalette();
   const { width } = useWindowDimensions();
 
   const isPhone = width < 420;
@@ -53,10 +57,10 @@ export default function SummaryScreen() {
   const TABLE_MIN_WIDTH = COL_NAME + COL_QTY + COL_COST;
 
   return (
-    <AnimatedScreenScroll style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.hero}>
-        <Text style={styles.heroTitle} maxFontSizeMultiplier={1.08}>Сводная таблица затрат</Text>
-        <Text style={styles.heroSubtitle} maxFontSizeMultiplier={1.12}>Разовые суммы показаны отдельно, а периодические и электричество нормализованы до годового горизонта.</Text>
+    <AnimatedScreenScroll style={[styles.container, { backgroundColor: palette.bg }]} contentContainerStyle={styles.content}>
+      <View style={[styles.hero, { backgroundColor: palette.surface, borderColor: palette.borderSoft }]}> 
+        <Text style={[styles.heroTitle, { color: palette.text }]} maxFontSizeMultiplier={1.08}>Сводная таблица затрат</Text>
+        <Text style={[styles.heroSubtitle, { color: palette.textSoft }]} maxFontSizeMultiplier={1.12}>Разовые суммы показаны отдельно, а периодические и электричество нормализованы до годового горизонта.</Text>
       </View>
 
       <SummaryCard
@@ -86,11 +90,11 @@ export default function SummaryScreen() {
 
       <AnimatedPressable
         onPress={() => setShowMarkdown((value) => !value)}
-        style={styles.toggle}
+        style={[styles.toggle, { backgroundColor: palette.surface, borderColor: palette.borderSoft }]}
       >
-        <Text style={styles.toggleText} maxFontSizeMultiplier={1.12}>
+        <Text style={[styles.toggleText, { color: palette.text }]} maxFontSizeMultiplier={1.12}>
           {showMarkdown ? 'Скрыть текст отчёта' : 'Сформировать текст отчёта'}{' '}
-          <Text style={styles.toggleArrow}>{showMarkdown ? '▲' : '▼'}</Text>
+          <Text style={[styles.toggleArrow, { color: palette.textMuted }]}>{showMarkdown ? '▲' : '▼'}</Text>
         </Text>
       </AnimatedPressable>
 
@@ -98,18 +102,18 @@ export default function SummaryScreen() {
 
       <AnimatedPressable
         onPress={() => setShowDetails((value) => !value)}
-        style={styles.toggle}
+        style={[styles.toggle, { backgroundColor: palette.surface, borderColor: palette.borderSoft }]}
       >
-        <Text style={styles.toggleText} maxFontSizeMultiplier={1.12}>
+        <Text style={[styles.toggleText, { color: palette.text }]} maxFontSizeMultiplier={1.12}>
           {showDetails ? 'Скрыть детали' : 'Показать детали'}{' '}
-          <Text style={styles.toggleArrow}>{showDetails ? '▲' : '▼'}</Text>
+          <Text style={[styles.toggleArrow, { color: palette.textMuted }]}>{showDetails ? '▲' : '▼'}</Text>
         </Text>
       </AnimatedPressable>
 
       {showDetails ? (
         <AnimatedSurface style={{ gap: 12 }}>
-          <View style={styles.card}>
-            <Text style={styles.cardTitle} maxFontSizeMultiplier={1.12}>Капитальные затраты</Text>
+          <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.borderSoft }]}>
+            <Text style={[styles.cardTitle, { color: palette.text }]} maxFontSizeMultiplier={1.12}>Капитальные затраты</Text>
 
             {isPhone ? (
               <ReportListPhone
@@ -134,10 +138,10 @@ export default function SummaryScreen() {
             )}
           </View>
 
-          <View style={styles.card}>
-            <Text style={styles.cardTitle} maxFontSizeMultiplier={1.12}>Операционные затраты</Text>
+          <View style={[styles.card, { backgroundColor: palette.surface, borderColor: palette.borderSoft }]}>
+            <Text style={[styles.cardTitle, { color: palette.text }]} maxFontSizeMultiplier={1.12}>Операционные затраты</Text>
 
-            <Text style={styles.sectionLabel} maxFontSizeMultiplier={1.12}>Разовые</Text>
+            <Text style={[styles.sectionLabel, { color: palette.textSoft }]} maxFontSizeMultiplier={1.12}>Разовые</Text>
             {report.oneTimeOperating.length > 0 ? (
               isPhone ? (
                 <ReportListPhone
@@ -161,10 +165,10 @@ export default function SummaryScreen() {
                 />
               )
             ) : (
-              <Text style={styles.empty}>Нет данных</Text>
+              <Text style={[styles.empty, { color: palette.textMuted }]}>Нет данных</Text>
             )}
 
-            <Text style={[styles.sectionLabel, { marginTop: 14 }]} maxFontSizeMultiplier={1.12}>Периодические в месяц</Text>
+            <Text style={[styles.sectionLabel, { marginTop: 14, color: palette.textSoft }]} maxFontSizeMultiplier={1.12}>Периодические в месяц</Text>
             {report.periodicOperating.length > 0 ? (
               isPhone ? (
                 <ReportListPhone
@@ -188,7 +192,7 @@ export default function SummaryScreen() {
                 />
               )
             ) : (
-              <Text style={styles.empty}>Нет данных</Text>
+              <Text style={[styles.empty, { color: palette.textMuted }]}>Нет данных</Text>
             )}
           </View>
         </AnimatedSurface>

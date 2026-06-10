@@ -1,13 +1,14 @@
 import { Text, View } from 'react-native';
 
 import type { ElectricityItem } from '../types';
-import { styles } from '../styles';
+import { useElectricityStyles } from '../styles';
 
 export function ElectricityHeader({
   items,
 }: {
   items: ElectricityItem[];
 }) {
+  const styles = useElectricityStyles();
   const activeItems = items.filter((item) => !item.isDeleted);
   const hiddenCount = items.length - activeItems.length;
   const totalUnits = activeItems.reduce((sum, item) => sum + item.quantity, 0);

@@ -8,6 +8,9 @@ export function getScreenIcon(title: string): IoniconName {
 
   if (t.includes('меню')) return 'grid-outline';
   if (t.includes('сводк')) return 'speedometer-outline';
+  if (t.includes('расчёт') || t.includes('расчет')) return 'calculator-outline';
+  if (t.includes('аналит')) return 'analytics-outline';
+  if (t.includes('сервис')) return 'settings-outline';
   if (t.includes('график')) return 'bar-chart-outline';
   if (t.includes('резерв') || t.includes('копи')) return 'archive-outline';
   if (t.includes('диагност')) return 'bug-outline';

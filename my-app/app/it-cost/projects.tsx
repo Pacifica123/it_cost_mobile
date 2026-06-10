@@ -1,22 +1,27 @@
+import { useMemo } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { router, type Href } from 'expo-router';
 
-import { projectStyles as styles } from '../../features/project/styles';
+import { useProjectStyles } from '../../features/project/styles';
 import { buildProjectReadiness } from '../../features/project/logic/readiness';
 import { buildReport } from '../../features/report/logic/buildReport';
 import { useData } from '../../store/data/DataContext';
 import { AnimatedPressable, AnimatedScreenScroll, AppCard } from '../../shared/ui';
-import { colors, radius, spacing } from '../../shared/theme';
+import { colors, radius, spacing, useThemePalette, type ThemePalette } from '../../shared/theme';
 import { formatCurrencyRU } from '../../shared/utils/currency';
 
 export const title = 'Мои проекты';
 
 function ProjectButton({ label, onPress, danger = false }: { label: string; onPress: () => void; danger?: boolean }) {
+  const local = useLocalStyles();
+
+  const palette = useThemePalette();
+
   return (
     <AnimatedPressable
       onPress={onPress}
       pressedScale={0.97}
-      style={[local.smallButton, danger && local.dangerButton]}
+      style={[local.smallButton, { backgroundColor: danger ? palette.danger : palette.primary }]}
     >
       <Text style={local.smallButtonText} maxFontSizeMultiplier={1.1}>{label}</Text>
     </AnimatedPressable>
@@ -24,6 +29,10 @@ function ProjectButton({ label, onPress, danger = false }: { label: string; onPr
 }
 
 export default function ProjectsScreen() {
+  const local = useLocalStyles();
+
+  const styles = useProjectStyles();
+  const palette = useThemePalette();
   const data = useData();
   const currentReport = buildReport(data);
   const currentReadiness = buildProjectReadiness(data);
@@ -69,17 +78,17 @@ export default function ProjectsScreen() {
         <Text style={styles.cardTitle} maxFontSizeMultiplier={1.12}>Текущий проект</Text>
         <Text style={styles.cardText} maxFontSizeMultiplier={1.12}>{data.projectMeta.name}</Text>
         <View style={local.statsRow}>
-          <View style={local.statPill}>
-            <Text style={local.statValue} maxFontSizeMultiplier={1.1}>{currentReadiness.percent}%</Text>
-            <Text style={local.statLabel} maxFontSizeMultiplier={1.1}>готовность</Text>
+          <View style={[local.statPill, { backgroundColor: palette.surfaceMuted, borderColor: palette.borderSoft }]}>
+            <Text style={[local.statValue, { color: palette.text }]} maxFontSizeMultiplier={1.1}>{currentReadiness.percent}%</Text>
+            <Text style={[local.statLabel, { color: palette.textMuted }]} maxFontSizeMultiplier={1.1}>готовность</Text>
           </View>
-          <View style={local.statPill}>
-            <Text style={local.statValue} maxFontSizeMultiplier={1.1}>{formatCurrencyRU(currentReport.capitalTotal)}</Text>
-            <Text style={local.statLabel} maxFontSizeMultiplier={1.1}>CAPEX</Text>
+          <View style={[local.statPill, { backgroundColor: palette.surfaceMuted, borderColor: palette.borderSoft }]}>
+            <Text style={[local.statValue, { color: palette.text }]} maxFontSizeMultiplier={1.1}>{formatCurrencyRU(currentReport.capitalTotal)}</Text>
+            <Text style={[local.statLabel, { color: palette.textMuted }]} maxFontSizeMultiplier={1.1}>CAPEX</Text>
           </View>
-          <View style={local.statPill}>
-            <Text style={local.statValue} maxFontSizeMultiplier={1.1}>{data.capitalData.length}/{data.operatingData.length}</Text>
-            <Text style={local.statLabel} maxFontSizeMultiplier={1.1}>CAPEX / OPEX</Text>
+          <View style={[local.statPill, { backgroundColor: palette.surfaceMuted, borderColor: palette.borderSoft }]}>
+            <Text style={[local.statValue, { color: palette.text }]} maxFontSizeMultiplier={1.1}>{data.capitalData.length}/{data.operatingData.length}</Text>
+            <Text style={[local.statLabel, { color: palette.textMuted }]} maxFontSizeMultiplier={1.1}>CAPEX / OPEX</Text>
           </View>
         </View>
         <View style={local.actionsRow}>
@@ -97,31 +106,40 @@ export default function ProjectsScreen() {
         ) : null}
 
         {data.savedProjects.map((project, index) => (
-          <View key={project.id} style={[local.projectCard, data.activeProjectId === project.id && local.activeProjectCard]}>
+          <View
+            key={project.id}
+            style={[
+              local.projectCard,
+              {
+                backgroundColor: data.activeProjectId === project.id ? palette.primarySoft : palette.surface,
+                borderColor: data.activeProjectId === project.id ? (palette.isDark ? 'rgba(96,165,250,0.42)' : 'rgba(37,99,235,0.32)') : palette.borderSoft,
+              },
+            ]}
+          >
             <View style={local.projectHeader}>
               <View style={local.projectTitleBox}>
-                <Text style={local.projectTitle} maxFontSizeMultiplier={1.12}>{project.name}</Text>
-                <Text style={local.projectSubtitle} maxFontSizeMultiplier={1.1}>
+                <Text style={[local.projectTitle, { color: palette.text }]} maxFontSizeMultiplier={1.12}>{project.name}</Text>
+                <Text style={[local.projectSubtitle, { color: palette.textMuted }]} maxFontSizeMultiplier={1.1}>
                   {project.organization || 'Организация не указана'} · обновлён {new Date(project.updatedAt).toLocaleDateString('ru-RU')}
                 </Text>
               </View>
               {data.activeProjectId === project.id ? (
-                <Text style={local.activeBadge} maxFontSizeMultiplier={1.1}>открыт</Text>
+                <Text style={[local.activeBadge, { backgroundColor: palette.surface, color: palette.primary }]} maxFontSizeMultiplier={1.1}>открыт</Text>
               ) : null}
             </View>
 
             <View style={local.statsRow}>
-              <View style={local.statPillSmall}>
-                <Text style={local.statValue} maxFontSizeMultiplier={1.1}>{formatCurrencyRU(project.budget)}</Text>
-                <Text style={local.statLabel} maxFontSizeMultiplier={1.1}>бюджет</Text>
+              <View style={[local.statPillSmall, { backgroundColor: palette.surfaceMuted, borderColor: palette.borderSoft }]}>
+                <Text style={[local.statValue, { color: palette.text }]} maxFontSizeMultiplier={1.1}>{formatCurrencyRU(project.budget)}</Text>
+                <Text style={[local.statLabel, { color: palette.textMuted }]} maxFontSizeMultiplier={1.1}>бюджет</Text>
               </View>
-              <View style={local.statPillSmall}>
-                <Text style={local.statValue} maxFontSizeMultiplier={1.1}>{project.capitalItemsCount}</Text>
-                <Text style={local.statLabel} maxFontSizeMultiplier={1.1}>CAPEX</Text>
+              <View style={[local.statPillSmall, { backgroundColor: palette.surfaceMuted, borderColor: palette.borderSoft }]}>
+                <Text style={[local.statValue, { color: palette.text }]} maxFontSizeMultiplier={1.1}>{project.capitalItemsCount}</Text>
+                <Text style={[local.statLabel, { color: palette.textMuted }]} maxFontSizeMultiplier={1.1}>CAPEX</Text>
               </View>
-              <View style={local.statPillSmall}>
-                <Text style={local.statValue} maxFontSizeMultiplier={1.1}>{project.operatingItemsCount}</Text>
-                <Text style={local.statLabel} maxFontSizeMultiplier={1.1}>OPEX</Text>
+              <View style={[local.statPillSmall, { backgroundColor: palette.surfaceMuted, borderColor: palette.borderSoft }]}>
+                <Text style={[local.statValue, { color: palette.text }]} maxFontSizeMultiplier={1.1}>{project.operatingItemsCount}</Text>
+                <Text style={[local.statLabel, { color: palette.textMuted }]} maxFontSizeMultiplier={1.1}>OPEX</Text>
               </View>
             </View>
 
@@ -137,7 +155,9 @@ export default function ProjectsScreen() {
   );
 }
 
-const local = StyleSheet.create({
+type LocalStyleTheme = ThemePalette | typeof colors;
+
+const createLocalStyles = (theme: LocalStyleTheme) => StyleSheet.create({
   cardGap: {
     gap: spacing.md,
   },
@@ -151,8 +171,8 @@ const local = StyleSheet.create({
     flexBasis: 118,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
-    backgroundColor: colors.surfaceMuted,
+    borderColor: theme.borderSoft,
+    backgroundColor: theme.surfaceMuted,
     padding: spacing.md,
   },
   statPillSmall: {
@@ -160,18 +180,18 @@ const local = StyleSheet.create({
     flexBasis: 96,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
-    backgroundColor: colors.surfaceMuted,
+    borderColor: theme.borderSoft,
+    backgroundColor: theme.surfaceMuted,
     padding: 10,
   },
   statValue: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 14,
     lineHeight: 18,
     fontWeight: '900',
   },
   statLabel: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 11,
     lineHeight: 15,
     fontWeight: '800',
@@ -180,14 +200,14 @@ const local = StyleSheet.create({
   projectCard: {
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
-    backgroundColor: colors.surface,
+    borderColor: theme.borderSoft,
+    backgroundColor: theme.surface,
     padding: spacing.md,
     gap: spacing.md,
   },
   activeProjectCard: {
     borderColor: 'rgba(37,99,235,0.32)',
-    backgroundColor: colors.primarySoft,
+    backgroundColor: theme.primarySoft,
   },
   projectHeader: {
     flexDirection: 'row',
@@ -200,21 +220,21 @@ const local = StyleSheet.create({
     minWidth: 0,
   },
   projectTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 16,
     lineHeight: 21,
     fontWeight: '900',
   },
   projectSubtitle: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 12,
     lineHeight: 17,
     fontWeight: '700',
     marginTop: 3,
   },
   activeBadge: {
-    color: colors.primary,
-    backgroundColor: colors.surface,
+    color: theme.primary,
+    backgroundColor: theme.surface,
     borderRadius: radius.pill,
     overflow: 'hidden',
     paddingHorizontal: 10,
@@ -232,19 +252,24 @@ const local = StyleSheet.create({
     flexGrow: 1,
     flexBasis: 120,
     borderRadius: radius.md,
-    backgroundColor: colors.primary,
+    backgroundColor: theme.primary,
     paddingVertical: 11,
     paddingHorizontal: 12,
     alignItems: 'center',
   },
-  dangerButton: {
-    backgroundColor: colors.danger,
-  },
   smallButtonText: {
-    color: colors.textOnDark,
+    color: theme.textOnDark,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '900',
     textAlign: 'center',
   },
 });
+
+const local = createLocalStyles(colors);
+
+function useLocalStyles() {
+  const palette = useThemePalette();
+
+  return useMemo(() => (palette.isDark ? createLocalStyles(palette) : local), [palette]);
+}

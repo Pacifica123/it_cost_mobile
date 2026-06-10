@@ -7,6 +7,8 @@ import {
 } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
+import { useThemePalette } from '../theme';
+
 const ReanimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 export function AnimatedScreenScroll({
@@ -19,11 +21,13 @@ export function AnimatedScreenScroll({
   style?: StyleProp<ViewStyle>;
   contentContainerStyle?: StyleProp<ViewStyle>;
 }) {
+  const palette = useThemePalette();
+
   return (
     <ReanimatedScrollView
       {...rest}
       entering={FadeIn.duration(180)}
-      style={style}
+      style={[{ backgroundColor: palette.bg }, style, { backgroundColor: palette.bg }]}
       contentContainerStyle={contentContainerStyle}
     >
       {children}

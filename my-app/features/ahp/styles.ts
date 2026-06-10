@@ -1,9 +1,15 @@
+import { useMemo } from 'react';
 import { Platform, StyleSheet } from 'react-native';
 
-export const styles = StyleSheet.create({
+import { colors, radius, shadows, spacing, type ThemePalette, useThemePalette } from '../../shared/theme';
+
+
+type AhpStyleTheme = ThemePalette | typeof colors;
+
+const createAhpStyles = (theme: AhpStyleTheme) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#f3f7fb',
+    backgroundColor: theme.bg,
   },
   content: {
     padding: 16,
@@ -11,12 +17,12 @@ export const styles = StyleSheet.create({
   },
 
   hero: {
-    backgroundColor: '#0f172a',
+    backgroundColor: theme.hero,
     borderRadius: 24,
     padding: 18,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#1e293b',
+    borderColor: theme.borderSoft,
     shadowColor: '#0f172a',
     shadowOpacity: 0.16,
     shadowRadius: 14,
@@ -25,27 +31,27 @@ export const styles = StyleSheet.create({
   },
   heroBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: '#1d4ed8',
+    backgroundColor: theme.primary,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 999,
     marginBottom: 10,
   },
   heroBadgeText: {
-    color: '#eff6ff',
+    color: theme.textOnDark,
     fontSize: 12,
     fontWeight: '800',
   },
   title: {
     fontSize: 26,
     fontWeight: '800',
-    color: '#f8fafc',
+    color: theme.textOnDark,
     marginBottom: 6,
   },
   subtitle: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#cbd5e1',
+    color: theme.textOnDarkSoft,
   },
 
   statsRow: {
@@ -55,7 +61,7 @@ export const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.surface,
     borderRadius: 18,
     padding: 12,
     marginHorizontal: 5,
@@ -70,22 +76,22 @@ export const styles = StyleSheet.create({
   statValue: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#0f172a',
+    color: theme.text,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: '#64748b',
+    color: theme.textMuted,
     lineHeight: 16,
   },
 
   panel: {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.surface,
     borderRadius: 22,
     padding: 16,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.borderSoft,
     shadowColor: '#0f172a',
     shadowOpacity: 0.05,
     shadowRadius: 10,
@@ -105,16 +111,16 @@ export const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#0f172a',
+    color: theme.text,
     marginBottom: 4,
   },
   sectionSubtitle: {
     fontSize: 13,
     lineHeight: 18,
-    color: '#64748b',
+    color: theme.textMuted,
   },
   sectionCounter: {
-    backgroundColor: '#eef2ff',
+    backgroundColor: theme.primarySoft,
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 6,
@@ -123,7 +129,7 @@ export const styles = StyleSheet.create({
   sectionCounterText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#4338ca',
+    color: theme.primary,
   },
 
   buttonRow: {
@@ -150,48 +156,48 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
   },
   buttonPrimary: {
-    backgroundColor: '#2563eb',
+    backgroundColor: theme.primary,
   },
   buttonSecondary: {
-    backgroundColor: '#e2e8f0',
+    backgroundColor: theme.surfaceMuted,
   },
   buttonDanger: {
-    backgroundColor: '#dc2626',
+    backgroundColor: theme.danger,
   },
   buttonGhost: {
-    backgroundColor: '#fef2f2',
+    backgroundColor: theme.dangerSoft,
     borderWidth: 1,
-    borderColor: '#fecaca',
+    borderColor: theme.danger,
   },
   buttonDisabled: {
     opacity: 0.45,
   },
   buttonText: {
-    color: '#ffffff',
+    color: theme.textOnDark,
     fontSize: 15,
     fontWeight: '700',
   },
   buttonTextDark: {
-    color: '#0f172a',
+    color: theme.text,
   },
 
   emptyBox: {
     paddingVertical: 18,
     paddingHorizontal: 14,
     borderRadius: 16,
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.surfaceMuted,
     borderWidth: 1,
     borderStyle: 'dashed',
-    borderColor: '#cbd5e1',
+    borderColor: theme.border,
   },
   emptyTitle: {
     fontSize: 15,
     fontWeight: '800',
-    color: '#0f172a',
+    color: theme.text,
     marginBottom: 4,
   },
   emptyText: {
-    color: '#64748b',
+    color: theme.textMuted,
     fontSize: 14,
     lineHeight: 20,
   },
@@ -202,42 +208,42 @@ export const styles = StyleSheet.create({
   },
   configTab: {
     minWidth: 132,
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.surfaceMuted,
     borderRadius: 16,
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.borderSoft,
     marginRight: 10,
   },
   configTabActive: {
-    backgroundColor: '#eff6ff',
-    borderColor: '#3b82f6',
+    backgroundColor: theme.primarySoft,
+    borderColor: theme.primary,
   },
   configTabTitle: {
     fontSize: 14,
     fontWeight: '800',
-    color: '#0f172a',
+    color: theme.text,
     marginBottom: 4,
   },
   configTabTitleActive: {
-    color: '#1d4ed8',
+    color: theme.primary,
   },
   configTabMeta: {
     fontSize: 12,
-    color: '#64748b',
+    color: theme.textMuted,
   },
   configTabMetaActive: {
-    color: '#1e40af',
+    color: theme.primary,
   },
 
   selectedCard: {
     marginTop: 12,
     padding: 14,
     borderRadius: 18,
-    backgroundColor: '#f8fbff',
+    backgroundColor: theme.surfaceMuted,
     borderWidth: 1,
-    borderColor: '#dbeafe',
+    borderColor: theme.primary,
     overflow: 'hidden',
   },
   selectedCardHeader: {
@@ -256,25 +262,25 @@ export const styles = StyleSheet.create({
   selectedCardTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#0f172a',
+    color: theme.text,
     marginBottom: 2,
     flexShrink: 1,
   },
   selectedCardSubtitle: {
     fontSize: 13,
-    color: '#64748b',
+    color: theme.textMuted,
     flexShrink: 1,
   },
   selectedPill: {
     alignSelf: 'flex-start',
     flexShrink: 0,
-    backgroundColor: '#dbeafe',
+    backgroundColor: theme.primarySoft,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 999,
   },
   selectedPillText: {
-    color: '#1d4ed8',
+    color: theme.primary,
     fontSize: 12,
     fontWeight: '800',
   },
@@ -283,9 +289,9 @@ export const styles = StyleSheet.create({
     marginTop: 12,
     padding: 14,
     borderRadius: 18,
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.surfaceMuted,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.borderSoft,
   },
   deviceHeader: {
     flexDirection: 'row',
@@ -301,12 +307,12 @@ export const styles = StyleSheet.create({
   deviceTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#0f172a',
+    color: theme.text,
     marginBottom: 2,
   },
   deviceSubtitle: {
     fontSize: 13,
-    color: '#64748b',
+    color: theme.textMuted,
   },
 
   field: {
@@ -320,23 +326,23 @@ export const styles = StyleSheet.create({
   fieldLabel: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#334155',
+    color: theme.textSoft,
     marginBottom: 6,
   },
   fieldHint: {
     fontSize: 12,
-    color: '#64748b',
+    color: theme.textMuted,
     marginTop: 6,
     lineHeight: 16,
   },
   input: {
     minHeight: 46,
     borderRadius: 14,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.surface,
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: theme.border,
     paddingHorizontal: 12,
-    color: '#0f172a',
+    color: theme.text,
     fontSize: 15,
   },
 
@@ -355,39 +361,39 @@ export const styles = StyleSheet.create({
     paddingVertical: 9,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#cbd5e1',
-    backgroundColor: '#ffffff',
+    borderColor: theme.border,
+    backgroundColor: theme.surface,
     marginHorizontal: 4,
     marginBottom: 8,
   },
   segmentButtonActive: {
-    backgroundColor: '#2563eb',
-    borderColor: '#2563eb',
+    backgroundColor: theme.primary,
+    borderColor: theme.primary,
   },
   segmentText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#334155',
+    color: theme.textSoft,
   },
   segmentTextActive: {
-    color: '#ffffff',
+    color: theme.textOnDark,
   },
 
   resultBox: {
     borderRadius: 16,
-    backgroundColor: '#f8fafc',
+    backgroundColor: theme.surfaceMuted,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: theme.borderSoft,
     padding: 14,
   },
   resultText: {
     fontSize: 14,
     lineHeight: 22,
-    color: '#0f172a',
+    color: theme.text,
   },
 
   toggleChip: {
-    backgroundColor: '#eef2ff',
+    backgroundColor: theme.primarySoft,
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 6,
@@ -396,12 +402,12 @@ export const styles = StyleSheet.create({
   toggleChipText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#4338ca',
+    color: theme.primary,
   },
 
   jsonBox: {
     borderRadius: 16,
-    backgroundColor: '#0f172a',
+    backgroundColor: theme.hero,
     padding: 14,
     marginTop: 4,
   },
@@ -413,10 +419,18 @@ export const styles = StyleSheet.create({
     }),
     fontSize: 12,
     lineHeight: 18,
-    color: '#e2e8f0',
+    color: theme.textOnDarkSoft,
   },
 
   mt12: {
     marginTop: 12,
   },
 });
+
+export const styles = createAhpStyles(colors);
+
+export function useAhpStyles() {
+  const palette = useThemePalette();
+
+  return useMemo(() => createAhpStyles(palette), [palette]);
+}

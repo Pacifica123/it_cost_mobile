@@ -1,6 +1,6 @@
 import { Text, View } from 'react-native';
 
-import { styles } from '../styles';
+import { useElectricityStyles } from '../styles';
 import { AnimatedPressable, AnimatedSurface } from '../../../shared/ui';
 
 export function ResultsPanel(props: {
@@ -16,6 +16,7 @@ export function ResultsPanel(props: {
     dayRub: number;
   };
 }) {
+  const styles = useElectricityStyles();
   const { resultsOpen, setResultsOpen, result } = props;
 
   return (

@@ -1,34 +1,40 @@
+import { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { BarChart, LineChart, PieChart } from 'react-native-chart-kit';
 
 import { buildFinancialChartData } from '../../features/charts/logic/buildFinancialCharts';
-import { projectStyles as styles } from '../../features/project/styles';
+import { useProjectStyles } from '../../features/project/styles';
 import { formatCurrencyRU } from '../../shared/utils/currency';
 import { useData } from '../../store/data/DataContext';
 import { AnimatedScreenScroll, AppCard } from '../../shared/ui';
-import { colors, radius, spacing } from '../../shared/theme';
+import { colors, radius, spacing, useThemePalette, type ThemePalette } from '../../shared/theme';
 
 export const title = 'Финансовые графики';
 
 const palette = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444'];
 
-const chartConfig = {
-  backgroundColor: '#ffffff',
-  backgroundGradientFrom: '#ffffff',
-  backgroundGradientTo: '#ffffff',
-  decimalPlaces: 0,
-  color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
-  labelColor: () => '#334155',
-  propsForDots: {
-    r: '3',
-    strokeWidth: '1.5',
-    stroke: '#3B82F6',
-  },
-};
 
 export default function FinancialChartsScreen() {
+  const local = useLocalStyles();
+
+  const styles = useProjectStyles();
+
   const data = useData();
   const charts = buildFinancialChartData(data);
+  const theme = useThemePalette();
+  const chartConfig = {
+    backgroundColor: theme.surface,
+    backgroundGradientFrom: theme.surface,
+    backgroundGradientTo: theme.surface,
+    decimalPlaces: 0,
+    color: (opacity = 1) => theme.isDark ? `rgba(96, 165, 250, ${opacity})` : `rgba(59, 130, 246, ${opacity})`,
+    labelColor: () => theme.textSoft,
+    propsForDots: {
+      r: '4',
+      strokeWidth: '2',
+      stroke: theme.primary,
+    },
+  };
   const { width } = useWindowDimensions();
   const contentWidth = Math.max(width - spacing.lg * 4, 240);
   const pieWidth = Math.max(contentWidth, 260);
@@ -38,8 +44,8 @@ export default function FinancialChartsScreen() {
   const structureTotal = charts.structure.reduce((sum, item) => sum + item.value, 0);
 
   return (
-    <AnimatedScreenScroll style={styles.screen} contentContainerStyle={styles.content}>
-      <View style={styles.hero}>
+    <AnimatedScreenScroll style={[styles.screen, { backgroundColor: theme.bg }]} contentContainerStyle={styles.content}>
+      <View style={[styles.hero, { backgroundColor: theme.hero }]}>
         <View style={styles.badge}>
           <Text style={styles.badgeText} maxFontSizeMultiplier={1.1}>Аналитика</Text>
         </View>
@@ -50,7 +56,7 @@ export default function FinancialChartsScreen() {
       </View>
 
       <AppCard style={local.cardGap}>
-        <Text style={styles.cardTitle} maxFontSizeMultiplier={1.12}>Структура затрат</Text>
+        <Text style={[styles.cardTitle, { color: theme.text }]} maxFontSizeMultiplier={1.12}>Структура затрат</Text>
         {hasStructure ? (
           <>
             <View style={local.pieWrap}>
@@ -59,7 +65,7 @@ export default function FinancialChartsScreen() {
                   name: item.title,
                   population: item.value,
                   color: palette[index % palette.length],
-                  legendFontColor: '#334155',
+                  legendFontColor: theme.textSoft,
                   legendFontSize: 12,
                 }))}
                 width={pieWidth}
@@ -75,14 +81,14 @@ export default function FinancialChartsScreen() {
               {charts.structure.map((item, index) => {
                 const percent = structureTotal > 0 ? Math.round((item.value / structureTotal) * 100) : 0;
                 return (
-                  <View key={item.id} style={local.structureLegendRow}>
+                  <View key={item.id} style={[local.structureLegendRow, { borderBottomColor: theme.borderSoft }]}>
                     <View style={local.structureLegendLabelWrap}>
                       <View style={[local.legendDot, { backgroundColor: palette[index % palette.length] }]} />
-                      <Text style={local.structureLegendTitle} maxFontSizeMultiplier={1.1}>
+                      <Text style={[local.structureLegendTitle, { color: theme.textSoft }]} maxFontSizeMultiplier={1.1}>
                         {item.title}
                       </Text>
                     </View>
-                    <Text style={local.structureLegendValue} maxFontSizeMultiplier={1.1}>
+                    <Text style={[local.structureLegendValue, { color: theme.text }]} maxFontSizeMultiplier={1.1}>
                       {formatCurrencyRU(item.value)} · {percent}%
                     </Text>
                   </View>
@@ -91,12 +97,12 @@ export default function FinancialChartsScreen() {
             </View>
           </>
         ) : (
-          <Text style={styles.cardText} maxFontSizeMultiplier={1.12}>Нет затрат для построения структуры.</Text>
+          <Text style={[styles.cardText, { color: theme.textSoft }]} maxFontSizeMultiplier={1.12}>Нет затрат для построения структуры.</Text>
         )}
       </AppCard>
 
       <AppCard style={local.cardGap}>
-        <Text style={styles.cardTitle} maxFontSizeMultiplier={1.12}>Профиль расходов</Text>
+        <Text style={[styles.cardTitle, { color: theme.text }]} maxFontSizeMultiplier={1.12}>Профиль расходов</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <BarChart
             data={{
@@ -118,16 +124,16 @@ export default function FinancialChartsScreen() {
         </ScrollView>
         <View style={local.legendList}>
           {charts.annualBars.map((item) => (
-            <View key={item.id} style={local.legendRow}>
-              <Text style={local.legendTitle} maxFontSizeMultiplier={1.1}>{item.title}</Text>
-              <Text style={local.legendValue} maxFontSizeMultiplier={1.1}>{formatCurrencyRU(item.value)}</Text>
+            <View key={item.id} style={[local.legendRow, { borderBottomColor: theme.borderSoft }]}>
+              <Text style={[local.legendTitle, { color: theme.textSoft }]} maxFontSizeMultiplier={1.1}>{item.title}</Text>
+              <Text style={[local.legendValue, { color: theme.text }]} maxFontSizeMultiplier={1.1}>{formatCurrencyRU(item.value)}</Text>
             </View>
           ))}
         </View>
       </AppCard>
 
       <AppCard style={local.cardGap}>
-        <Text style={styles.cardTitle} maxFontSizeMultiplier={1.12}>Накопленная стоимость владения</Text>
+        <Text style={[styles.cardTitle, { color: theme.text }]} maxFontSizeMultiplier={1.12}>Накопленная стоимость владения</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <LineChart
             data={{
@@ -135,12 +141,12 @@ export default function FinancialChartsScreen() {
               datasets: [
                 {
                   data: charts.cumulativeTco,
-                  color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
+                  color: (opacity = 1) => theme.isDark ? `rgba(96, 165, 250, ${opacity})` : `rgba(59, 130, 246, ${opacity})`,
                   strokeWidth: 2.25,
                 },
                 {
                   data: charts.discountedTco,
-                  color: (opacity = 1) => `rgba(16, 185, 129, ${opacity})`,
+                  color: (opacity = 1) => theme.isDark ? `rgba(52, 211, 153, ${opacity})` : `rgba(16, 185, 129, ${opacity})`,
                   strokeWidth: 2.25,
                 },
               ],
@@ -158,16 +164,16 @@ export default function FinancialChartsScreen() {
           />
         </ScrollView>
         <View style={local.lineLegendRow}>
-          <View style={local.lineLegendItem}>
+          <View style={[local.lineLegendItem, { backgroundColor: theme.surfaceMuted, borderColor: theme.borderSoft }]}>
             <View style={[local.legendDot, { backgroundColor: palette[0] }]} />
-            <Text style={local.lineLegendText} maxFontSizeMultiplier={1.1}>TCO</Text>
+            <Text style={[local.lineLegendText, { color: theme.text }]} maxFontSizeMultiplier={1.1}>TCO</Text>
           </View>
-          <View style={local.lineLegendItem}>
+          <View style={[local.lineLegendItem, { backgroundColor: theme.surfaceMuted, borderColor: theme.borderSoft }]}>
             <View style={[local.legendDot, { backgroundColor: palette[1] }]} />
-            <Text style={local.lineLegendText} maxFontSizeMultiplier={1.1}>Дисконт. TCO</Text>
+            <Text style={[local.lineLegendText, { color: theme.text }]} maxFontSizeMultiplier={1.1}>Дисконт. TCO</Text>
           </View>
         </View>
-        <Text style={local.note} maxFontSizeMultiplier={1.12}>
+        <Text style={[local.note, { color: theme.textMuted }]} maxFontSizeMultiplier={1.12}>
           Дисконтированная линия использует ставку из настроек приложения и нужна для ориентировочного сравнения горизонта владения.
         </Text>
       </AppCard>
@@ -175,7 +181,9 @@ export default function FinancialChartsScreen() {
   );
 }
 
-const local = StyleSheet.create({
+type LocalStyleTheme = ThemePalette | typeof colors;
+
+const createLocalStyles = (theme: LocalStyleTheme) => StyleSheet.create({
   cardGap: {
     gap: spacing.md,
   },
@@ -196,7 +204,7 @@ const local = StyleSheet.create({
     gap: spacing.md,
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: colors.borderSoft,
+    borderBottomColor: theme.borderSoft,
   },
   structureLegendLabelWrap: {
     flexDirection: 'row',
@@ -212,14 +220,14 @@ const local = StyleSheet.create({
     flexShrink: 0,
   },
   structureLegendTitle: {
-    color: colors.textSoft,
+    color: theme.textSoft,
     fontSize: 13,
     lineHeight: 18,
     fontWeight: '800',
     flexShrink: 1,
   },
   structureLegendValue: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 13,
     lineHeight: 18,
     fontWeight: '900',
@@ -232,17 +240,17 @@ const local = StyleSheet.create({
     gap: spacing.md,
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: colors.borderSoft,
+    borderBottomColor: theme.borderSoft,
   },
   legendTitle: {
-    color: colors.textSoft,
+    color: theme.textSoft,
     fontSize: 13,
     lineHeight: 18,
     fontWeight: '800',
     flex: 1,
   },
   legendValue: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 13,
     lineHeight: 18,
     fontWeight: '900',
@@ -261,21 +269,29 @@ const local = StyleSheet.create({
     gap: 8,
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: colors.borderSoft,
-    backgroundColor: colors.surfaceMuted,
+    borderColor: theme.borderSoft,
+    backgroundColor: theme.surfaceMuted,
     paddingVertical: 8,
     paddingHorizontal: 10,
   },
   lineLegendText: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '800',
   },
   note: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 12,
     lineHeight: 18,
     fontWeight: '700',
   },
 });
+
+const local = createLocalStyles(colors);
+
+function useLocalStyles() {
+  const palette = useThemePalette();
+
+  return useMemo(() => (palette.isDark ? createLocalStyles(palette) : local), [palette]);
+}

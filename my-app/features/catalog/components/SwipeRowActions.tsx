@@ -1,24 +1,31 @@
 import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 
-import { exploreStyles as styles } from '../styles';
+import { useCatalogStyles } from '../styles';
 import { AnimatedPressable } from '../../../shared/ui';
+import { useThemePalette } from '../../../shared/theme';
 
 export function SwipeEditAction({ onPress }: { onPress: () => void }) {
+  const styles = useCatalogStyles();
+
+  const palette = useThemePalette();
   return (
     <View style={styles.swipeActions}>
-      <AnimatedPressable style={[styles.swipeBtn, styles.swipeEdit]} onPress={onPress}>
-        <Ionicons name="create-outline" size={20} color="#111827" />
+      <AnimatedPressable style={[styles.swipeBtn, styles.swipeEdit, { backgroundColor: palette.warningSoft, borderColor: palette.borderSoft }]} onPress={onPress}>
+        <Ionicons name="create-outline" size={20} color={palette.text} />
       </AnimatedPressable>
     </View>
   );
 }
 
 export function SwipeDeleteAction({ onPress }: { onPress: () => void }) {
+  const styles = useCatalogStyles();
+
+  const palette = useThemePalette();
   return (
     <View style={styles.swipeActions}>
-      <AnimatedPressable style={[styles.swipeBtn, styles.swipeDelete]} onPress={onPress}>
-        <Ionicons name="trash-outline" size={20} color="#7F1D1D" />
+      <AnimatedPressable style={[styles.swipeBtn, styles.swipeDelete, { backgroundColor: palette.dangerSoft, borderColor: palette.borderSoft }]} onPress={onPress}>
+        <Ionicons name="trash-outline" size={20} color={palette.danger} />
       </AnimatedPressable>
     </View>
   );

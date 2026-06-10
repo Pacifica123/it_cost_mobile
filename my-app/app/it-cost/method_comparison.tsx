@@ -5,10 +5,10 @@ import { StyleSheet, Text, View } from 'react-native';
 import { router, type Href } from 'expo-router';
 
 import { compareOptimizationMethods, type MethodComparisonRow } from '../../features/methodComparison/logic/compareMethods';
-import { projectStyles as styles } from '../../features/project/styles';
+import { useProjectStyles } from '../../features/project/styles';
 import { useData } from '../../store/data/DataContext';
 import { AnimatedPressable, AnimatedScreenScroll, AppCard } from '../../shared/ui';
-import { colors, radius, spacing } from '../../shared/theme';
+import { colors, radius, spacing, type ThemePalette, useThemePalette } from '../../shared/theme';
 import { formatCurrencyRU } from '../../shared/utils/currency';
 
 export const title = 'Сравнение методов';
@@ -21,6 +21,10 @@ const methodIcon: Record<MethodComparisonRow['id'], ComponentProps<typeof Ionico
 };
 
 function MethodCard({ row, index }: { row: MethodComparisonRow; index: number }) {
+  const local = useLocalStyles();
+
+  const styles = useProjectStyles();
+
   return (
     <AppCard delay={index * 45} style={local.methodCard}>
       <View style={local.methodHeader}>
@@ -39,6 +43,10 @@ function MethodCard({ row, index }: { row: MethodComparisonRow; index: number })
 }
 
 export default function MethodComparisonScreen() {
+  const local = useLocalStyles();
+
+  const styles = useProjectStyles();
+
   const data = useData();
   const report = useMemo(() => compareOptimizationMethods(data), [data]);
 
@@ -93,7 +101,9 @@ export default function MethodComparisonScreen() {
   );
 }
 
-const local = StyleSheet.create({
+type LocalStyleTheme = ThemePalette | typeof colors;
+
+const createLocalStyles = (theme: LocalStyleTheme) => StyleSheet.create({
   summaryCard: {
     gap: spacing.sm,
   },
@@ -104,8 +114,8 @@ const local = StyleSheet.create({
     marginTop: 4,
   },
   fact: {
-    color: colors.text,
-    backgroundColor: colors.surfaceMuted,
+    color: theme.text,
+    backgroundColor: theme.surfaceMuted,
     borderRadius: radius.pill,
     paddingHorizontal: 10,
     paddingVertical: 7,
@@ -127,34 +137,42 @@ const local = StyleSheet.create({
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.primarySoft,
+    backgroundColor: theme.primarySoft,
   },
   methodTitle: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 17,
     lineHeight: 22,
     fontWeight: '900',
   },
   methodScore: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '900',
     marginTop: 1,
   },
   winner: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 14,
     lineHeight: 20,
     fontWeight: '800',
-    backgroundColor: colors.surfaceMuted,
+    backgroundColor: theme.surfaceMuted,
     borderRadius: radius.md,
     padding: spacing.md,
   },
   note: {
-    color: colors.textSoft,
+    color: theme.textSoft,
     fontSize: 13,
     lineHeight: 19,
     fontWeight: '700',
   },
 });
+
+const local = createLocalStyles(colors);
+
+function useLocalStyles() {
+  const palette = useThemePalette();
+
+  return useMemo(() => (palette.isDark ? createLocalStyles(palette) : local), [palette]);
+}

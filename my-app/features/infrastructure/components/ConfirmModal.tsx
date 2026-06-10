@@ -1,6 +1,6 @@
 import { Modal, Pressable, Text, View, type GestureResponderEvent } from 'react-native';
 
-import { styles } from '../styles';
+import { useInfrastructureStyles } from '../styles';
 import { AppButton } from './AppButton';
 import { AnimatedSurface } from '../../../shared/ui';
 
@@ -27,6 +27,8 @@ export function ConfirmModal({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const styles = useInfrastructureStyles();
+
   return (
     <Modal visible={visible} animationType="fade" transparent onRequestClose={onCancel}>
       <Pressable style={styles.confirmOverlay} onPress={onCancel}>

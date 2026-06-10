@@ -5,12 +5,14 @@ import { NpvFormCard } from '../../features/npv/components/NpvFormCard';
 import { NpvResultsTable } from '../../features/npv/components/NpvResultsTable';
 import { NpvSummaryRow } from '../../features/npv/components/NpvSummaryRow';
 import { useNpvCalculator } from '../../features/npv/hooks/useNpvCalculator';
-import { styles } from '../../features/npv/styles';
+import { useNpvStyles } from '../../features/npv/styles';
 import { AnimatedScreenScroll } from '../../shared/ui';
 
 export const title = 'NPV-анализ';
 
 export default function NPVScreen() {
+  const styles = useNpvStyles();
+
   const { form, results, chartValues, error, finalNpv, paybackPeriod, setForm, calculate, reset } = useNpvCalculator();
 
   return (

@@ -1,8 +1,9 @@
 import React from 'react';
 import { Text, TextInput, View } from 'react-native';
 
-import { styles } from './styles';
+import { useAhpStyles } from './styles';
 import { AnimatedPressable } from '../../shared/ui';
+import { useThemePalette } from '../../shared/theme';
 
 export function SectionTitle({
   title,
@@ -13,6 +14,8 @@ export function SectionTitle({
   subtitle?: string;
   right?: React.ReactNode;
 }) {
+  const styles = useAhpStyles();
+
   return (
     <View style={styles.sectionHeader}>
       <View style={styles.sectionHeaderLeft}>
@@ -39,6 +42,9 @@ export function Field({
   placeholder?: string;
   hint?: string;
 }) {
+  const styles = useAhpStyles();
+  const palette = useThemePalette();
+
   return (
     <View style={styles.field}>
       <Text style={styles.fieldLabel}>{label}</Text>
@@ -48,7 +54,7 @@ export function Field({
         onChangeText={onChangeText}
         keyboardType={keyboardType}
         placeholder={placeholder}
-        placeholderTextColor="#94a3b8"
+        placeholderTextColor={palette.textMuted}
         autoCorrect={false}
         autoCapitalize="none"
       />
@@ -70,6 +76,9 @@ export function InlineField({
   keyboardType?: 'default' | 'numeric';
   placeholder?: string;
 }) {
+  const styles = useAhpStyles();
+  const palette = useThemePalette();
+
   return (
     <View style={styles.inlineField}>
       <Text style={styles.fieldLabel}>{label}</Text>
@@ -79,7 +88,7 @@ export function InlineField({
         onChangeText={onChangeText}
         keyboardType={keyboardType}
         placeholder={placeholder}
-        placeholderTextColor="#94a3b8"
+        placeholderTextColor={palette.textMuted}
         autoCorrect={false}
         autoCapitalize="none"
       />
@@ -96,6 +105,8 @@ export function StatCard({
   value: string | number;
   accent: string;
 }) {
+  const styles = useAhpStyles();
+
   return (
     <View style={styles.statCard}>
       <View style={[styles.statDot, { backgroundColor: accent }]} />
@@ -118,6 +129,8 @@ export function ActionButton({
   disabled?: boolean;
   compact?: boolean;
 }) {
+  const styles = useAhpStyles();
+
   return (
     <AnimatedPressable
       onPress={onPress}

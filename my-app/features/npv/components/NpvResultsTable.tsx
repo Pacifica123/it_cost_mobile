@@ -1,11 +1,13 @@
 import { Text, View } from 'react-native';
 
 import { formatNpvNumber } from '../logic/npv';
-import { styles } from '../styles';
+import { useNpvStyles } from '../styles';
 import { AnimatedSurface } from '../../../shared/ui';
 import type { ResultRow } from '../types';
 
 export function NpvResultsTable({ rows }: { rows: ResultRow[] }) {
+  const styles = useNpvStyles();
+
   if (!rows.length) {
     return null;
   }

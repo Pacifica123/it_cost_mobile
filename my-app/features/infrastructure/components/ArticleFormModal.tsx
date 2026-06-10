@@ -1,9 +1,10 @@
 import { Picker } from '@react-native-picker/picker';
 import { KeyboardAvoidingView, Modal, Platform, Switch, Text, TextInput, View } from 'react-native';
 
-import { styles } from '../styles';
+import { useInfrastructureStyles } from '../styles';
 import { AnimatedSurface } from '../../../shared/ui';
 import { AppButton } from './AppButton';
+import { useThemePalette } from '../../../shared/theme';
 
 export function ArticleFormModal(props: {
   visible: boolean;
@@ -17,6 +18,9 @@ export function ArticleFormModal(props: {
   onSave: () => void;
   onClose: () => void;
 }) {
+  const styles = useInfrastructureStyles();
+  const palette = useThemePalette();
+
   const {
     visible,
     editingArticleId,
@@ -40,7 +44,7 @@ export function ArticleFormModal(props: {
             <Text style={styles.label}>Название</Text>
             <TextInput
               placeholder="Например: Сеть / Серверное"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={palette.textMuted}
               value={articleName}
               onChangeText={setArticleName}
               style={styles.input}

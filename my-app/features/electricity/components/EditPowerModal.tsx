@@ -1,6 +1,7 @@
 import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
-import { styles } from '../styles';
+import { useThemePalette } from '../../../shared/theme';
+import { useElectricityStyles } from '../styles';
 import { AnimatedPressable, AnimatedSurface } from '../../../shared/ui';
 
 export function EditPowerModal(props: {
@@ -10,6 +11,8 @@ export function EditPowerModal(props: {
   onClose: () => void;
   onSave: () => void;
 }) {
+  const styles = useElectricityStyles();
+  const palette = useThemePalette();
   const { visible, editPower, onChangePower, onClose, onSave } = props;
 
   return (
@@ -28,7 +31,7 @@ export function EditPowerModal(props: {
                 keyboardType="numeric"
                 style={styles.input}
                 placeholder="Напр. 450"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={palette.textMuted}
                 autoFocus
               />
 
